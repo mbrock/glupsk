@@ -1,0 +1,325 @@
+!% -G
+!% -D
+
+Constant Story "TWO COLUMNS";
+Constant Headline "^A Glk demo by Andrew Plotkin.^";
+
+! This is a simple demonstration of a "parallel worlds" Inform game.
+! The game has two story windows. You enter commands in the left window,
+! as usual. A twin character executes parallel actions in the right window.
+!
+! To make this work, we need to set up parallel object trees, where each
+! object responds to the same commands as its twin. This is a nuisance
+! to set up. If there's any asymmetry, the game can easily get into an
+! asymmetric state, where one character is flailing around in the wrong
+! room or with the wrong inventory.
+!
+! I have only implemented the basics of this mechanism. Multiple-object
+! commands don't work right. I suspect that disambiguation questions don't
+! work right. Lots of stuff doesn't work right. However, it's a start.
+!
+! I didn't make any attempt to twin the status line.
+
+! Rock constant for the second story window.
+Constant GG_SECONDWIN_ROCK 210;
+! The second story window. (0 means it's not open yet.)
+Global gg_secondwin = 0;
+
+! We want to twin all player-typed actions, but not actions generated
+! by <> and <<>> statements. The initial <Look> is an exception to this
+! rule, so we keep a global flag to track the exception.
+Global firstlook = true;
+
+Include "Parser";
+Include "VerbLib";
+
+[ Initialise;
+    ! Replace the library's begin_action routine with our own.
+    InformLibrary.begin_action = TwoColBeginAction;
+
+    ! Set the starting locations of the two player objects.
+    location = Room1;
+    move secondselfobj to Room2;
+
+    ! If there is no second window open, open one. If there is, we just
+    ! "restarted", so clear the second window.
+    
+    if (gg_secondwin == 0) {
+        gg_secondwin = glk($0023, gg_mainwin, $21, 50, 3,
+            GG_SECONDWIN_ROCK); ! window_open
+        if (gg_secondwin == 0) {
+            print "[Unable to open second window.]^";
+            quit;
+        }
+    }
+    else {
+        glk($002A, gg_secondwin); ! window_clear
+    }
+
+    ! Opening message.
+    print "You look around your shiny new apartment, admiring
+        the latest nanotech-made futon.^^";
+
+    ! Opening message for the second window. We need to throw in
+    ! a Banner() call to keep the parallelism looking right.
+    SetWindow(2);
+    new_line;
+    print "You look around your filthy mud-stained hovel,
+        admiring the stump you sleep on.^^";
+    Banner();
+    SetWindow(1);
+];
+
+! Second player object. This is identical to the player object.
+!
+Object  secondselfobj "(self object)"
+  with  short_name  [;  return L__M(##Miscellany, 18); ],
+        description [;  return L__M(##Miscellany, 19); ],
+        before NULL,
+        after NULL,
+        life NULL,
+        each_turn NULL,
+        time_out NULL,
+        describe NULL,
+        add_to_scope 0,
+        capacity 100,
+        parse_name 0,
+        orders 0,
+        number 0,
+        before_implicit NULL,
+  has   concealed animate proper transparent;
+
+! Utility function to set the current output to window 1 or 2.
+!
+[ SetWindow dest   substream;
+    if (dest == 1) {
+        substream = glk($2C, gg_mainwin); ! window_get_stream
+        glk($47, substream); ! stream_set_current
+    }
+    else {
+        substream = glk($2C, gg_secondwin); ! window_get_stream
+        glk($47, substream); ! stream_set_current
+    }
+];
+
+! Given an object in the first world, find its equivalent in the second
+! world. We do this with the "twin" property. Everything in the first
+! world must supply this property.
+! 
+! As a special case, compass directions are their own twins. We also
+! special-case the first-world player object, since it's a nuisance to
+! add "twin" to a library object.
+!
+[ FindTwin obj   val;
+    if (obj == nothing)
+        return nothing;
+
+    if (obj == selfobj)
+        return secondselfobj;
+        
+    if (obj in Compass)
+        return obj;
+
+    val = obj.twin;
+    if (~~val)
+        print "[BUG] ", (The) obj, " has no twin.^";
+
+    return val;
+];
+
+! This function replaces InformLibrary.begin_action.
+!
+! The normal function of begin_action is to execute one action (either
+! typed by the player, or from a <> statement). We hack it up to
+! execute the action twice -- but only for player-typed actions.
+! Those are, so to speak, the top level. A player action may invoke
+! lower-level actions (via <> or <<>>). We don't want to twin each of
+! those, or we'd wind up with four, eight, or sixteen actions at the
+! lower level... certainly not what we want. By twinning only at the
+! top level, we wind up with exactly two parallel execution trees.
+!
+! The "source" argument is zero for player-typed actions, nonzero for
+! lower-level actions. That's how we tell.
+!
+! (Exception: At the very beginning of the game, the library does a
+! <Look>. We want to twin that one. The "firstlook" global variable
+! tracks this.)
+!
+[ TwoColBeginAction a n s source   sa sn ss s1 s2 i k;
+    sa = action; sn = noun; ss = second;
+    action = a; noun = n; second = s;
+    #Ifdef DEBUG;
+    if (debug_flag & 2 ~= 0) TraceAction(source);
+    #Endif; ! DEBUG
+    if ((meta || BeforeRoutines() == false) && action < 4096)
+        ActionPrimitive();
+    action = sa; noun = sn; second = ss;
+
+    ! Don't twin meta actions.
+    if (meta)
+        return;
+
+    ! Don't twin lower-level actions, unless it's the initial <Look>.
+    if (source ~= 0 && firstlook == false)
+        return;
+
+    SetWindow(2);
+
+    ! Switch to the second player.
+    ChangePlayer(secondselfobj);
+
+    ! We have to alter a bunch of global variables so that the second 
+    ! action executes in the correct context. Use FindTwin() to
+    ! locate the twin of noun and second.
+    
+    action = a; noun = FindTwin(n); second = FindTwin(s);
+    s1 = inp1; s2 = inp2;
+    if (inp1 ~= 0 or 1) inp1 = noun;
+    if (inp2 ~= 0 or 1) inp2 = second;
+
+    ! We also have to alter the entries in the pattern array.
+    ! These are used by PrintCommand().
+    for (k=0 : k<pcount : k++) {
+        i = pattern-->k;
+        if (i == PATTERN_NULL or 0 or 1)
+            continue;
+        if (i >= REPARSE_CODE)
+            continue;
+        if (i provides twin)
+            pattern-->k = FindTwin(i);
+    }
+
+    ! Print a fake prompt and command input. (But not for the
+    ! initial <Look>.)
+    if (firstlook == false) {
+        L__M(##Prompt);
+        glk($0086, 8); ! set input style
+        PrintCommand(0);
+        glk($0086, 0); ! set normal style
+        new_line;
+    }
+    
+    #Ifdef DEBUG;
+    if (debug_flag & 2 ~= 0) TraceAction(source);
+    #Endif; ! DEBUG
+    if ((meta || BeforeRoutines() == false) && action < 4096)
+        ActionPrimitive();
+    action = sa; noun = sn; second = ss; inp1 = s1; inp2 = s2;
+
+    ! Change back.
+    ChangePlayer(selfobj);
+    firstlook = false;
+        
+    SetWindow(1);
+];
+
+! ----
+
+! This is required in any game that creates new Glk objects (such as windows).
+! See the Glk technical manual.
+! 
+[ IdentifyGlkObject phase type ref rock;
+
+    if (phase == 0) {
+        gg_secondwin = 0;
+        return;
+    }
+
+    if (phase == 1) {
+        switch (type) {
+            0:
+                switch (rock) {
+                    GG_SECONDWIN_ROCK: gg_secondwin = ref;
+                }
+        }
+        return;
+    }
+
+    if (phase == 2) {
+        if (gg_secondwin == 0 && gg_mainwin ~= 0) {
+            gg_secondwin = glk($0023, gg_mainwin, $21, 50, 3,
+                GG_SECONDWIN_ROCK); ! window_open
+            if (gg_secondwin == 0) {
+                print "[Unable to open second window.]^";
+                quit;
+            }
+        }
+    }
+];
+  
+! ----
+
+! World one. Notice that every object has a "twin" property. Rooms do too,
+! although they don't actually need it in this implementation. 
+
+Object thing1 "RAM chip" selfobj
+  with
+    twin thing2,
+    name 'petabyte' 'ram' 'chip' 'memory',
+    description "It's a petabyte of RAM.";
+
+Object Room1 "Shiny Apartment"
+  with
+    twin Room2,
+    description "Your apartment is in the latest style. The exodoor is
+        north.",
+    n_to Outdoors1,
+  has light;
+
+Object -> Furniture1 "futon"
+  with
+    twin Furniture2,
+    name 'nanotech' 'futon',
+    initial "Your nanotech futon hums in the corner.",
+    description "It's translucent and shiny.",
+    before [;
+        Touch: "The futon feels like it only half-exists.";
+        Push: <<Touch self>>;
+    ],
+  has supporter enterable static;
+
+Object Outdoors1 "Aldebaran City"
+  with
+    twin Outdoors2,
+    description "You are standing amid the gleaming towers of Aldebaran
+        City. It's very large. Your home is south.",
+    s_to Room1,
+  has light;
+    
+! ----
+
+! World two. Objects don't have "name" properties, since the player can't
+! refer to them directly.
+
+Object thing2 "rock" secondselfobj
+  with
+    description "It's a worn rock.";
+
+Object Room2 "Hovel"
+  with
+    description "It's the same filthy hovel your family has
+        lived in for three generations. The door is north.",
+    n_to Outdoors2,
+  has light;
+
+Object -> Furniture2 "stump"
+  with
+    initial "In the center of the room is a rotten stump.",
+    description "It's black and moldy.",
+    before [;
+        Touch: "The stump feels squishy.";
+        Push: <<Touch self>>;
+    ],
+  has supporter enterable static;
+
+Object Outdoors2 "Swamp"
+  with
+    description "You are standing in the dismal swamp you call home.
+        It's very small. Your hovel is south.",
+    s_to Room2,
+  has light;
+  
+! ----
+  
+Include "Grammar";
+

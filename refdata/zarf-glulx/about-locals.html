@@ -1,0 +1,312 @@
+<!doctype HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Glulx: The Local Variable Mess</title>
+</head>
+<body>
+
+<h2>Glulx: The Local Variable Mess</h2>
+
+<p>
+The <a href="http://github.com/erkyrath/glk-dev/blob/master/Glulx-Spec">draft of the next Glulx spec</a> says, on the subject of local variables:
+</p>
+
+<blockquote>
+NOTE: 8-bit and 16-bit locals have never been in common use, and this spec has not been unambiguous in describing their handling. (By which I mean, what I implemented in the reference interpreter didn't match the spec.) Therefore, 8-bit and 16-bit locals are deprecated. Use of the copyb and copys opcodes with a local-variable operand is also deprecated.
+</blockquote>
+
+<p>
+When I wrote "never been in common use" I was being somewhat parochial. Inform 6 and 7 only generate 32-bit local variables, so no Inform games are affected by this deprecation. However, the Spanish IF system <a href="http://sourceforge.net/projects/superglus/">Superglus</a> has used short locals, and some Superglus games are out there relying on this feature.
+</p>
+
+<p>
+It is therefore worth documenting what the spec said, what Glulxe (the reference interpreter) implemented, and what other interpreters can handle. This is for everybody's benefit, including mine -- whenever the subject comes up, I have to re-trawl the source code to remind myself what's going on.
+</p>
+
+<h3>What the spec says</h3>
+
+<p>
+The relevant parts of the Glulx spec (version 3.1.1):
+</p>
+
+<blockquote>
+
+<p>
+The "locals" are a list of values which the function uses as local variables. These also include function arguments. (The first N locals can be used as the arguments to an N-argument function.) Locals can be 8, 16, or 32-bit values. They are not necessarily contiguous; padding is inserted wherever necessary to bring a value to its natural alignment (16-bit values at even addresses, 32-bit values at multiples of four).
+</p>
+
+<p>
+The program is not prevented from accessing [local variable] locations whose size and position don't match the formatting, or locations that overlap, or even locations in the padding between locals. However, if a program does this, the results are undefined, because the byte-ordering of locals is up to the terp.
+</p>
+
+<p>
+The "call frame local" modes access a field on the stack, starting at byte ((FramePtr+LocalsPos) + address). [...] this must be aligned with (and the same size as) one of the fields described in the function's locals format. 
+</p>
+
+<p>
+Since copys and copyb can access chunks smaller than the usual four bytes, they require some comment. When reading from main memory or the call-frame locals, they access two or one bytes, instead of four. However, when popping or pushing values on the stack, these opcodes pull or push a full 32-bit value.
+</p>
+
+</blockquote>
+
+<p>
+The confusion is already implicit in the fourth quoted paragraph. That is written as if local variables were always four bytes, and all opcodes <em>other</em> than copys and copyb accessed four-byte locals only. This contradicts the third paragaph.
+</p>
+
+<p>
+As I said, Inform 6 and 7 only use four-byte locals. They also never generate the copyb and copys opcodes when compiling regular code. (copyb is used in one place, when printing the game version banner, but <em>not</em> to access local variables -- only main memory.) This is why the confusion lingered for years; the games I was familiar with never tripped over it.
+</p>
+
+<h3>What the spec means</h3>
+
+<p>
+I'll use this example call frame to illustrate henceforth:
+</p>
+
+<pre>
+  Addr  Variable
+  ----  --------
+  L+0   LocX (4 bytes)
+  L+4   LocY (2 bytes)
+  L+6   LocZ (1 byte)
+  L+7   LocW (1 byte)
+  L+8   LocQ (4 bytes)
+</pre>
+  
+<p>
+This locals segment is twelve bytes, starting at stack address L (FramePtr+LocalsPos). It contains a 32-bit variable (LocX), a 16-bit variable (LocY), two 8-bit variables (LocZ and LocW), and then another 32-bit (LocQ). There is no padding.
+</p>
+
+<p>
+Remember, the Glulx stack (which includes the locals segment) doesn't have a specified endianness. It doesn't even have to be stored as a bunch of bytes. So it's important that a valid Glulx program only access these local variables as whole units. If you try to read the "first byte" of LocX as an 8-bit variable, who knows what you're going to get.
+</p>
+
+<p>
+The intent of the spec is that most opcodes should obey the local-variable structure when accessing the locals segment. For example, if you write the I6 line
+</p>
+
+<pre>
+  LocX = LocY + LocZ;
+</pre>
+
+<p>
+...the compiler could compile this as:
+</p>
+
+<pre>
+  @add loc:4 loc:6 loc:0;
+</pre>
+
+<p>
+Note: that isn't legitimate I6 assembly syntax. I'm using "loc:4" to indicate the operand mode "call frame local with address 4", e.g., LocY. The point is, the interpreter is supposed to read a two-byte value starting at address L+4, add a one-byte value starting at address L+6, and store the sum in the four-byte field starting at address L+0.
+</p>
+
+<p>
+The spec calls out copyb and copys as special, implying that an opcode
+</p>
+
+<pre>
+  @copyb loc:6 loc:7
+</pre>
+
+<p>
+...should copy one byte at L+6 to L+7. This isn't very informative, however, because the rule above implies that the regular (four-byte) copy opcode should do exactly the same thing! That is, 
+</p>
+
+<pre>
+  @copy loc:6 loc:7
+</pre>
+
+<p>
+...should <em>also</em> copy one byte at L+6 to L+7.
+</p>
+
+<p>
+On the other hand, if you do
+</p>
+
+<pre>
+  @copyb loc:0 loc:7
+</pre>
+
+<p>
+...then you're breaking the locals structure; you're trying to read the first byte of LocX. As I said, local variables have no defined endianness, so the outcome is not guaranteed. (But the Inform compiler has no safeguards against doing this.)
+</p>
+
+<p>
+To demonstrate this problem in compilable Inform 6 code:
+</p>
+
+<pre>
+  [ testfunc loca locb;
+    loca = $01020304;
+    @copyb loca locb;
+    print locb;
+  ];
+</pre>
+
+<p>
+This routine will print "4" on an Intel Mac, but "16777216" (0x01000000) in Glulxe on a PPC Mac.
+</p>
+
+<p>
+The value of copys and copyb is demonstrated if we copy to main memory (or the stack) instead. Both of the following are valid and useful:
+</p>
+
+<pre>
+  @copyb loc:6 mem:1000
+</pre>
+
+<p>
+This copies one byte from L+6 to main memory address 1000. In contrast,
+</p>
+
+<pre>
+  @copy loc:6 mem:1000
+</pre>
+
+<p>
+...reads one byte from L+6, and stores it in the four-byte field starting at main memory 1000. (Glulx main memory is always big-endian, so this means the byte is copied to address 1003, while addresses 1000-1002 are filled with zeroes.)
+</p>
+
+<p>
+As it happens, you can achieve the same results, <em>without</em> the copyb/copys special rule, by using the astoreb and astores opcodes. (This is in fact what the Inform compiler uses for I6 array code.) The whole mess would have been avoided if I'd noticed this and left copyb/copys out of the original spec.
+</p>
+
+<h3>What Glulxe does</h3>
+
+<p>
+We love specifications, but we write what works. Glulxe was the initial Glulx interpreter. I still consider it "the reference interpreter" (meaning that when the implementation clashes with the spec, I can't just wish the problem away).
+</p>
+
+<p>
+Glulxe has an outright bug, according to the spec: it <em>always</em> reads or writes four-byte locals, except when executing the copyb opcode (which always reads or writes one-byte locals) or the copys opcode (always two-byte locals). It doesn't pay attention to the locals structure at all.
+</p>
+
+<p>
+This means that the line
+</p>
+
+<pre>
+  @copy loc:6 loc:7
+</pre>
+
+<p>
+...will <em>not</em> copy one byte. It will copy a four-byte field (L+6 to L+9) to a overlapping four-byte field (L+7 to L+10). This will do the right thing as far as LocZ and LocW are concerned, but it will corrupt LocQ. If there were no LocQ, it would corrupt the bottom value of the value stack.
+</p>
+
+<p>
+(This case, at root, is why I am deprecating short locals. Code that relies on them has never worked right in Glulxe. I <em>could</em> fix Glulxe, but I don't want to break games that might rely on its buggy behavior!)
+</p>
+
+<p>
+The copyb/copys opcodes are not totally useless. They can safely be used with main memory and the stack. (As I said, most Inform games rely on this behavior in one place.) Glulxe also handles them correctly with short locals, <em>if</em> the local size matches the argument size:
+</p>
+
+<pre>
+  @copyb loc:6 loc:7
+  @copyb loc:6 mem:1000
+</pre>
+
+<p>
+These two lines will do the right thing, because a one-byte opcode is being applied to one-byte local variables. However,
+</p>
+
+<pre>
+  @copyb loc:0 loc:7
+</pre>
+
+<p>
+...is unsafe, as noted above. On a big-endian machine, it will copy the high byte of LocX to LocW. On a little-endian machine, it will copy the low byte of LocX to LocW.
+</p>
+
+<p>
+(<em>This</em> case is why I am deprecating the use of copyb/copys with <em>all</em> locals. Even if I had not shipped a buggy Glulxe interpreter, it would be inherently unsafe.)
+</p>
+
+<h3>What Git does</h3>
+
+<p>
+Git is a fast C interpreter written by Iain Merrick.
+</p>
+
+<p>
+Git doesn't support short locals at all. If a function header defines 8-bit or 16-bit local variables, calling that function will cause Git to exit with an error: "Local variable wasn't 4 bytes wide". 
+</p>
+
+<p>
+This simplifies the operand code greatly, which is good, because Git's operand code is some kind of Faustian preprocessing nightmare which I wouldn't try to understand for a big clock.
+</p>
+
+<h3>What Quixe does</h3>
+
+<p>
+Quixe is a Javascript (web-app) interpreter which does JIT-compilation to speed up VM code execution. It is not yet released (as I write this), but the opcode-handling has been stable for some time now, so I can report what it does.
+</p>
+
+<p>
+Quixe does not represent the stack (and locals) as an array of bytes. For efficiency, it stores the locals segment as a sparse array of (native) Javascript number. Each local is a single number, indexed at the address which it "should" have. The intermediate array positions are undefined. So, for our example stack frame, Quixe would have the array
+</p>
+
+<pre>
+  [ LocX, undef, undef, undef, LocY, undef, LocZ, LocW, LocQ ]
+</pre>
+
+<p>
+(The trailing undefined values are omitted.)
+</p>
+
+<p>
+Because locals are not encoded as bytes, Quixe avoids the endian problems that Glulxe suffers.
+</p>
+
+<pre>
+  @copy loc:6 loc:7
+</pre>
+
+<p>
+...correctly copies LocZ to LocW.
+</p>
+
+<pre>
+  @copyb loc:0 loc:7
+</pre>
+
+<p>
+...reliably copies the low byte of LocX to LocW. The short I6 program quoted earlier will print "4", same as Intel Glulxe.
+</p>
+
+<p>
+However, one bug remains. Quixe will still ignore the size limitations of the locals structure. If you do
+</p>
+
+<pre>
+  @copy loc:0 loc:7
+</pre>
+
+<p>
+...then Quixe will copy LocX to LocW directly. This could leave LocW holding a value greater than 255, despite nominally being an 8-bit variable. In fact, any operation which stores into a short local can wind up storing a value too large for that local. 
+</p>
+
+<p>
+(The copyb and copys opcodes truncate properly -- albeit for the opcode size, not the variable size. This is why the "@copy loc:6 loc:7" case works correctly.)
+</p>
+
+<hr>
+
+<p>
+Last updated May 25, 2010.
+</p>
+
+<p>
+<em><a href="index.html">Glulx home page</a></em>
+</p>
+
+<p>
+<em><a href="../home.html">Zarfhome</a></em>
+<em><a href="../sitemap.html#glulx">(map)</a></em>
+<em><a href="../cave/glulx.html">(down)</a></em>
+</p>
+
+</body>
+</html>

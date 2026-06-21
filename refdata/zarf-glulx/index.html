@@ -1,0 +1,579 @@
+<!doctype HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+<title>Glulx: A 32-Bit Virtual Machine for IF</title>
+</head>
+<body>
+
+<h2>Glulx: A 32-Bit Virtual Machine for IF</h2>
+
+<p align=center>
+<img src="glulx-logo.gif" alt="[GLULX]">
+</p>
+
+<hr>
+
+<h3>What Is It?</h3>
+
+<p>
+Glulx is a portable VM, like the Z-machine. Unlike the Z-machine, it 
+uses 32-bit data and addresses, so it can handle game files up to four
+gigabytes long. Also unlike the Z-machine, it has native support for Glk I/O,
+so game files can use any capability Glk provides. However, like
+the Z-machine -- again -- you can write games in the Inform language
+and compile them to Glulx game files.
+</p>
+
+<p>
+For more justification (or, perhaps, rationalization) see
+<a href="Glulx-Spec.html#intro">chapter zero</a> of the Glulx Spec.
+</p>
+
+<hr>
+
+<h3>Specification</h3>
+
+<p>
+This is the Glulx VM Specification, version 3.1.3.
+</p>
+
+<ul>
+<li><a href="Glulx-Spec.html">HTML version of Glulx specification</a> 
+<li><a href="Glulx-Spec.md">Plain text version of Glulx specification</a>
+<li><a href="Glulx-Spec.pdf">PDF version of Glulx specification</a>
+<li><a href="Glulx-Spec-Changes.txt">Change log for the specification</a>
+</ul>
+
+<hr>
+
+<h3>Glulxe</h3>
+
+<p>
+Glulxe (for "Glulx Execute") is the Glulx interpreter. The
+current version is 0.6.1.
+</p>
+
+<p>
+The official and up-to-date archive of Glulxe ports is on
+the IF Archive, under
+<a href="http://www.ifarchive.org/indexes/if-archiveXprogrammingXglulxXinterpretersXglulxe.html">if-archive/programming/glulx/interpreters/glulxe</a>.
+</p>
+
+
+<ul>
+<li><a href="glulxe-061.tar.gz">Glulxe 0.6.1</a>
+(C source code.)
+<li><a href="http://github.com/erkyrath/glulxe">GIT source code repository</a>
+(bleeding edge and older versions.)
+<!--
+<li><a href="Glulxe-034.hqx">Glulxe for Macintosh</a>
+(executable.) [0.3.4]
+<li><a href="WinGlulxe-035.zip">Glulxe for Windows</a>
+(executable. Thanks to David Kinder.) [0.3.5]
+<li><a href="glulxe.exe">Glulxe for DOS</a>
+(executable. Thanks to L. Ross Raszewski.) [0.3.4]
+-->
+</ul>
+
+<p>
+Since this is a Glk program, it must be built with a Glk library. See the
+<a href="../glk/index.html">Glk home page</a>.
+</p>
+
+<hr>
+
+<h3>Quixe</h3>
+
+<a href="quixe/">Quixe</a> is a Glulx interpreter written in pure Javascript.
+It lets you run Glulx games in a web browser.
+<p>
+
+<hr>
+
+<h3>Lectrote</h3>
+
+<a href="https://github.com/erkyrath/lectrote">Lectrote</a> 
+is Quixe wrapped up as an app for MacOS, Windows, and Linux.
+<a href="https://github.com/erkyrath/lectrote/releases">(Current
+binaries here.)</a> 
+<p>
+
+<hr>
+
+<h3>Glulx Inform</h3>
+
+<p>
+The standard
+<a href="http://ifarchive.org/indexes/if-archive/infocom/compilers/inform6/">Inform 6 compiler</a>
+can generate Glulx binaries.
+(If you want the bleeding-edge
+version, you can follow
+<a href="https://github.com/DavidKinder/Inform6">David Kinder's Github repository</a>.)
+</p>
+
+<p>
+Here is
+<a href="inform-guide.txt">The Game Author's Guide to Glulx Inform</a>.
+This is what you need to know if you know Inform, and want to compile
+your new (or old) Inform game for the Glulx VM.
+</p>
+
+<p>
+Here is
+<a href="Glulx-Inform-Tech.html">The Glulx Inform Technical Reference</a>,
+which documents all the internal table formats used by Glulx Inform
+games. (Dictionary tables, grammar tables, property tables, and so on.)
+Here is
+<a href="about-locals.html">The Local Variable Mess</a>, a technical
+note on the deprecation of 8-bit and 16-bit local variables.
+</p>
+
+<p>
+John Cater &lt;katre@plover.net&gt;
+has written <a href="infglk-0.6.1.zip">infglk</a>,
+an Inform header file for Glk functions, with support for rebuilding
+it when the glk.h header changes. (However, a more up-to-date
+version is now on my
+<a href="https://github.com/erkyrath/glk-dev/tree/master/dispatch_dump">Github account</a>.)
+</p>
+
+<hr>
+
+<h3>Sample Game Files</h3>
+
+<p>
+I've compiled Adventure. This is Graham's Inform source, release 5 serial
+961209. I compiled it without any changes at all, except for two constant
+definitions which will be unnecessary in the final release. 
+(See the Guide to Glulx Inform.) 
+<!-- 
+They're compiled with debug mode (-D) and strict error checking (-S).
+ -->
+</p>
+
+<ul>
+<li><a href="Advent.z5">Advent.z5</a>: the Z-code version.
+<li><a href="Advent.ulx">Advent.ulx</a>: the Glulx version.
+<li><a href="Advent.save">Advent.save</a>: a save file from the Glulx version.
+<!--
+<li><a href="Advent-nocomp.ulx">Advent-nocomp.ulx</a>: the Glulx version, 
+uncompressed strings.
+<li><a href="Advent-abbr.ulx">Advent-abbr.ulx</a>: the Glulx version, 
+compressed strings with economy mode (abbreviations).
+<li><a href="Advent.save">Advent.save</a>: a save file from the Glulx version.
+<li><a href="Advent.hqx">Advent.hqx</a>: a Mac archive containing all
+three files, with correct Mac file types.
+ -->
+</ul>
+
+<p>
+The Z-code and Glulx game files should behave identically in just about 
+every way. (You should download both of them, so that you're really comparing
+the same game, library, and compiler version. These use Inform 6.21 and the
+adapted bi-platform 6/10 library. The version of Advent.z5 on the IF Archive
+uses an earlier library.)
+</p>
+
+<p>
+Known differences:
+</p>
+
+<ul>
+<li>Text styles are more diverse. As mentioned in the Guide to Glulx Inform:
+the game's title is
+displayed in the Header style; room names are displayed in Subheader;
+score changes are in Note; and "You have died" is in Alert.
+You can adjust your Glk library preferences to make these styles appear
+however you want. (In MacGlk and XGlk, for example, you can set the
+font/size/color of each of them independently.)
+<li>The Glulxe version is slower. This is noticeable and annoying on my
+old (20MHz?) 68040 machine. On the newer (120MHz) machine, it's not
+a problem.
+(The search opcodes in the newest compiler, library, and interpreter 
+should speed up games by about 20%.)
+</ul>
+
+<h3>Sample Program Without Inform Library</h3>
+
+<p>
+In Z-code Inform, you can write a "Hello world" program in one line of
+code. A print statement will work all by itself.
+</p>
+
+<p>
+In Glulx Inform, you have to do a little more work: you have to set Glk
+up to work, and create a window to print to. It's still only about four
+lines of code.
+</p>
+
+<ul>
+<li><a href="helloworld.inf">helloworld.inf</a>: the Inform source code
+to print a single line.
+</ul>
+
+<p>
+Now, don't get confused, most Inform game authors will never need to worry
+about those four lines of code. The bi-platform Inform library takes care of
+all this magically. However, if you want to write a Glulx Inform program
+that <em>doesn't</em> use the library at all, look at helloworld.inf to get
+started.
+</p>
+
+<h3>Sample Game With Resources</h3>
+
+<p>
+And introducing: Sensory Jam (release 4). 
+This is a tiny demo game which contains
+sounds, graphics, and all sorts of other nifty things. Well, really
+just sound and graphics.
+</p>
+
+<ul>
+<li><a href="sensory.ulx">sensory.ulx</a>: the plain Glulx file.
+<li><a href="sensory.tar.Z">sensory.tar.Z</a>: a tar file containing
+sensory.ulx, plus all its sounds and images as separate files.
+<li><a href="sensory.blb">sensory.blb</a>: a Blorb file containing the
+game and all its resources.
+<li><a href="sensory.inf">sensory.inf</a>: the Inform source code.
+</ul>
+
+<p>
+You'll need a Glulxe 0.3.3 interpreter to play this, since it was
+compiled with the latest compiler.
+</p>
+
+<p>
+Toni Arnold has extracted some of the graphics code from Sensory Jam
+into an 
+<a href="http://www.copyriot.com/tarnold/blorb/">Inform library extension</a>.
+It was written to deal with the older bi-platform library, so you will
+have to diddle it a bit to fit it into current code -- I haven't tried it
+myself. Nonetheless, it's a handy example.
+</p>
+
+<h3>Sample Game With Parallel Worlds</h3>
+
+<ul>
+<li><a href="twocol.inf">twocol.inf</a>: the Inform source code
+for a two-column game.
+<li><a href="twocol.ulx">twocol.ulx</a>: the Glulx game file.
+</ul>
+
+<p>
+This is a quick demo of a game concept: it takes place in two parallel
+worlds, each with its own story window. You enter commands in the left
+window, and your twin performs analogous actions in the right window.
+It's a very basic implementation, and a lot of stuff doesn't work
+right, but it's a start.
+</p>
+
+<h3>Unit Test Sample Games</h3>
+
+<ul>
+<li><a href="glulxercise.inf">glulxercise.inf</a>
+(<a href="glulxercise.ulx">glulxercise.ulx</a>)
+(<a href="quixe/quixe/play.html">test in browser</a>):
+a unit test that runs through all the Glulx opcodes and
+features.
+
+<li><a href="graphwintest.inf">graphwintest.inf</a>
+(<a href="graphwintest.gblorb">graphwintest.gblorb</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/graphwintest.gblorb.js">test in browser</a>):
+a game which tests the features of graphics windows.
+
+<li><a href="imagetest.inf">imagetest.inf</a>
+(<a href="imagetest.gblorb">imagetest.gblorb</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/imagetest.gblorb.js">test in browser</a>):
+a game which tests displaying images in text buffers.
+
+<li><a href="autosavetest.inf">autosavetest.inf</a>
+(<a href="autosavetest.gblorb">autosavetest.gblorb</a>):
+a game which tests embedding a save file in the Blorb data.
+
+<li><a href="extbinaryfile.inf">extbinaryfile.inf</a>
+(<a href="extbinaryfile.ulx">extbinaryfile.ulx</a>):
+a game which tests data files in text/unicode mode (UTF-8, by
+a recent spec change).
+
+<li><a href="resizememstreamtest.inf">resizememstreamtest.inf</a>
+(<a href="resizememstreamtest.ulx">resizememstreamtest.ulx</a>)
+a game which tests a memory bug that was fixed in Glulxe 0.5.0.
+
+<li><a href="resstreamtest.inf">resstreamtest.inf</a>
+(<a href="resstreamtest.gblorb">resstreamtest.gblorb</a>)
+a game which tests the resource-reading feature.
+
+<li><a href="startsavetest.inf">startsavetest.inf</a>
+(<a href="startsavetest-empty.gblorb">startsavetest-empty.gblorb</a>,
+<a href="startsavetest.gblorb">startsavetest.gblorb</a>)
+a game which uses the resource-reading feature to
+start itself up quickly. (The startsavetest.gblorb file
+contains an embedded save file, which is restored at
+startup time. The startsavetest-empty.gblorb file is
+an intermediate stage in constructing this. See the
+header comments.)
+
+<li><a href="unisourcetest.inf">unisourcetest.inf</a>
+(<a href="unisourcetest.ulx">unisourcetest.ulx</a>):
+a game which tests I6's ability to read Unicode source files.
+(This is an I6 compiler feature, not an interpreter feature.)
+
+<li><a href="chinesedicttest.inf">chinesedicttest.inf</a>
+(<a href="chinesedicttest.ulx">chinesedicttest.ulx</a>):
+another game which tests I6's ability to read Unicode source files.
+(This is an I6 compiler feature, not an interpreter feature.)
+
+<li><a href="dictflagtest.inf">dictflagtest.inf</a>
+(<a href="dictflagtest.ulx">dictflagtest.ulx</a>,
+<a href="dictflagtest.z5">dictflagtest.z5</a>):
+a game which tests the I6 dictionary-flag feature.
+(This is an I6 compiler feature, not an interpreter feature.)
+
+<li><a href="datetimetest.inf">datetimetest.inf</a>
+(<a href="datetimetest.ulx">datetimetest.ulx</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/datetimetest.ulx.js">test in browser</a>):
+a game which tests the date and time features.
+
+<li><a href="inputfeaturetest.inf">inputfeaturetest.inf</a>
+(<a href="inputfeaturetest.ulx">inputfeaturetest.ulx</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/inputfeaturetest.ulx.js">test in browser</a>):
+a game which tests the line-input echoing and termination features.
+
+<li><a href="floatparsetest.inf">floatparsetest.inf</a>
+(<a href="floatparsetest.ulx">floatparsetest.ulx</a>):
+a game which can parse float constants in game commands.
+(Contains a working I6 GPR routine for float values.)
+
+<li><a href="floatconsttest.inf">floatconsttest.inf</a>
+(<a href="floatconsttest.ulx">floatconsttest.ulx</a>):
+a game which tests the I6 float-literal parser.
+(This is an I6 compiler feature, not an interpreter feature.)
+
+<li><a href="doubleconsttest.inf">doubleconsttest.inf</a>
+(<a href="doubleconsttest.ulx">doubleconsttest.ulx</a>):
+a game which tests the I6 double-literal parser.
+(This is an I6 compiler feature, not an interpreter feature.)
+
+<li><a href="unicasetest.inf">unicasetest.inf</a>
+(<a href="unicasetest.ulx">unicasetest.ulx</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/unicasetest.ulx.js">test in browser</a>):
+a game which tests the Unicode case-changing and normalization functions.
+
+<li><a href="unicodetest.inf">unicodetest.inf</a>
+(<a href="unicodetest.ulx">unicodetest.ulx</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/unicodetest.ulx.js">test in browser</a>):
+a game which prints various Unicode characters.
+
+<li><a href="discardundotest.inf">discardundotest.inf</a>
+(<a href="discardundotest.ulx">discardundotest.ulx</a>):
+a game which lets you test the @hasundo and @discardundo opcodes.
+
+<li><a href="memcopytest.inf">memcopytest.inf</a>
+(<a href="memcopytest.ulx">memcopytest.ulx</a>):
+a game which lets you test the @mcopy and @mzero opcodes.
+
+<li><a href="memheaptest.inf">memheaptest.inf</a>
+(<a href="memheaptest.ulx">memheaptest.ulx</a>):
+a game which lets you test the @malloc and @mfree opcodes.
+
+<li><a href="memstreamtest.inf">memstreamtest.inf</a>
+(<a href="memstreamtest.ulx">memstreamtest.ulx</a>):
+a game which lets you test the glk_stream_open_memory() and 
+glk_stream_open_memory_uni() calls.
+
+<li><a href="inputeventtest.inf">inputeventtest.inf</a>
+(<a href="inputeventtest.ulx">inputeventtest.ulx</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/inputeventtest.ulx.js">test in browser</a>):
+a game which lets you test character and line input events (plain
+and Unicode, text buffer and text grid windows).
+
+<li><a href="accelfunctest.inf">accelfunctest.inf</a>
+(<a href="accelfunctest.ulx">accelfunctest.ulx</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/accelfunctest.ulx.js">test in browser</a>):
+a game which lets you test function acceleration.
+
+<li><a href="arraylimittest.inf">arraylimittest.inf</a>
+(<a href="arraylimittest.ulx">arraylimittest.ulx</a>):
+a game which calls print_to_array(buf) with no second argument.
+(This demonstrates the ability of the interpreter to catch
+this mistake and display a warning or error.)
+
+<li><a href="unidicttest.inf">unidicttest.inf</a>
+(<a href="unidicttest.ulx">unidicttest.ulx</a>):
+a game which contains various Unicode characters in its game dictionary.
+
+<li><a href="externalfile.inf">externalfile.inf</a>
+(<a href="externalfile.ulx">externalfile.ulx</a>):
+a game which creates data files using various file-opening modes.
+
+<li><a href="windowtest.inf">windowtest.inf</a>
+(<a href="windowtest.ulx">windowtest.ulx</a>)
+(<a href="quixe/quixe/play-remote.html?story=stories/windowtest.ulx.js">test in browser</a>):
+a game which lets you try out various window arrangements, and other Glk
+features.
+
+<li><a href="randomgen.inf">randomgen.inf</a>
+(<a href="randomgen.ulx">randomgen.ulx</a>):
+a game which spits out random numbers.
+
+</ul>
+
+<hr>
+
+<h3>Glulx Assembler</h3>
+
+<p>
+Simon Stapleton has written glulxa, an assembler for the Glulx VM.
+Here is
+<a href="http://www.ifarchive.org/indexes/if-archiveXprogrammingXglulxXcompilersXglulxa.html">the source code</a> (on the IFArchive).
+</p>
+
+<p>
+There's also 
+<a href="http://www.helsinki.fi/~jpihlaja/glas/">Glas</a>
+by Joonas Pihlaja, although it's a bit old.
+</p>
+
+<hr>
+
+<h3>Text Compression Sample Code</h3>
+
+<p>
+I've settled on good old-fashioned Huffman encoding for the compression
+system, allowing either characters or words (or a mixture of both)
+as the encoding entities.
+</p>
+
+<p>
+However, if you want to experiment on your own, these are
+some simple tests, trying various text-compression
+algorithms. Here is 
+<a href="comtext.tar.Z">the source code</a>. 
+You can extend this test platform to try out new compression ideas,
+if you want.
+</p>
+
+<hr>
+
+<h3>Before Anybody Asks...</h3>
+
+<p>
+MIME type "application/x-glulx". On the Mac, file type "UlxG", and the
+standard Glulxe interpreter uses creator code "gUlx".
+</p>
+
+<hr>
+
+<h3>What's New</h3>
+
+<p>
+The Glulx 3.1.3 spec: support for double-precision floating-point math.
+Also @hasundo and @discardundo opcodes.
+Glulxe 0.6.0 supports this.
+</p>
+
+<p>
+As of April 2020, the copyright of the Glk spec document is transferred
+to the
+<a href="https://iftechfoundation.org/">Interactive Fiction Technology Foundation</a>.
+I still act as the maintainer.
+</p>
+
+<p>
+Glulxe 0.5.4: a debugger module. (Not compiled in by default.)
+</p>
+
+<p>
+Glulxe 0.5.3: optimizations and bug fixes.
+</p>
+
+<p>
+Quixe 2.1.3, with support for Electron.
+And then 2.1.4, with support for autosave.
+</p>
+
+<p>
+Quixe 2.1.0, now with graphics.
+</p>
+
+<p>
+Quixe 2.0.0, now jQuery-based.
+</p>
+
+<p>
+Updated the Glulx 3.1.2 spec to add more accelerated functions.
+(It's still numbered "3.1.2", a decision I may regret.)
+Glulxe 0.5.2 and Quixe 1.3.1 support this.
+</p>
+
+<p>
+Glulxe 0.5.1: bug fixes.
+</p>
+
+<p>
+Glulxe 0.5.0: bug fixes; turned on memory-range checking by default;
+added glue for iOS port.
+</p>
+
+<p>
+Glulxe 0.4.7: profiling improvments; bug fixes.
+</p>
+
+<p>
+The Glulx 3.1.2 spec: support for floating-point math.
+Also Glulxe 0.4.6, which supports it, along with some bug fixes.
+</p>
+
+<p>
+<a href="quixe/">Quixe</a>!
+</p>
+
+<p>
+Glulxe 0.4.5: more bug fixes, and a deprecation warning for a case that
+occurs if Inform code calls print_to_array(buf) with no second argument.
+</p>
+
+<p>
+The Glulx 3.1.1 spec: support for accelerated functions.
+Glulxe 0.4.4 supports this, and also can be compiled with a profiling
+option.
+</p>
+
+<p>
+Glulxe 0.4.3: includes some bug fixes, and the option to check for memory
+overruns.
+</p>
+
+<p>
+Put out the Glulx 3.1.0 spec, which includes @mzero, @mcopy, @malloc,
+and @mfree opcodes.
+</p>
+
+<p>
+Kicked out the Glulx 3.0.0 spec, which includes the infrastructure needed
+for Unicode support.
+</p>
+
+<p>
+(Fixed typo in spec: the @streamstr opcode can be used for string types
+E0, E1, or E2. The original 3.0.0 document failed to mention E2.)
+</p>
+
+<hr>
+
+<p>
+Last updated October 22, 2023.
+</p>
+
+<p>
+<em><a href="../glk/">Glk home page</a></em>
+</p>
+
+<p>
+<em><a href="../home.html">Zarfhome</a></em>
+<em><a href="../sitemap.html#glulx">(map)</a></em>
+<em><a href="../cave/glulx.html">(down)</a></em>
+</p>
+
+</body>
+</html>

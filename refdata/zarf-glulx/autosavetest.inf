@@ -1,0 +1,1575 @@
+Constant Story "AutoSave";
+Constant Headline "^Not a game.^";
+
+Release 1;
+
+! Unit test for interpreter autosave.
+
+Include "Parser";
+Include "VerbLib";
+
+Global totalfailures;
+Global errorcount;
+
+[ Initialise;
+	location = Kitchen;
+	StartDaemon(Kitchen);
+];
+
+[ RunTestSub;
+	if (~~(noun ofclass TestObj))
+		"That's not a test.";
+	print "Running ", (the) noun, ".^";
+
+	errorcount = 0;
+	
+	noun.testfunc();
+
+	totalfailures = totalfailures + errorcount;
+
+	if (errorcount)
+		print "^FAILED: Total errors: ", errorcount, ".^";
+	else
+		print "^Passed.^";
+	new_line;
+];
+
+[ WaitKey res;
+	print "^Kill and hit a key>";
+	
+	glk($00D2, gg_mainwin); ! request_char_event
+	while (true) {
+		glk($00C0, gg_event); ! select
+		if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+			res = gg_event-->2;
+			break;
+		}
+	}
+
+	print "...", (charname) res, ".^";
+];
+
+[ WaitKeySilent res;
+	glk($00D2, gg_mainwin); ! request_char_event
+	while (true) {
+		glk($00C0, gg_event); ! select
+		if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+			res = gg_event-->2;
+			break;
+		}
+	}
+	return res;
+];
+
+[ charname ch;
+	if (ch < 0) {
+		SpecialKeyName(ch);
+		return;
+	}
+	if (ch == 32) {
+		print "<space>";
+		return;
+	}
+	if (ch < 32) {
+		print "<ctrl-", (char) (ch+64), ">";
+		return;
+	}
+	if (ch <= 126) {
+		print "'", (char) ch, "'";
+		return;
+	}
+	print "<???>";
+];
+
+[ SpecialKeyName res;
+	print "<";
+	switch (res) {
+		$ffffffff: print "unknown";
+		$fffffffe: print "left";
+		$fffffffd: print "right";
+		$fffffffc: print "up";
+		$fffffffb: print "down";
+		$fffffffa: print "return";
+		$fffffff9: print "delete";
+		$fffffff8: print "escape";
+		$fffffff7: print "tab";
+		$fffffff6: print "page-up";
+		$fffffff5: print "page-down";
+		$fffffff4: print "home";
+		$fffffff3: print "end";
+		$ffffffef: print "f1";
+		$ffffffee: print "f2";
+		$ffffffed: print "f3";
+		$ffffffec: print "f4";
+		$ffffffeb: print "f5";
+		$ffffffea: print "f6";
+		$ffffffe9: print "f7";
+		$ffffffe8: print "f8";
+		$ffffffe7: print "f9";
+		$ffffffe6: print "f10";
+		$ffffffe5: print "f11";
+		$ffffffe4: print "f12";
+		default: print "???";
+	}
+	print ">";
+];
+	
+[ Hex val   byte initial ix;
+	print "$";
+	initial = true;
+	for (ix=0 : ix<8 : ix++) {
+		@ushiftr val 28 byte;
+		@shiftl val 4 val;
+		byte = byte & $0F;
+		if (byte == 0 && initial && ix < 7)
+			continue;
+		initial = false;
+		if (byte <= 9)
+			print (char) (byte+'0');
+		else
+			print (char) (byte-10+'A');
+	}
+];
+
+[ check val wanted;
+	if (val == wanted) {
+		print val;
+		rtrue;
+	}
+	errorcount++;
+	print val, " (should be ", wanted, " FAIL)";
+	rfalse;
+];
+
+[ check_hex val wanted;
+	if (val == wanted) {
+		print (Hex) val;
+		rtrue;
+	}
+	errorcount++;
+	print (Hex) val, " (should be ", (Hex) wanted, " FAIL)";
+	rfalse;
+];
+
+[ check_nonzero val;
+	if (val) {
+		print (Hex) val;
+		rtrue;
+	}
+	errorcount++;
+	print val, " (should be nonzero FAIL)";
+	rfalse;
+];
+
+Array gg_result --> 2;
+
+[ check_result_counts readcount writecount;
+    if (gg_result-->0 ~= readcount) {
+        print "ERROR: Read count was wrong: ", gg_result-->0, ", not ", readcount, "^";
+        errorcount++;
+    }
+    if (gg_result-->1 ~= writecount) {
+        print "ERROR: Write count was wrong: ", gg_result-->1, ", not ", writecount, "^";
+        errorcount++;
+    }
+];
+
+[ check_bytelist _vararg_count    arr ix wanted val;
+	@copy sp arr;
+	_vararg_count--;
+	
+	for (ix=0 : ix<_vararg_count : ix++) {
+		@copy sp wanted;
+		if (ix)
+			print ", ";
+		@aloadb arr ix val;
+		if (wanted == val) {
+			print wanted;
+		}
+		else {
+			errorcount++;
+			print val, " (should be ", wanted, " FAIL)";
+		}
+	}
+];
+
+[ check_str str buf len  newlen ix good ch;
+	good = true;
+	newlen = string_to_array(str, cbuffer2, BUFFER_SIZE);
+	if (newlen ~= len) {
+		good = false;
+	}
+	else {
+		for (ix=0 : ix<len : ix++) {
+			if (buf->ix ~= cbuffer2->ix)
+				good = false;
+		}
+	}
+	print "~";
+	for (ix=0 : ix<len : ix++) {
+		ch = buf->ix;
+		@streamchar ch;
+	}
+	print "~ len ", len;
+	if (~~good) {
+		errorcount++;
+		print " (should be ~";
+		for (ix=0 : ix<newlen : ix++) {
+			ch = cbuffer2->ix;
+			@streamchar ch;
+		}
+		print "~ len ", newlen, ", FAIL)";
+	}
+];
+
+[ check_ustr str ubuf len  newlen ix good ch;
+	good = true;
+	newlen = string_to_uarray(str, ubuffer2, BUFFER_SIZE);
+	if (newlen ~= len) {
+		good = false;
+	}
+	else {
+		for (ix=0 : ix<len : ix++) {
+			if (ubuf-->ix ~= ubuffer2-->ix)
+				good = false;
+		}
+	}
+	print "~";
+	for (ix=0 : ix<len : ix++) {
+		ch = ubuf-->ix;
+		@streamunichar ch;
+	}
+	print "~ len ", len;
+	if (~~good) {
+		errorcount++;
+		print " (should be ~";
+		for (ix=0 : ix<newlen : ix++) {
+			ch = ubuffer2-->ix;
+			@streamunichar ch;
+		}
+		print "~ len ", newlen, ", FAIL)";
+	}
+];
+
+[ string_to_array val arr arrlen    str oldstr len;
+	oldstr = glk($0048); ! stream_get_current
+	str = glk($0043, arr, arrlen, 1, 0); ! stream_open_memory
+	if (str == 0) return 0;
+
+	glk($0047, str); ! stream_set_current
+
+	if (val->0 == $c0 or $c1)
+		val();
+	else
+		@streamstr val;
+
+	glk($0047, oldstr); ! stream_set_current
+	@copy $ffffffff sp;
+	@copy str sp;
+	@glk $0044 2 0; ! stream_close
+	@copy sp len;
+	@copy sp 0;
+
+	return len;
+];
+
+[ string_to_uarray val arr arrlen    str oldstr len;
+	oldstr = glk($0048); ! stream_get_current
+	str = glk($0139, arr, arrlen, 1, 0); ! stream_open_memory_uni
+	if (str == 0) return 0;
+
+	glk($0047, str); ! stream_set_current
+
+	if (val->0 == $c0 or $c1)
+		val();
+	else
+		@streamstr val;
+
+	glk($0047, oldstr); ! stream_set_current
+	@copy $ffffffff sp;
+	@copy str sp;
+	@glk $0044 2 0; ! stream_close
+	@copy sp len;
+	@copy sp 0;
+
+	return len;
+];
+
+Class TopClass;
+
+Class MidClass
+  class TopClass;
+
+Class BotClass
+  class MidClass;
+
+TopClass topobj;
+MidClass midobj;
+BotClass botobj;
+
+Class TestObj
+  with name 'test' 'tests//p',
+	before [;
+		Enter: <<RunTest self>>;
+		Take: <<RunTest self>>;
+		Examine:
+			"This tests ", (string) self.testdesc, ".";
+	],
+	testdesc 0,
+	testfunc 0,
+  has static;
+
+Global glob;
+Global glob2;
+Constant BUFFER_SIZE 256;
+Array cbuffer  -> BUFFER_SIZE;
+Array cbuffer2 -> BUFFER_SIZE;
+Array ubuffer --> BUFFER_SIZE;
+Array ubuffer2 --> BUFFER_SIZE;
+
+Object Kitchen "Autosave Room"
+  with
+	description [;
+		print "A voice booooms out: Welcome to the test chamber.^^";
+		print "This test is a little bit weird. Type ~run test~ (or
+			~run all~). Each test will pause in the middle with a
+			~Kill and hit a key>~ prompt. (Or, for some tests,
+			~Kill and enter a line>~.)
+			At that point, kill the interpreter and then restart it --
+			hopefully reloading to that point.
+			Hit a key (or line of text) to continue the test.^";
+	],
+	daemon [;
+		if (totalfailures) {
+			print "Total failures: ", totalfailures, "^";
+			totalfailures = 0;
+		}
+	],
+  has light;
+
+TestObj -> Base "base test"
+  with
+	name 'base' 'basic',
+	testdesc "basic autosave functionality",
+	testfunc [ loc;
+		loc = 97;
+		glob = 86;
+		@push 123;
+		WaitKey();
+		@pull glob2;
+		print "*sp="; check(glob2, 123); print "; ";
+		print "loc="; check(loc, 97); print "; ";
+		print "glob="; check(glob, 86); print "^";
+	];
+
+TestObj -> Randomize "random test"
+  with
+	name 'random' 'randomize',
+	testdesc "random number generator",
+	testfunc [ ix val;
+		print "Deterministic...^";
+		@setrandom 1;
+		for (ix=0 : ix<16 : ix++) {
+			@random 0 val;
+			ubuffer-->ix = val;
+		}
+
+		WaitKey();
+
+		print "Array:";
+		@setrandom 1;
+		for (ix=0 : ix<16 : ix++) {
+			@random 0 val;
+			print " ", ix, "="; check(val, ubuffer-->ix);
+			ubuffer-->ix = val;
+		}
+		new_line;
+		
+		print "Nondeterministic...^";
+
+		WaitKey();
+
+		print "Array:";
+		@setrandom 0;
+		for (ix=0 : ix<16 : ix++) {
+			@random 0 val;
+			print " ", ix, "!=";
+			if (val ~= ubuffer-->ix) {
+				print val;
+			}
+			else {
+				errorcount++;
+				print val, " (should NOT be ", ubuffer-->ix, " FAIL)";
+			}
+			ubuffer-->ix = val;
+		}
+		new_line;
+	];
+
+TestObj -> IoSys "iosys test"
+  with
+	name 'iosys',
+	testdesc "iosys",
+	testfunc [ len res;
+		print "iosys 0:^";
+		print "^Kill and hit a key>";
+		@setiosys 0 0;
+		res = WaitKeySilent();
+		len = string_to_array("static null", cbuffer, BUFFER_SIZE);
+		@setiosys 2 0;
+		print "...", (charname) res, ".^";
+		check_str("", cbuffer, len); print "^";
+		new_line;
+
+		print "iosys 1 array:^";
+		print "^Kill and hit a key>";
+		glob = 0;
+		@setiosys 1 parenthesize_array;
+		res = WaitKeySilent();
+		print "Parens.^";
+		len = 24;
+		@setiosys 2 0;
+		print "...", (charname) res, ".^";
+		check_str("(P)(a)(r)(e)(n)(s)(.)(^)", cbuffer, len); print "^";
+		new_line;
+
+		print "iosys 1 stream:^";
+		print "^Kill and hit a key>";
+		glob = 0;
+		@setiosys 1 bracketize_stream;
+		res = WaitKeySilent();
+		len = string_to_array("Bra-cket.", cbuffer, BUFFER_SIZE);
+		@setiosys 2 0;
+		print "...", (charname) res, ".^";
+		check_str("<B><r><a><-><c><k><e><t><.>", cbuffer, len); print "^";
+		new_line;
+		];
+
+[ parenthesize_array ch;
+	cbuffer->glob = '(';
+	glob++;
+	cbuffer->glob = ch;
+	glob++;
+	cbuffer->glob = ')';
+	glob++;
+];
+		
+[ bracketize_stream ch;
+	glk($0080, '<'); ! put_char
+	glk($0080, ch); ! put_char
+	glk($0080, '>'); ! put_char
+];
+
+TestObj -> Protect "protect test"
+  with
+	name 'protect',
+	testdesc "memory-range protection",
+	testfunc [ val addr ix;
+		@gestalt 3 0 val; ! Undo
+		if (~~val)
+			print "Interpreter claims to not support undo. (Continuing test anyway...)^^";
+
+		addr = cbuffer+3;
+		@protect addr 6;
+		for (ix=0 : ix<15 : ix++)
+			cbuffer->ix = ix+1;
+		WaitKey();
+		cbuffer->15 = 20;
+		@saveundo val;
+		if (val == 1) {
+			print "@@64saveundo failed!^";
+			errorcount++;
+			return;
+		}
+		if (val == 0) {
+			print "Undo saved...^";
+			! The following changes will be undone.
+			for (ix=0 : ix<16 : ix++)
+				cbuffer->ix = 99;
+			errorcount++;
+			print "Restoring undo...^";
+			@restoreundo val;
+			if (val == 1) {
+				print "@@64restoreundo failed (value 1)!^";
+			}
+			else {
+				print "@@64restoreundo failed with unknown return value: ", val, "^";
+			}
+			errorcount++;
+			return;
+		}
+		else if (val ~= -1) {
+			print "Unknown @@64saveundo return value: ", val, "^";
+			errorcount++;
+			return;
+		}
+		print "Undo succeeded, return value "; check(val, -1); print ".^";
+		
+		print "Protected 3,6: ";
+		check_bytelist(cbuffer, 1,2,3,99,99,99,99,99,99,10,11,12,13,14,15,20); print "^";
+
+		@protect 0 0;
+	];
+
+TestObj -> Heap "heap test"
+  with
+	name 'heap',
+	testdesc "memory heap",
+	testfunc [ val blk1 blk2 blk3 endmem newendmem;
+		@gestalt 7 0 val; ! MAlloc
+		if (~~val) {
+			print "Interpreter claims to not support heap allocation. Skipping test.^^";
+			return;
+		}
+
+		endmem = HDR_ENDMEM-->0;
+		@getmemsize val;
+		print "Original memsize="; check_hex(val, endmem); print "^";
+		
+		@gestalt 8 0 val; ! MAllocHeap
+		print "Current heap: "; check_hex(val, 0); print "^";
+
+		print "Allocating 16...^";
+		@malloc 16 blk1;
+		if (blk1 == 0) {
+			errorcount++;
+			print "Allocation failed.^";
+			return;
+		}
+
+		@gestalt 8 0 val; ! MAllocHeap
+		print "Heap starts at "; check_hex(val, endmem);
+		@getmemsize newendmem;
+		print ", ends at ", (Hex) newendmem, "^";
+		if (newendmem <= endmem) {
+			errorcount++;
+			print "Heap size is not positive.^";
+		}
+		if (blk1 < endmem || blk1+16 > newendmem) {
+			errorcount++;
+			print "Block is outside heap.^";
+		}
+
+		print "Allocating 512...^";
+		@malloc 512 blk2;
+		if (blk2 == 0) {
+			errorcount++;
+			print "Allocation failed.^";
+			return;
+		}
+		
+		@gestalt 8 0 val; ! MAllocHeap
+		print "Heap starts at "; check_hex(val, endmem);
+		@getmemsize newendmem;
+		print ", ends at ", (Hex) newendmem, "^";
+		if (newendmem <= endmem) {
+			errorcount++;
+			print "Heap size is not positive.^";
+		}
+		if (blk2 < endmem || blk2+512 > newendmem) {
+			errorcount++;
+			print "Block is outside heap.^";
+		}
+
+		print "Freeing 16...^";
+		@mfree blk1;
+		
+		@getmemsize newendmem;
+		print "Heap ends at ", (Hex) newendmem, "^";
+		@gestalt 8 0 val; ! MAllocHeap
+		if (val == 0) {
+			errorcount++;
+			print "Heap is inactive.^";
+		}
+		if (blk2 < endmem || blk2+512 > newendmem) {
+			errorcount++;
+			print "Block is outside heap.^";
+		}
+		
+		print "Freeing 512...^";
+		@mfree blk2;
+		
+		@gestalt 8 0 val; ! MAllocHeap
+		print "Final heap: "; check_hex(val, 0); print "^";
+		endmem = HDR_ENDMEM-->0;
+		@getmemsize val;
+		print "Final memsize="; check_hex(val, endmem); print "^";
+
+		@malloc 19 blk1;
+		print "blk1(19)="; check_nonzero(blk1); print ", ";
+		@malloc 23 blk2;
+		print "blk2(23)="; check_nonzero(blk2); print ", ";
+		@malloc 17 blk3;
+		print "blk3(17)="; check_nonzero(blk3); print "^";
+
+		WaitKey();
+
+		@mfree blk2;
+		print "free blk2, ";
+		@malloc 23 blk2;
+		print "blk2(23)="; check_nonzero(blk2); print "^";
+
+		@mfree blk1;
+		print "free blk1, ";
+		@malloc 19 blk1;
+		print "blk1(19)="; check_nonzero(blk1); print "^";
+
+		@mfree blk2;
+		print "free blk2, ";
+		@malloc 23 blk2;
+		print "blk2(23)="; check_nonzero(blk2); print "^";
+
+		@mfree blk1;
+		print "free blk1, ";
+		@mfree blk2;
+		print "free blk2^";
+
+		@malloc 25 blk1;
+		print "blk1(25)="; check_nonzero(blk1); print ", ";
+		@malloc 17 blk2;
+		print "blk2(17)="; check_nonzero(blk2); print "^";
+		
+		WaitKey();
+
+		@mfree blk2;
+		print "free blk2, ";
+		@malloc 41 blk2;
+		print "blk2(41)="; check_nonzero(blk2); print "^";
+
+		@mfree blk1;
+		print "free blk1, ";
+		@mfree blk2;
+		print "free blk2, ";
+		@mfree blk3;
+		print "free blk3^";
+		
+		
+		@gestalt 8 0 val; ! MAllocHeap
+		print "Final heap: "; check_hex(val, 0); print "^";
+		endmem = HDR_ENDMEM-->0;
+		@getmemsize val;
+		print "Final memsize="; check_hex(val, endmem); print "^";
+
+	];
+
+TestObj -> Accel "accel test"
+  with
+	name 'accel' 'accelerat',
+	testdesc "acceleration opcodes",
+	testfunc [ val ix;
+		accel_params();
+
+		val = OC__Cl(TopClass, String);
+		print "TopClass ofclass String: "; check(val, 0); print ", ";
+		val = OC__Cl(TopClass, Routine);
+		print "TopClass ofclass Routine: "; check(val, 0); print "^";
+		val = OC__Cl(TopClass, Object);
+		print "TopClass ofclass Object: "; check(val, 0); print ", ";
+		
+		val = OC__Cl(topobj, String);
+		print "topobj ofclass String: "; check(val, 0); print ", ";
+		val = OC__Cl(topobj, Routine);
+		print "topobj ofclass Routine: "; check(val, 0); print ", ";
+		val = OC__Cl(topobj, Object);
+		print "topobj ofclass Object: "; check(val, 1); print ", ";
+		val = OC__Cl(topobj, TopClass);
+		print "topobj ofclass TopClass: "; check(val, 1); print ", ";
+		val = OC__Cl(topobj, MidClass);
+		print "topobj ofclass MidClass: "; check(val, 0); print ", ";
+		val = OC__Cl(topobj, BotClass);
+		print "topobj ofclass BotClass: "; check(val, 0); print "^";
+
+		val = OC__Cl(midobj, String);
+		print "midobj ofclass String: "; check(val, 0); print ", ";
+		val = OC__Cl(midobj, Routine);
+		print "midobj ofclass Routine: "; check(val, 0); print ", ";
+		val = OC__Cl(midobj, Object);
+		print "midobj ofclass Object: "; check(val, 1); print ", ";
+		val = OC__Cl(midobj, TopClass);
+		print "midobj ofclass TopClass: "; check(val, 1); print ", ";
+		val = OC__Cl(midobj, MidClass);
+		print "midobj ofclass MidClass: "; check(val, 1); print ", ";
+		val = OC__Cl(midobj, BotClass);
+		print "midobj ofclass BotClass: "; check(val, 0); print "^";
+
+		val = OC__Cl(botobj, String);
+		print "botobj ofclass String: "; check(val, 0); print ", ";
+		val = OC__Cl(botobj, Routine);
+		print "botobj ofclass Routine: "; check(val, 0); print ", ";
+		val = OC__Cl(botobj, Object);
+		print "botobj ofclass Object: "; check(val, 1); print ", ";
+		val = OC__Cl(botobj, TopClass);
+		print "botobj ofclass TopClass: "; check(val, 1); print ", ";
+		val = OC__Cl(botobj, MidClass);
+		print "botobj ofclass MidClass: "; check(val, 1); print ", ";
+		val = OC__Cl(botobj, BotClass);
+		print "botobj ofclass BotClass: "; check(val, 1); print "^";
+
+		print "^WARNING: The rest of test cannot detect errors. You must observe profiling information and see whether the run speed changes.^^";
+
+		WaitKey();
+
+		print "Not accelerated:^";
+
+		for (ix=0 : ix<5000 : ix++) {
+			val = OC__Cl(botobj, TopClass);
+		}
+		
+		WaitKey();
+
+		print "Acceleration on...^";
+
+		@accelfunc 1 Z__Region;
+		@accelfunc 8 CP__Tab;
+		@accelfunc 9 RA__Pr;
+		@accelfunc 10 RL__Pr;
+		@accelfunc 11 OC__Cl;
+		@accelfunc 12 RV__Pr;
+		@accelfunc 13 OP__Pr;
+		
+		WaitKey();
+
+		print "Accelerated:^";
+
+		for (ix=0 : ix<5000 : ix++) {
+			val = OC__Cl(botobj, TopClass);
+		}
+		
+		WaitKey();
+
+		print "Acceleration off...^";
+
+		@accelfunc 0 Z__Region;
+		@accelfunc 0 CP__Tab;
+		@accelfunc 0 RA__Pr;
+		@accelfunc 0 RL__Pr;
+		@accelfunc 0 OC__Cl;
+		@accelfunc 0 RV__Pr;
+		@accelfunc 0 OP__Pr;
+		
+		WaitKey();
+
+	];
+
+Global params_accelerated;
+
+[ accel_params   addr;
+	if (params_accelerated)
+		return;
+	
+	addr = #classes_table;
+	@accelparam 0 addr;
+	@accelparam 1 INDIV_PROP_START;
+	@accelparam 2 Class;
+	@accelparam 3 Object;
+	@accelparam 4 Routine;
+	@accelparam 5 String;
+	addr = #globals_array + WORDSIZE * #g$self;
+	@accelparam 6 addr;
+	@accelparam 7 NUM_ATTR_BYTES;
+	addr = #cpv__start;
+	@accelparam 8 addr;
+
+	params_accelerated = true;
+];
+
+TestObj -> GlkOp "glkop test"
+  with
+	name 'glkop' 'operand' 'glk',
+	testdesc "various glk operands",
+	testfunc [ res val arg1 opres;
+
+	print "Two static args:^";
+	print "^Kill and hit a key>";
+	glk($00D2, gg_mainwin); ! request_char_event
+	while (true) {
+		opres = 99;
+		@push 123;
+		@push gg_event;
+		@glk $00C0 1 opres;
+		@pull val;
+		if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+			res = gg_event-->2;
+			break;
+		}
+	}
+	print "...", (charname) res, ".^";
+	print "*sp="; check(val, 123); print ", ";
+	print "@@glk return "; check(opres, 0); new_line;
+
+	print "^Two stack args:^";
+	print "^Kill and hit a key>";
+	glk($00D2, gg_mainwin); ! request_char_event
+	while (true) {
+		opres = 99;
+		@push 124;
+		@push gg_event;
+		@push 1;
+		@push $00C0;
+		@glk sp sp sp;
+		@pull opres;
+		@pull val;
+		if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+			res = gg_event-->2;
+			break;
+		}
+	}
+	print "...", (charname) res, ".^";
+	print "*sp="; check(val, 124); print ", ";
+	print "@@glk return "; check(opres, 0); new_line;
+
+	print "^Local, stack args:^";
+	print "^Kill and hit a key>";
+	glk($00D2, gg_mainwin); ! request_char_event
+	while (true) {
+		opres = 99;
+		arg1 = $00C0;
+		@push 321;
+		@push gg_event;
+		@push 1;
+		@glk arg1 sp opres;
+		@pull val;
+		if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+			res = gg_event-->2;
+			break;
+		}
+	}
+	print "...", (charname) res, ".^";
+	print "*sp="; check(val, 321); print ", ";
+	print "arg1="; check(arg1, $00C0); print ", ";
+	print "@@glk return "; check(opres, 0); new_line;
+
+	print "^Stack, global args:^";
+	print "^Kill and hit a key>";
+	glk($00D2, gg_mainwin); ! request_char_event
+	while (true) {
+		opres = 99;
+		arg1 = 987;
+		glob = 1;
+		@push (-2);
+		@push gg_event;
+		@push $00C0;
+		@glk sp glob opres;
+		@pull val;
+		if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+			res = gg_event-->2;
+			break;
+		}
+	}
+	print "...", (charname) res, ".^";
+	print "*sp="; check(val, -2); print ", ";
+	print "arg1="; check(arg1, 987); print ", ";
+	print "glob="; check(glob, 1); print ", ";
+	print "@@glk return "; check(opres, 0); new_line;
+	
+	];
+
+
+TestObj -> GlkCommon "common glk test"
+  with
+	name 'common' 'glk',
+	testdesc "common glk state",
+	testfunc [ id total streamcount windowcount filerefcount str origstr origpar val;
+	
+	    id = glk($0040, 0, gg_arguments); ! stream_iterate
+		total = 0;
+	    while (id) {
+			total++;
+	        id = glk($0040, id, gg_arguments); ! stream_iterate
+	    }
+		streamcount = total;
+		
+	    id = glk($0020, 0, gg_arguments); ! window_iterate
+		total = 0;
+	    while (id) {
+			total++;
+	        id = glk($0020, id, gg_arguments); ! window_iterate
+	    }
+		windowcount = total;
+		
+	    id = glk($0064, 0, gg_arguments); ! fileref_iterate
+		total = 0;
+	    while (id) {
+			total++;
+	        id = glk($0064, id, gg_arguments); ! fileref_iterate
+	    }
+		filerefcount = total;
+
+		print "Counts: ", streamcount, " streams, ",
+			windowcount, " windows, ", filerefcount, " filerefs.^";
+			
+		origstr = glk($002C, gg_mainwin); ! window_get_stream
+		origpar = glk($0029, gg_mainwin); ! window_get_parent
+
+		WaitKey();
+
+	    id = glk($0040, 0, gg_arguments); ! stream_iterate
+		total = 0;
+	    while (id) {
+			total++;
+	        id = glk($0040, id, gg_arguments); ! stream_iterate
+	    }
+		print "Streams: "; check(total, streamcount); new_line;
+		
+	    id = glk($0020, 0, gg_arguments); ! window_iterate
+		total = 0;
+	    while (id) {
+			total++;
+	        id = glk($0020, id, gg_arguments); ! window_iterate
+	    }
+		print "Windows: "; check(total, windowcount); new_line;
+		
+	    id = glk($0064, 0, gg_arguments); ! fileref_iterate
+		total = 0;
+	    while (id) {
+			total++;
+	        id = glk($0064, id, gg_arguments); ! fileref_iterate
+	    }
+		print "Filerefs: "; check(total, filerefcount); new_line;
+
+		val = glk($0028, gg_mainwin); ! window_get_type
+		print "Mainwin type: "; check(val, 3); new_line;
+		
+		val = glk($0029, gg_mainwin); ! window_get_parent
+		print "Mainwin parent: "; check(val, origpar); new_line;
+
+		str = glk($002C, gg_mainwin); ! glk_window_get_stream
+		print "Mainwin stream: "; check(str, origstr); print " "; check_nonzero(str);
+		val = glk($0041, str); ! stream_get_rock
+		print ", rock="; check(val, 0); new_line;
+	];
+
+	
+
+TestObj -> LineInput "line input test"
+  with
+	name 'line' 'input' 'lineinput' 'glk',
+	testdesc "char and unichar line input",
+	testfunc [ len;
+		print "Normal line input...^";
+		print "^Kill and enter a line>>";
+		
+		glk($00D0, gg_mainwin, cbuffer, BUFFER_SIZE, 0); ! request_line_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 3 && gg_event-->1 == gg_mainwin) {
+				len = gg_event-->2;
+				break;
+			}
+		}
+		
+		print "...~";
+		glk($0084, cbuffer, len); ! put_buffer
+		print "~ (", len, " chars)^";
+		
+		print "^Short line input (6 chars)...^";
+		print "^Kill and enter a line>>";
+		
+		glk($00D0, gg_mainwin, cbuffer, 6, 0); ! request_line_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 3 && gg_event-->1 == gg_mainwin) {
+				len = gg_event-->2;
+				break;
+			}
+		}
+		
+		print "...~";
+		glk($0084, cbuffer, len); ! put_buffer
+		print "~ (", len, " chars)^";
+		
+		print "^Unicode line input...^";
+		print "^Kill and enter a line>>";
+		
+		glk($0141, gg_mainwin, ubuffer, BUFFER_SIZE, 0); ! request_line_event_uni
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 3 && gg_event-->1 == gg_mainwin) {
+				len = gg_event-->2;
+				break;
+			}
+		}
+		
+		print "...~";
+		glk($012A, ubuffer, len); ! put_buffer_uni
+		print "~ (", len, " unichars)^";
+	];
+
+TestObj -> EchoInput "echo input test"
+  with
+	name 'echo'  'input' 'echoinput' 'glk',
+	testdesc "echo flag for line input",
+	testfunc [ len val;
+		val = glk($0004, 17, 0); ! gestalt_LineInputEcho
+		if (~~val) {
+			print "This interpreter does not support noecho mode.^";
+			return;
+		}
+
+		print "WARNING: This test cannot detect errors. You must watch the screen and look for missing or duplicated input commands.^^";
+	
+		print "Normal line input...^";
+		print "^Kill and enter a line>>";
+		
+		glk($00D0, gg_mainwin, cbuffer, BUFFER_SIZE, 0); ! request_line_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 3 && gg_event-->1 == gg_mainwin) {
+				len = gg_event-->2;
+				break;
+			}
+		}
+		
+		print "...~";
+		glk($0084, cbuffer, len); ! put_buffer
+		print "~ (", len, " chars)^";
+		
+		print "^Noecho line input...^";
+		print "^Kill and enter a line>>";
+
+		glk($0150, gg_mainwin, 0); ! set_echo_line_event
+		glk($00D0, gg_mainwin, cbuffer, BUFFER_SIZE, 0); ! request_line_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 3 && gg_event-->1 == gg_mainwin) {
+				len = gg_event-->2;
+				glk($0086, 8); ! set_style
+				glk($0084, cbuffer, len); ! put_buffer
+				glk($0086, 0); ! set_style
+				new_line;
+				break;
+			}
+		}
+		
+		print "...~";
+		glk($0084, cbuffer, len); ! put_buffer
+		print "~ (", len, " chars)^";
+		
+		print "^Noecho mode line input (echo set after request)...^";
+		print "^Kill and enter a line>>";
+		
+		glk($0150, gg_mainwin, 0); ! set_echo_line_event
+		glk($00D0, gg_mainwin, cbuffer, BUFFER_SIZE, 0); ! request_line_event
+		glk($0150, gg_mainwin, 1); ! set_echo_line_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 3 && gg_event-->1 == gg_mainwin) {
+				len = gg_event-->2;
+				glk($0086, 8); ! set_style
+				glk($0084, cbuffer, len); ! put_buffer
+				glk($0086, 0); ! set_style
+				new_line;
+				break;
+			}
+		}
+		
+		print "...~";
+		glk($0084, cbuffer, len); ! put_buffer
+		print "~ (", len, " chars)^";
+		
+		print "^Normal mode line input (echo cleared after request)...^";
+		print "^Kill and enter a line>>";
+		
+		glk($0150, gg_mainwin, 1); ! set_echo_line_event
+		glk($00D0, gg_mainwin, cbuffer, BUFFER_SIZE, 0); ! request_line_event
+		glk($0150, gg_mainwin, 0); ! set_echo_line_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 3 && gg_event-->1 == gg_mainwin) {
+				len = gg_event-->2;
+				break;
+			}
+		}
+		
+		print "...~";
+		glk($0084, cbuffer, len); ! put_buffer
+		print "~ (", len, " chars)^";
+		
+		glk($0150, gg_mainwin, 1); ! set_echo_line_event
+	];
+	
+TestObj -> MemStream "memstream test"
+  with
+	name 'memstream' 'memory' 'stream' 'glk',
+	testdesc "memory stream I/O",
+	testfunc [ len str val oldstr;
+		print "Char stream:^";
+		
+		str = glk($0043, cbuffer, BUFFER_SIZE, filemode_Write, 444); ! stream_open_memory
+		if (~~str) {
+			print "Unable to create stream^";
+			errorcount++;
+			return;
+		}
+
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 444); new_line;
+
+		glk($0081, str, '+'); ! put_char_stream
+		
+		oldstr = glk($0048); ! stream_get_current
+		glk($0047, str); ! stream_set_current
+		print "Floop.";
+		glk($0047, oldstr); ! stream_set_current
+		
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 444); new_line;
+		
+		glk($0044, str, gg_result); ! stream_close
+		len = gg_result-->1;
+		check_result_counts(0, 7);
+		check_str("+Floop.", cbuffer, len); new_line;
+
+		str = glk($0043, cbuffer, BUFFER_SIZE, filemode_Read, 555); ! stream_open_memory
+		if (~~str) {
+			print "Unable to create stream^";
+			errorcount++;
+			return;
+		}
+
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 555); new_line;
+		
+		val = glk($0090, str); ! get_char_stream
+		print "Char 0: "; check(val, '+'); print ", ";
+		val = glk($0090, str); ! get_char_stream
+		print "Char 1: "; check(val, 'F'); print "^";
+
+		WaitKey();
+		
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 555); new_line;
+		
+		val = glk($0090, str); ! get_char_stream
+		print "Char 2: "; check(val, 'l'); print ", ";
+		val = glk($0090, str); ! get_char_stream
+		print "Char 3: "; check(val, 'o'); print "^";
+		
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(4, 0);
+
+		print "^Unicode stream:^";
+		
+		str = glk($0139, ubuffer, BUFFER_SIZE, filemode_Write, 666); ! stream_open_memory_uni
+		if (~~str) {
+			print "Unable to create stream^";
+			errorcount++;
+			return;
+		}
+
+		glk($012B, str, $203B); ! put_char_stream_uni
+		
+		oldstr = glk($0048); ! stream_get_current
+		glk($0047, str); ! stream_set_current
+		print "Fl@{F6}p-noodles";
+		glk($0047, oldstr); ! stream_set_current
+
+		glk($0045, str, 6, 0); ! stream_set_position
+
+		WaitKey();
+
+		glk($0047, str); ! stream_set_current
+		print "@{3A9}.";
+		glk($0047, oldstr); ! stream_set_current
+
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 666); new_line;
+		
+		glk($0044, str, gg_result); ! stream_close
+		len = gg_result-->1;
+		check_result_counts(0, 15);
+		check_ustr("@{203B}Fl@{F6}p-@{3A9}.odles", ubuffer, 13); new_line;
+		
+	];
+
+TestObj -> ResStream "resstream test"
+  with
+	name 'resstream' 'resource' 'stream' 'glk',
+	testdesc "resource stream input",
+	testfunc [ len str ustr val;
+		val = glk($0004, 22, 0); ! gestalt_ResourceStream
+		if (~~val) {
+			print "This interpreter does not support resource streams.^";
+			return;
+		}
+
+		print "Data 1...^";
+		str = glk($0049, 1, 111); ! stream_open_resource
+		if (~~str) {
+			print "Unable to create stream -- perhaps you are running autosavetest.ulx instead of autosavetest.gblorb^";
+			errorcount++;
+			return;
+		}
+
+		WaitKey();
+		
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 111); new_line;
+
+		len = glk($0092, str, cbuffer, 5); ! get_buffer_stream
+		check_str("Magic", cbuffer, len); new_line;
+		
+		WaitKey();
+		
+		len = glk($0092, str, cbuffer+5, BUFFER_SIZE-5); ! get_buffer_stream
+		check_str("Magic purple people eater.", cbuffer, len+5); new_line;
+		
+		glk($0044, str, gg_result); ! stream_close
+		len = gg_result-->1;
+		check_result_counts(26, 0);
+		
+		print "Data 3 and 5...^";
+		
+		str = glk($0049, 3, 113); ! stream_open_resource
+		if (~~str) {
+			print "Unable to create stream^";
+			errorcount++;
+			return;
+		}
+
+		ustr = glk($013A, 5, 115); ! stream_open_resource_uni
+		if (~~ustr) {
+			print "Unable to create stream^";
+			errorcount++;
+			return;
+		}
+
+		WaitKey();
+		
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 113); new_line;
+		val = glk($0041, ustr); ! stream_get_rock
+		print "stream rock="; check(val, 115); new_line;
+		
+		len = glk($0092, str, cbuffer, BUFFER_SIZE); ! get_buffer_stream
+		check_str("Az@{E1}l@{EB}@{E5}@{DF}.^", cbuffer, len); new_line;
+
+		len = glk($0131, ustr, ubuffer, BUFFER_SIZE); ! get_buffer_stream_uni
+		check_ustr("A @{E5}@{3C9} @{5D0}@{5EA} @{201C}@{201D} @{304A}@{3059}@{3082}.^", ubuffer, len); new_line;
+
+		glk($0044, str, gg_result); ! stream_close
+		len = gg_result-->1;
+		check_result_counts(9, 0);
+		
+		glk($0044, ustr, gg_result); ! stream_close
+		len = gg_result-->1;
+		check_result_counts(16, 0);
+		
+	];
+
+TestObj -> FileStream "filestream test"
+  with
+	name 'filestream' 'file' 'stream' 'glk',
+	testdesc "file stream I/O",
+	testfunc [ len fref str name val;
+
+		name = "autofile";
+		print "Named file (writeappend): ", (string) name, "^";
+		
+		len = name.print_to_array(cbuffer, BUFFER_SIZE);
+		cbuffer->3 = $E0;
+		cbuffer->(4+len) = 0;
+		fref = glk($0061, $102, cbuffer+3, 0); ! fileref_create_by_name
+		! text transcript file
+		if (~~fref) {
+			print "Unable to create fileref^";
+			errorcount++;
+			return;
+		}
+
+		delete_if_exists(fref, name);
+
+		str = open_file(fref, name, filemode_WriteAppend, 876);
+
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 876); new_line;
+
+		write_stream(str, "Loco");
+		
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "stream rock="; check(val, 876); new_line;
+
+		write_stream(str, "motive.^");
+		
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(0, 12);
+
+		str = open_file(fref, name, filemode_Read, 877);
+	
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "fileref rock="; check(val, 877); new_line;
+
+		len = glk($0092, str, cbuffer, BUFFER_SIZE); ! get_buffer_stream
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(12, 0);
+		check_str("Locomotive.^", cbuffer, len); new_line;
+
+		glk($0063, fref); ! fileref_destroy
+
+		
+		name = "(temp)";
+		print "Temporary file (readwrite):^";		
+		fref = glk($0060, $102, 0); ! fileref_create_temp
+		! text transcript file
+		if (~~fref) {
+			print "Unable to create fileref^";
+			errorcount++;
+			return;
+		}
+
+		str = open_file(fref, name, filemode_ReadWrite, 878);
+
+		glk($0081, str, '+'); ! put_char_stream
+		
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "fileref rock="; check(val, 878); new_line;
+		
+		write_stream(str, "Elephant-pants.");
+		glk($0045, str, 9, 0); ! stream_set_position
+
+		WaitKey();
+		
+		len = glk($0092, str, cbuffer, BUFFER_SIZE); ! get_buffer_stream
+		check_str("-pants.", cbuffer, len); new_line;
+		
+		glk($0045, str, 9, 0); ! stream_set_position
+		write_stream(str, " knickers.");
+		
+		WaitKey();
+
+		val = glk($0046, str); ! stream_get_position
+		print "Getpos="; check(val, 19); new_line;
+		
+		glk($0045, str, 0, 0); ! stream_set_position
+
+		WaitKey();
+
+		val = glk($0041, str); ! stream_get_rock
+		print "fileref rock="; check(val, 878); new_line;
+		
+		val = glk($0046, str); ! stream_get_position
+		print "Getpos="; check(val, 0); new_line;
+		
+		len = glk($0092, str, cbuffer, BUFFER_SIZE); ! get_buffer_stream
+		check_str("+Elephant knickers.", cbuffer, len); new_line;
+		
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(26, 26);
+
+		glk($0063, fref); ! fileref_destroy
+	];
+
+Constant filemode_Write = 1;
+Constant filemode_Read = 2;
+Constant filemode_ReadWrite = 3;
+Constant filemode_WriteAppend = 5;
+
+TestObj -> Fileref "fileref test"
+  with
+	name 'fileref' 'glk',
+	testdesc "filerefs",
+	testfunc [ len fref str name val;
+
+		name = "autofref";
+		print "Named file: ", (string) name, "^";
+		
+		len = name.print_to_array(cbuffer, BUFFER_SIZE);
+		cbuffer->3 = $E0;
+		cbuffer->(4+len) = 0;
+		fref = glk($0061, $102, cbuffer+3, 888); ! fileref_create_by_name
+		! text transcript file
+		if (~~fref) {
+			print "Unable to create fileref^";
+			errorcount++;
+			return;
+		}
+
+		delete_if_exists(fref, name);
+
+		WaitKey();
+
+		val = glk($0065, fref); ! fileref_get_rock
+		print "fileref rock="; check(val, 888); new_line;
+
+		str = open_file(fref, name, filemode_Write);
+		write_stream(str, "Locomotive.^");
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(0, 12);
+
+		WaitKey();
+
+		val = glk($0065, fref); ! fileref_get_rock
+		print "fileref rock="; check(val, 888); new_line;
+
+		str = open_file(fref, name, filemode_Read);
+		len = glk($0092, str, cbuffer, BUFFER_SIZE); ! get_buffer_stream
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(12, 0);
+		check_str("Locomotive.^", cbuffer, len); new_line;
+
+		glk($0063, fref); ! fileref_destroy
+
+
+		name = "(temp)";
+		print "Temporary file:^";		
+		fref = glk($0060, $102, 999); ! fileref_create_temp
+		! text transcript file
+		if (~~fref) {
+			print "Unable to create fileref^";
+			errorcount++;
+			return;
+		}
+
+		delete_if_exists(fref, name);
+
+		WaitKey();
+
+		val = glk($0065, fref); ! fileref_get_rock
+		print "fileref rock="; check(val, 999); new_line;
+
+		str = open_file(fref, name, filemode_Write);
+		write_stream(str, "Caboose.^");
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(0, 9);
+
+		WaitKey();
+
+		val = glk($0065, fref); ! fileref_get_rock
+		print "fileref rock="; check(val, 999); new_line;
+
+		str = open_file(fref, name, filemode_Read);
+		len = glk($0092, str, cbuffer, BUFFER_SIZE); ! get_buffer_stream
+		glk($0044, str, gg_result); ! stream_close
+		check_result_counts(9, 0);
+		check_str("Caboose.^", cbuffer, len); new_line;
+
+		glk($0063, fref); ! fileref_destroy
+
+	];
+	
+[ delete_if_exists fref name   val;
+    val = glk($0067, fref); ! fileref_does_file_exist
+    if (val) {
+        print "(Deleting existing file: ", (string) name, ")^";
+        glk($0066, fref); ! fileref_delete_file
+    }
+];
+
+[ open_file fref name mode rock   str;
+    str = glk($0042, fref, mode, rock); ! stream_open_file
+    if (~~str) {
+        print "Unable to open stream: ", (string) name, "^";
+        quit;
+    }
+    return str;
+];
+
+[ write_stream str val   len;
+    len = val.print_to_array(cbuffer, BUFFER_SIZE);
+    glk($0085, str, cbuffer+4, len); ! put_buffer_stream
+];
+
+TestObj -> Timer "timer test"
+  with
+	name 'timer' 'glk',
+	testdesc "timer events",
+	testfunc [ res val;
+		val = glk($0004, 5, 0); ! gestalt_Timer
+		if (~~val) {
+			print "This interpreter does not support timer events.^";
+			return;
+		}
+
+  		print "Timer events on...^";
+		glk($00D6, 250); ! request_timer_events
+
+		print "^Kill and hit a key>";
+	
+		glk($00D2, gg_mainwin); ! request_char_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+				res = gg_event-->2;
+				break;
+			}
+			! Ignore timer events
+		}
+
+		print "...", (charname) res, ".^";
+
+		print "^Wait for a timer event>";
+
+		res = 0;
+		glk($00D2, gg_mainwin); ! request_char_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+				res = gg_event-->2;
+				break;
+			}
+			if (gg_event-->0 == 1) {
+				glk($00D3, gg_mainwin); ! cancel_char_event
+				res = -1;
+				break;
+			}
+		}
+
+		if (res == -1) {
+			print "...timer event.^";
+		}
+		else {
+			errorcount++;
+			print "...", (charname) res, "; FAILED.^";
+		}
+
+  		print "Timer events off...^";
+		glk($00D6, 0); ! request_timer_events
+
+		print "^Kill and hit a key>";
+	
+		glk($00D2, gg_mainwin); ! request_char_event
+		while (true) {
+			glk($00C0, gg_event); ! select
+			if (gg_event-->0 == 2 && gg_event-->1 == gg_mainwin) {
+				res = gg_event-->2;
+				break;
+			}
+			if (gg_event-->0 == 1) {
+				glk($00D3, gg_mainwin); ! cancel_char_event
+				res = -1;
+				break;
+			}
+		}
+
+		if (res == -1) {
+			errorcount++;
+			print "...timer event; FAILED.^";
+		}
+		else {
+			print "...", (charname) res, ".^";
+		}
+
+	];
+
+! ### line input with funny terminator flags
+! ### an open transcript file
+
+Include "Grammar";
+
+Extend only 'run' replace
+	* multi -> RunTest;
+

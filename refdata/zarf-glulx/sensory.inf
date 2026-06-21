@@ -1,0 +1,643 @@
+Constant Story "Sensory Jam";
+Constant Headline "^A Quick Glulx Demo^
+by Andrew Plotkin.^";
+Release 4;
+
+! The window that displays a painting in the art gallery.
+Constant GG_PAINTINGWIN_ROCK 210;
+Global gg_paintingwin = 0;
+
+! Two sound channels; one for background sound, one for foreground sound.
+Constant GG_FOREGROUNDCHAN_ROCK 410;
+Constant GG_BACKGROUNDCHAN_ROCK 411;
+Global gg_foregroundchan = 0;
+Global gg_backgroundchan = 0;
+
+! The painting which is currently visible in the graphics window.
+! -1 means that there is (or should be) no graphics window.
+Global current_painting = -1;
+
+! The volume of the wind noise. -1 means that there is (or should be)
+! none.
+Global current_windlevel = -1;
+
+Include "Parser";
+Include "VerbLib";
+
+[ Initialise res;
+    ! First, create any Glk objects we will need immediately. In this 
+    ! game, that means two sound channels. (The painting window won't
+    ! be created until the player examines a painting.)
+    ! 
+    ! Note that the channels may already exist, even though the program
+    ! just started up! It is possible that the player just typed "restart".
+    ! The library calls IdentifyGlkObject() before Initialise(), so if
+    ! the objects already exist, the global variables that store them
+    ! will already be set. Therefore, test them before creating new
+    ! objects.
+    !
+    ! We also must test to make sure that the sound calls are available 
+    ! at all.
+    res = glk($0004, 8, 0); ! gestalt_Sound
+    if (res) {
+        if (gg_foregroundchan == 0) {
+            gg_foregroundchan = glk($00F2, GG_FOREGROUNDCHAN_ROCK); ! schannel_create
+        }
+        if (gg_backgroundchan == 0) {
+            gg_backgroundchan = glk($00F2, GG_BACKGROUNDCHAN_ROCK); ! schannel_create
+        }
+    }
+
+    location = Lobby;
+    print "You dream you walk in marble halls...^^";
+];
+
+! The IdentifyGlkObject entry point is called by the library to let you
+! know what Glk objects exist. (This is necessary because after a restore,
+! restart, or undo command, your global variables containing Glk objects
+! will be wrong.)
+! This takes place in three phases:
+! * The library calls IdentifyGlkObject() with phase==0. You should set
+! all your Glk object references to zero.
+! * The library calls IdentifyGlkObject() with phase==1. This occurs
+! once for each window, stream, and fileref that the library doesn't
+! recognize. (The library handles the two standard windows, and the
+! files and streams that have to do with saving, transcripts, and
+! command records. You only have to deal with objects that you create.)
+! You should set whatever reference is appropriate to the object.
+! For each object: Type will be 0, 1, 2 for windows, streams, filerefs
+! respectively; ref will be the object references; and rock will be
+! the object's rock, by which you can recognize it.
+! * The library calls IdentifyGlkObject() with phase==2. This occurs
+! once, after all the other calls, and gives you a chance to recognize
+! objects that aren't windows, streams, or filerefs. If you don't
+! create any such objects, you can ignore that bit. 
+! But you should also take the opportunity to update all your Glk objects 
+! to the game state that was just started or restored. (For example, redraw
+! graphics, or set the right background sounds playing.)
+[ IdentifyGlkObject phase type ref rock res id;
+    if (phase == 0) {
+        ! Zero out references to our objects.
+        gg_paintingwin = 0;
+        gg_foregroundchan = 0;
+        gg_backgroundchan = 0;
+        return;
+    }
+
+    if (phase == 1) {
+        switch (type) {
+            0: ! it's a window
+                switch (rock) {
+                    GG_PAINTINGWIN_ROCK: gg_paintingwin = ref;
+                }
+            1: ! it's a stream
+                ! But we don't create any.
+            2: ! it's a fileref
+                ! But we don't create any.
+        }
+        return;
+    }
+
+    if (phase == 2) {
+
+        ! First, we have to identify any sound channels which already
+        ! exist. This code is analogous to the code in GGRecoverObjects(),
+        ! which just called here. However, the library only concerns itself
+        ! with windows, streams, and filerefs. The game has to handle 
+        ! sound channels itself.
+        res = glk($0004, 8, 0); ! gestalt_Sound
+        if (res) {
+            id = glk($00F0, 0, gg_arguments); ! schannel_iterate
+            while (id) {
+                switch (gg_arguments-->0) {
+                    GG_FOREGROUNDCHAN_ROCK: gg_foregroundchan = id;
+                    GG_BACKGROUNDCHAN_ROCK: gg_backgroundchan = id;
+                }
+                id = glk($00F0, id, gg_arguments); ! schannel_iterate
+            }
+        }
+
+        ! All objects are now recovered, and the gg_ global object
+        ! references are correctly set.
+
+        ! Now that we know whether the painting window exists, we have to 
+        ! turn it on or off, depending on whether it *should* exist or not.
+        ! If it already exists, we'd better redraw it, in case the contents
+        ! aren't right.
+        if (current_painting == -1) {
+            if (gg_paintingwin)
+                SetPaintingWin(-1);
+        }
+        else {
+            if (gg_paintingwin == 0)
+                SetPaintingWin(current_painting);
+            else
+                RedrawPaintingWin();
+        }
+
+        ! We should also reset the volume of the the background sound 
+        ! channel.
+        if (gg_backgroundchan)
+            SetWindLevel(current_windlevel, true);
+        return;
+    }
+];
+
+! The HandleGlkEvent entry point is called after every event, in
+! KeyboardPrimitive() and KeyCharPrimitive(). (The context argument
+! tells which, 0 or 1 respectively.) We have to redo the painting window
+! if windows are rearranged/resized (evtype_Arrange) or if a general
+! redraw event comes through (evtype_Redraw).
+[ HandleGlkEvent ev context;
+    context = 0; ! suppress ignored warning
+    switch (ev-->0) {
+      5: ! evtype_Arrange
+        if (gg_paintingwin)
+          RedrawPaintingWin();
+      6: ! evtype_Redraw
+        if (gg_paintingwin)
+          RedrawPaintingWin();
+    }
+];
+
+! Now, a bunch of repetitive code to check the intepreter's capabilities.
+! I decided to print each warning exactly once, the first time it's
+! encountered. That's really the only reason this section is so long.
+
+! Are there graphics capabilities at all?
+Global WarnedNoGraphics = false;
+[ TestGraphics res;
+    res = glk($0004, 6, 0); ! gestalt(gestalt_Graphics)
+    if (res == 0) {
+        if (~~WarnedNoGraphics) {
+            WarnedNoGraphics = true;
+            print "[Your interpreter does not support graphics, so you
+                can't see the nice artwork. Sorry.]^^";
+        }
+        rfalse;
+    }
+    rtrue;
+];
+
+! Can we draw images in graphics windows?
+Global WarnedNoGraphicsWin = false;
+[ TestGraphicsWin res;
+    if (~~TestGraphics())
+        rfalse;
+    res = glk($0004, 7, 5); ! gestalt(gestalt_DrawImage, wintype_Graphics)
+    if (res == 0) {
+        if (~~WarnedNoGraphicsWin) {
+            WarnedNoGraphicsWin = true;
+            print "[Your interpreter does not support graphics in separate
+                windows, so you can't see the paintings in the gallery. 
+                Sorry.]^^";
+        }
+        rfalse;
+    }
+    rtrue;
+];
+
+! Can we draw images in text-buffer windows?
+Global WarnedNoGraphicsText = false;
+[ TestGraphicsText res;
+    if (~~TestGraphics())
+        rfalse;
+    res = glk($0004, 7, 3); ! gestalt(gestalt_DrawImage, wintype_TextBuffer)
+    if (res == 0) {
+        if (~~WarnedNoGraphicsText) {
+            WarnedNoGraphicsText = true;
+            print "[Your interpreter does not support graphics in text
+                windows, so you can't see the ornate initial letter. 
+                Sorry.]^^";
+        }
+        rfalse;
+    }
+    rtrue;
+];
+
+! Are there sound capabilities at all?
+Global WarnedNoSound = false;
+[ TestSound res;
+    res = glk($0004, 8, 0); ! gestalt_Sound
+    if (res == 0) {
+        if (~~WarnedNoSound) {
+            WarnedNoSound = true;
+            print "[Your interpreter does not support sound, so you can't
+                hear the nifty noises. Sorry.]^^";
+        }
+        rfalse;
+    }
+    rtrue;
+];
+
+! Can we change the volume of sound channels?
+Global WarnedNoVolume = false;
+[ TestVolume res;
+    res = glk($0004, 9, 0); ! gestalt_Volume
+    if (res == 0) {
+        if (~~WarnedNoVolume) {
+            WarnedNoVolume = true;
+            print "[Your interpreter does not support changing volume,
+                so the wind won't get louder and softer. Sorry.]^^";
+        }
+        rfalse;
+    }
+    rtrue;
+];
+
+! Now, some code to actually do things.
+
+[ PlaySound chan sndid repeat res;
+    if (~~TestSound())
+        return;
+    if (chan == 0) {
+        print "[The sound effects channel was not created, even though 
+            your interpreter said it could be.]^^";
+        return;
+    }
+    if (~~repeat)
+        res = glk($00F8, chan, sndid); ! schannel_play
+    else
+        res = glk($00F9, chan, sndid, -1, 0); ! schannel_play_ext
+    if (~~res)
+        print "[Sound resource ", sndid, " could not be played.]^^";
+];
+
+[ SetWindLevel val paranoid  chan oldval; 
+    ! If paranoid is false, we can safely assume that the sound is
+    ! already playing; just adjust the volume. If it's true, we
+    ! start the sound again, because we don't know if it's playing
+    ! or not. (The latter case is important after an undo, restore,
+    ! or restart.)
+    chan = gg_backgroundchan;
+    oldval = current_windlevel;
+    current_windlevel = val;
+    if (val == oldval && ~~paranoid)
+        return;
+    if (val == -1) {
+        ! It's possible to get here when there are no sound calls in
+        ! the library. However, if that's the case, chan will certainly
+        ! be zero, so we just return.
+        if (chan == 0) {
+            return;
+        }
+        ! Stop any sound on the channel, if there is any.
+        glk($00FA, chan); ! schannel_stop
+        return;
+    }
+    else {
+        if (~~TestSound())
+            return;
+        if (~~TestVolume())
+            return;
+        if (chan == 0) {
+            print "[The sound effects channel was not created, even though 
+                your interpreter said it could be.]^^";
+            return;
+        }
+        glk($00FB, chan, (val+1) * 16384); ! schannel_set_volume
+        if (paranoid)
+            PlaySound(chan, 10, true);
+    }
+];
+
+! This creates a graphics window to display a painting (0, 1, or 2);
+! or, if val is -1, destroys the graphics window. It's always possible
+! that the window doesn't appear, of course; we have to watch for that.
+[ SetPaintingWin val;
+    if (val == -1) {
+        if (gg_paintingwin) {
+            glk($0024, gg_paintingwin, 0); ! close_window
+            gg_paintingwin = 0;
+        }
+        current_painting = -1;
+        return;
+    }
+
+    if (gg_paintingwin == 0) {
+        if (~~TestGraphicsWin())
+            return;
+        gg_paintingwin = glk($0023, gg_mainwin, $12, 200, 5, 
+            GG_PAINTINGWIN_ROCK); ! window_open
+        if (gg_paintingwin == 0) {
+            print "[Your interpreter was unable to create a graphics
+                window, even though it said it could.]^^";
+            return;
+        }
+    }
+
+    current_painting = val;
+    RedrawPaintingWin();
+];
+
+[ RedrawPaintingWin res wid hgt imwid imhgt ix jx istep jstep;
+    if (gg_paintingwin == 0)
+        return;
+
+    glk($0025, gg_paintingwin, gg_arguments, gg_arguments+4); ! window_get_size
+    wid = gg_arguments-->0;
+    hgt = gg_arguments-->1;
+
+    res = glk($00E0, current_painting, gg_arguments, gg_arguments+4); ! image_get_info
+    if (~~res) {
+        print "[Image resource ", current_painting, " could not be found.]^^";
+        return;
+    }
+    imwid = gg_arguments-->0;
+    imhgt = gg_arguments-->1;
+
+    if (VisualGallery.number == 0) {
+        glk($00EA, gg_paintingwin, $00808080, 0, 0, wid, hgt); ! window_fill_rect
+    }
+    else {
+        res = glk($00E0, 9+VisualGallery.number, gg_arguments, gg_arguments+4); 
+            ! image_get_info
+        if (~~res) {
+            print "[Image resource ", 9+VisualGallery.number, " could not be found.]^^";
+            return;
+        }
+        istep = gg_arguments-->0;
+        jstep = gg_arguments-->1;
+        for (jx=0 : jx<hgt : jx = jx+jstep) {
+            for (ix=0 : ix<wid : ix = ix+istep) {
+                glk($00E1, gg_paintingwin, 9+VisualGallery.number, 
+                    ix, jx); ! image_draw
+            }
+        }
+    }
+
+    glk($00E1, gg_paintingwin, current_painting, 
+        (wid-imwid)/2, (hgt-imhgt)/2); ! image_draw
+];
+
+! ---
+
+! And now, the game itself.
+
+! ---
+
+Object Lobby "Entrance Lobby"
+  with
+    description [;
+        "Dim light filters down from the Florentine dome overhead.
+            White pillars march around the perimeter of the room,
+            framing three arches: the Hall of Winds to the west,
+            the Visual Gallery to the east, and the exit to the
+            south.";
+    ],
+    out_to [; <<Go s_obj>>; ],
+    s_to [;
+        deadflag = 3;
+        "Sunlight blinds you, and you come to your senses.";
+    ],
+    e_to VisualGallery,
+    w_to [;
+        SetWindLevel(1, true);
+        return HallOfWinds;
+    ],
+  has light;
+
+Object -> gong "gong"
+  with
+    name 'big' 'brass' 'gong',
+    initial "A big brass gong hangs on the wall, next to an ornate
+        calligraphed scroll.",
+    description "It's brassy, large, and, um, gongulous.",
+    before [;
+        Take:
+            "It's fastened to the wall.";
+        Attack:
+            PlaySound(gg_foregroundchan, 2, false);
+            "Gonnnnng.";
+    ],
+  has static;
+
+Object -> scroll "ornate scroll"
+  with
+    name 'ornate' 'scroll' 'letter' 'calligraph',
+    description [ res imageok;
+        print "Looking closer, you see that only the first letter is
+            decorative. (And it looks more like graffiti than calligraphy.) 
+            The rest of the scroll is printed in rather dull type.^^";
+        imageok = true;
+        if (~~TestGraphicsText()) {
+            imageok = false;
+        }
+        if (imageok) {
+            res = glk($00E0, 5, 0, 0); ! image_get_info
+            if (~~res) {
+                print "[Image resource ", 5, " could not be found.]^^";
+                imageok = false;
+            }
+        }
+        glk($0086, 7); ! set block-quote style
+        if (imageok) {
+            glk($00E1, gg_mainwin, 5, 4, 0); ! image_draw
+        }
+        else {
+            print "I";
+        }
+        print "nsofar as I may be heard by anything, which may or may
+not care what I say, I ask, if it matters, that you be forgiven for
+anything you may have done or failed to do which requires
+forgiveness. Conversely, if not forgiveness but something else may be
+required to insure any possible benefit for which you may be eligible
+after the destruction of your body, I ask that this, whatever it may
+be, be granted or withheld, as the case may be, in such a manner as to
+ensure your receiving said benefit. I ask this in my capacity as your
+elected intermediary between yourself and that which may not be
+yourself, but which may have an interest in the matter of your
+receiving as much as it is possible for you to receive of this thing,
+and which may in some way be influenced by this ceremony. Amen.^^";
+        print "     -- Roger Zelazny, from ";
+        glk($0086, 1); ! set emphasized style
+        print "Creatures of Light and Darkness";
+        glk($0086, 7); ! set block-quote style
+        print "^";
+        glk($0086, 0); ! set normal style
+        rtrue;
+    ],
+    before [;
+        Take: "Please don't steal the art.";
+    ],
+  has scenery;
+
+
+! ---
+
+[ WallColorName;
+    switch (VisualGallery.number) {
+        0: print "stark grey";
+        1: print "ripply green";
+        2: print "blobby indigo";
+    }
+];
+
+Object VisualGallery "The Visual Gallery"
+  with
+    description [;
+        print "You are in a bare, chilly room of ";
+        WallColorName();
+        print " marble. An archway leads back to the west. By the
+            archway is a tiny button.^^";
+        print "A blurry photograph, an abstract painting, and a
+            woodcut hang nearby.^";
+        rtrue;
+    ],
+    number 0,
+    w_to [;
+        SetPaintingWin(-1);
+        return Lobby;
+    ],
+  has light;
+
+Object -> wallbutton "tiny button"
+  with
+    name 'tiny' 'button',
+    before [;
+        Push:
+            VisualGallery.number++;
+            if (VisualGallery.number >= 3)
+                VisualGallery.number = 0;
+            RedrawPaintingWin();
+            print "The walls flicker and shift to a ";
+            WallColorName();
+            ".";
+    ],
+  has scenery;
+
+Object -> photograph "blurry photograph"
+  with
+    name 'blurry' 'photo' 'photograph',
+    description [;
+        SetPaintingWin(0);
+        "It's not very good. Whoever took it must have been
+            an amateur. And the subject isn't particularly fetching
+            either.";
+    ],
+    before [;
+        Take:
+            "Please don't steal the art.";
+    ],
+  has scenery;
+
+Object -> painting "abstract painting"
+  with
+    name 'abstract' 'painting',
+    description [;
+        SetPaintingWin(1);
+        "It's colorful, but it still looks like a bundle of sticks.";
+    ],
+    before [;
+        Take:
+            "Please don't steal the art.";
+    ],
+  has scenery;
+
+Object -> woodcut "woodcut print"
+  with
+    name 'wood' 'cut' 'woodcut' 'print',
+    description [;
+        SetPaintingWin(2);
+        "It's sharply printed in black and white.";
+    ],
+    before [;
+        Take:
+            "Please don't steal the art.";
+    ],
+  has scenery;
+
+! ---
+
+Object HallOfWinds "The Hall of Winds"
+  with
+    description [;
+        "A wide marble corridor stretches off to the west. To the east,
+            beyond an archway, is the lobby.^^
+            Wind whistles faintly in the distance.";
+    ],
+    e_to [;
+        SetWindLevel(-1, true);
+        return Lobby;
+    ],
+    w_to [;
+        SetWindLevel(2, false);
+        return HallOfWinds2;
+    ],
+  has light;
+
+Object HallOfWinds2 "Middle of Hall of Winds"
+  with
+    description [;
+        "You are in the middle of a long east/west marble corridor.^^
+            The wind is louder here.";
+    ],
+    e_to [;
+        SetWindLevel(1, false);
+        return HallOfWinds;
+    ],
+    w_to [;
+        SetWindLevel(3, false);
+        return HallOfWinds3;
+    ],
+  has light;
+
+Object HallOfWinds3 "End of Hall of Winds"
+  with
+    description [;
+        "The corridor ends in a small round cul-de-sac. In the center
+            of the room is a hugely complicated machine, covered with
+            dials and switches and levers and buttons.^^
+            Wind howls all around you, from no obvious source.";
+    ],
+    e_to [;
+        SetWindLevel(2, false);
+        return HallOfWinds2;
+    ],
+  has light;
+
+Object -> machine "machine"
+  with
+    name 'machine' 'lever' 'levers' 'dial' 'dials' 'switch' 'switches'
+        'button' 'buttons',
+    description "The machine is covered with controls which are much
+        too complicated to describe.",
+    before [;
+        Take:
+            "It's much too large to carry.";
+        Attack, Push, Pull, Turn, Touch, Rub, Squeeze:
+            PlaySound(gg_foregroundchan, 1, false);
+            "The machine goes ~Bloop.~";
+    ],
+  has scenery;
+
+Object wind "wind" 
+  with
+    name 'wind' 'winds',
+    found_in HallOfWinds HallOfWinds2 HallOfWinds3,
+    description "You can't see wind.",
+    before [;
+        Take: 
+            "How silly.";
+        Listen:
+            switch (location) {
+                HallOfWinds: "The wind is quiet.";
+                HallOfWinds2: "The wind is fairly loud.";
+                HallOfWinds3: "The wind is shriekingly loud.";
+            }
+    ],
+    react_before [;
+        Listen:
+            if (noun == 0)
+                <<Listen self>>;
+    ],
+  has scenery;
+
+! ---
+
+[ DeathMessage;
+    print "Thanks for playing";
+];
+
+Include "Grammar";
+

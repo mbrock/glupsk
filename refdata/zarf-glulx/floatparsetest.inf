@@ -1,0 +1,1067 @@
+Constant Story "FloatParseTest";
+Constant Headline "^Not a game.^";
+
+Release 2;
+
+! Unit test for printing and parsing floating-point constants.
+
+! Compiling this test requires a recent version of the Inform 6 compiler,
+! which understands floating-point constants.
+
+Include "Parser";
+Include "VerbLib";
+
+[ Initialise val;
+	location = Kitchen;
+
+	@gestalt 11 0 val; ! Float
+	if (~~val) {
+		print "^^WARNING: Your Glulx interpreter does not support the
+			floating-point opcodes. This test will not work.^^";
+	}
+];
+
+Object Kitchen "Floating Room"
+  with
+	description "You stand in a floating room in Digitopolis.
+		A voice booooms out:
+		Try ~type NUM~ or ~type NUM on keyboard~ to parse a
+		floating-point number!
+		Read the chart and the paper tape to run through unit tests!",
+  has light;
+
+Object -> tkeyboard "keyboard"
+  with
+	name 'keyboard' 'teletype' 'key' 'keys',
+	initial "A teletype keyboard is set up nearby.",
+	description "Try ~type NUM~ or ~type NUM on keyboard~ to test
+		floating-point parsing. All of the following should work,
+		and many other variations:^^
+TYPE 1.5e1^
+TYPE 1 * 10@{5E}2^
+TYPE 1.0x10@{5E}-1^
+TYPE -1.0 @{D7} 10@{5E}+1",
+  has static;
+  
+Object -> tape "paper tape"
+  with
+	name 'paper' 'tape' 'pile',
+	initial "A pile of paper tape spills out from beneath the teletype.",
+	description [;
+		RunPrintTest();
+	],
+  has static;
+
+Object -> chart "chart"
+  with
+	name 'chart' 'long' 'tedious' 'figure' 'figures',
+	initial "A long, tedious chart hangs on the wall. It is covered with
+		long, tedious figures.",
+	description [;
+		RunParseTest();
+	],
+  has static;
+
+! Floating-point parsing routines.
+
+! Parse a float from a text buffer. Returns a float value, or FLOAT_NAN if
+! no value was understood.
+!
+! The recognized format, if you'll pardon a slightly bastardized regexp
+! syntax, is "S?D*(PD*)?(ES?D+)?" where S is a sign character "+" or "-",
+! D is a decimal digit "0" to "9", P is a decimal point ".",
+! and E is the exponential modifier "E" or "e".
+!
+! For flexibility, the string "M10^" is also accepted for E, where M is
+! "X", "x", "*", or the multiplication sign @{D7}. Optional spaces are
+! allowed before and after the M sign. (But only for the "10^" form of
+! the exponent, not the "e" form.)
+!
+! This routine does not try to recognize special names for infinity or NaN,
+! but it can return FLOAT_INFINITY or FLOAT_NINFINITY if the exponent is too
+! large.
+!
+! This routine relies on floating-point math. Therefore, the same string
+! may parse to slightly different float values on different interpreters!
+! Be warned.
+!
+! If useall is true, this insists on using all len characters from the buffer.
+! (It returns FLOAT_NAN if any unrecognized characters are left over.)
+! Contrariwise, if useall is false, unused characters at the end of the buffer
+! are fine. (But not at the beginning; the float must start at the beginning
+! of the buffer.)
+! 
+[ FloatParse buf len useall
+	res ix val ch ten negative intpart fracpart fracdiv
+	expon expnegative count;
+
+	if (len == 0)
+		return FLOAT_NAN;
+		
+	ix = 0;
+	negative = false;
+	intpart = 0;
+	fracpart = 0;
+	@numtof 10 ten;
+
+	! Sign character (optional)
+	ch = buf->ix;
+	if (ch == '-') {
+		negative = true;
+		ix++;
+	}
+	else if (ch == '+') {
+		ix++;
+	}
+
+	! Some digits (optional)
+	for (count=0 : ix<len : ix++, count++) {
+		ch = buf->ix;
+		if (ch < '0' || ch > '9')
+			break;
+		val = (ch - '0');
+		@numtof val val;
+		@fmul intpart ten intpart;
+		@fadd intpart val intpart;
+	}
+
+	! Decimal point and more digits (optional)
+	if (ix<len && buf->ix == '.') {
+		ix++;
+		@numtof 1 fracdiv;
+		for ( : ix<len : ix++, count++) {
+			ch = buf->ix;
+			if (ch < '0' || ch > '9')
+				break;
+			val = (ch - '0');
+			@numtof	val val;
+			@fmul fracpart ten fracpart;
+			@fadd fracpart val fracpart;
+			@fmul fracdiv ten fracdiv;
+		}
+		@fdiv fracpart fracdiv fracpart;
+	}
+
+	! If there are no digits before *or* after the decimal point, fail.
+	if (count == 0)
+		return FLOAT_NAN;
+
+	! Combine the integer and fractional parts.
+	@fadd intpart fracpart res;
+
+	! Exponent (optional)
+	if (ix<len && buf->ix == 'e' or 'E' or ' ' or '*' or 'x' or 'X' or $D7) {
+		if (buf->ix == 'e' or 'E') {
+			! no spaces, just the 'e'
+			ix++;
+			if (ix == len)
+				return FLOAT_NAN;
+		}
+		else {
+			! any number of spaces, "*", any number of spaces more, "10^"
+			while (ix < len && buf->ix == ' ')
+				ix++;
+			if (ix == len)
+				return FLOAT_NAN;
+			if (buf->ix ~= '*' or 'x' or 'X' or $D7)
+				return FLOAT_NAN;
+			ix++;
+			while (ix < len && buf->ix == ' ')
+				ix++;
+			if (ix == len)
+				return FLOAT_NAN;
+			if (buf->ix ~= '1')
+				return FLOAT_NAN;
+			ix++;
+			if (buf->ix ~= '0')
+				return FLOAT_NAN;
+			ix++;
+			if (buf->ix ~= $5E)
+				return FLOAT_NAN;
+			ix++;
+		}
+
+		! Sign character (optional)
+		expnegative = false;
+		ch = buf->ix;
+		if (ch == '-') {
+			expnegative = true;
+			ix++;
+		}
+		else if (ch == '+') {
+			ix++;
+		}
+
+		expon = 0;
+		! Some digits (mandatory)
+		for (count=0 : ix<len : ix++, count++) {
+			ch = buf->ix;
+			if (ch < '0' || ch > '9')
+				break;
+			expon = 10*expon + (ch - '0');
+		}
+
+		if (count == 0)
+			return FLOAT_NAN;
+
+		if (expnegative)
+			expon = -expon;
+
+		if (expon) {
+			@numtof expon expon;
+			@pow ten expon val;
+			@fmul res val res;
+		}
+	}
+
+	if (negative) {
+		! set the value's sign bit
+		res = $80000000 | res;
+	}
+
+	if (useall && ix ~= len)
+		return FLOAT_NAN;
+	return res;
+];
+
+Global float_understood;
+
+! An I6 grammar routine (GPR) for floats. On success, this returns
+! GPR_PREPOSITION and stores a value in the global float_understood.
+!
+! This is quite a nuisance, actually, because "." is a word separator.
+! Also, we want to accept command sequences like "type 4. look"! So we
+! need to collect a set of words made up of digits, signs, periods, and
+! the letter "e", but without any intervening whitespace, and excluding
+! a trailing period.
+!
+! (This will fail to correctly parse "type 4.e", but I think that is a
+! small flaw. A player would more likely try "type 4. e" or, really,
+! not concatenate commands at all. It will also parse "type 4. on keyboard"
+! as two commands, even though "4." is a legitimate float literal.
+! Contrariwise, "type 4. x me" will be taken as one command. (Because the "x"
+! *could* be a continuation of the float, and I don't back up when it turns
+! out not to be.) I don't plan to worry about these cases.)
+
+[ FloatToken buf bufend ix ch firstwd newstart newlen lastchar lastwasdot;
+	if (wn > num_words)
+		return GPR_FAIL;
+
+	! We're going to collect a set of words. Start with zero words.
+	firstwd = wn;
+	buf = WordAddress(wn);
+	bufend = buf;
+	lastchar = 0;
+
+	while (wn <= num_words) {
+		newstart = WordAddress(wn);
+		if (newstart ~= bufend) {
+			! There's whitespace between the previous word and this one.
+			! Whitespace is okay around an asterisk...
+			if ((lastchar ~= '*' or 'x' or 'X' or $D7)
+				&& (newstart->0 ~= '*' or 'x' or 'X' or $D7)) {
+				! But around any other character, it's not.
+				! Don't include the new word.
+				break;
+			}
+		}
+		newlen = WordLength(wn);
+		for (ix=0 : ix<newlen : ix++) {
+			ch = newstart->ix;
+			if (~~((ch >= '0' && ch <= '9')
+				|| (ch == '-' or '+' or 'E' or 'e' or '.' or 'x' or 'X' or '*' or $D7 or $5E)))
+				break;
+		}
+		if (ix < newlen) {
+			! This word contains an invalid character.
+			! Don't include the new word.
+			break;
+		}
+		! Okay, include it.
+		bufend = newstart + newlen;
+		wn++;
+		lastchar = (bufend-1)->0;
+		lastwasdot = (newlen == 1 && lastchar == '.');
+	}
+
+	if (wn > firstwd && lastwasdot) {
+		! Exclude a trailing period.
+		wn--;
+		bufend--;
+	}
+
+	if (wn == firstwd) {
+		! No words accepted.
+		return GPR_FAIL;
+	}
+
+	float_understood = FloatParse(buf, bufend-buf, true);
+	if (float_understood == FLOAT_NAN)
+		return GPR_FAIL;
+	return GPR_PREPOSITION;
+];
+
+! Floating-point printing routines. (These are based on code in
+! Glulxercise.inf, but modified.)
+  
+! Print a float. This uses exponential notation ("[-]N.NNNe[+-]NN") if
+! the exponent is not between 6 and -4. If it is (that is, if the
+! absolute value is near 1.0) then it uses decimal notation ("[-]NNN.NNNNN").
+! The precision is the number of digits after the decimal point
+! (at least one, no more than eight). The default is five, because
+! beyond that rounding errors creep in, and even exactly-represented
+! float values are printed with trailing fudgy digits.
+! Trailing zeroes are trimmed.
+[ Float val prec   pval;
+	pval = val & $7FFFFFFF;
+
+	@jz pval ?UseFloatDec;
+	@jfge pval $49742400 ?UseFloatExp; ! 1000000.0
+	@jflt pval $38D1B717 ?UseFloatExp; ! 0.0001
+
+	.UseFloatDec;
+	return FloatDec(val, prec);
+	.UseFloatExp;
+	return FloatExp(val, prec);
+];
+
+Array PowersOfTen --> 1 10 100 1000 10000 100000 1000000 10000000 100000000 1000000000;
+
+! Print a float in exponential notation: "[-]N.NNNe[+-]NN".
+! The precision is the number of digits after the decimal point
+! (at least one, no more than eight). The default is five, because
+! beyond that rounding errors creep in, and even exactly-represented
+! float values are printed with trailing fudgy digits.
+! Trailing zeroes are trimmed.
+[ FloatExp val prec   log10val expo fexpo idig ix pow10;
+	if (prec == 0)
+		prec = 5;
+	if (prec > 8)
+		prec = 8;
+	pow10 = PowersOfTen --> prec;
+
+	! Knock off the sign bit first.
+	if (val & $80000000) {
+		@streamchar '-';
+		val = val & $7FFFFFFF;
+	}
+	
+	@jisnan val ?IsNan;
+	@jisinf val ?IsInf;
+
+	if (val == $0) {
+		expo = 0;
+		idig = 0;
+		jump DoPrint;
+	}
+
+	! Take as an example val=123.5, with precision=6. The desired
+	! result is "1.23000e+02".
+	
+	@log val sp;
+	@fdiv sp $40135D8E log10val; ! $40135D8E is log(10)
+	@floor log10val fexpo;
+	@ftonumn fexpo expo;
+	! expo is now the exponent (as an integer). For our example, expo=2.
+
+	@fsub log10val fexpo sp;
+	@numtof prec sp;
+	@fadd sp sp sp;
+	@fmul sp $40135D8E sp;
+	@exp sp sp;
+	! The stack value is now exp((log10val - fexpo + prec) * log(10)).
+	! We've shifted the decimal point left by expo digits (so that
+	! it's after the first nonzero digit), and then right by prec
+	! digits. In our example, that would be 1235000.0.
+	@ftonumn sp idig;
+	! Round to an integer, and we have 1235000. Notice that this is
+	! exactly the digits we want to print (if we stick a decimal point
+	! after the first).
+
+	.DoPrint;
+	
+	if (idig >= 10*pow10) {
+		! Rounding errors have left us outside the decimal range of
+		! [1.0, 10.0) where we should be. Adjust to the next higher
+		! exponent.
+		expo++;
+		@div idig 10 idig;
+	}
+	
+	! Trim off trailing zeroes, as long as there's at least one digit
+	! after the decimal point. (Delete this stanza if you want to
+	! keep the trailing zeroes.)
+	while (prec > 1) {
+		@mod idig 10 sp;
+		@jnz sp ?DoneTrimming;
+		@div pow10 10 pow10;
+		@div idig 10 idig;
+		prec--;
+	}
+	.DoneTrimming;
+	
+	for (ix=0 : ix<=prec : ix++) {
+		@div idig pow10 sp;
+		@mod sp 10 sp;
+		@streamnum sp;
+		if (ix == 0)
+			@streamchar '.';
+		@div pow10 10 pow10;
+	}
+
+	! Print the exponent. There are two conventions coded here: the
+	! programmatic ("1.0e+00") and the literary ("1.0 * 10^0").
+	#ifndef FLOAT_PROGRAMMING_EXPONENTS;
+		@streamstr " * 10";
+		@streamchar $5E;
+		@streamnum expo;
+	#ifnot;
+		! Convention is to use at least two digits.
+		@streamchar 'e';
+		if (expo < 0) {
+			@streamchar '-';
+			@neg expo expo;
+		}
+		else {
+			@streamchar '+';
+		}
+		if (expo < 10)
+			@streamchar '0';
+		@streamnum expo;
+	#endif; ! FLOAT_PROGRAMMING_EXPONENTS
+	
+	rtrue;
+
+	.IsNan;
+	@streamstr "NaN";
+	rtrue;
+
+	.IsInf;
+	@streamstr "Inf";
+	rtrue;
+];
+
+! Print a float in decimal notation: "[-]NNN.NNNNN".
+! The precision is the number of digits after the decimal point
+! (at least one, no more than eight). The default is five, because
+! beyond that rounding errors creep in, and even exactly-represented
+! float values are printed with trailing fudgy digits.
+! Trailing zeroes are trimmed.
+[ FloatDec val prec   log10val int fint extra0 frac idig ix pow10;
+	if (prec == 0)
+		prec = 5;
+	if (prec > 8)
+		prec = 8;
+	pow10 = PowersOfTen --> prec;
+	
+	! Knock off the sign bit first.
+	if (val & $80000000) {
+		@streamchar '-';
+		val = val & $7FFFFFFF;
+	}
+	
+	@jisnan val ?IsNan;
+	@jisinf val ?IsInf;
+
+	! Take as an example val=123.5, with precision=6. The desired result
+	! is "123.50000".
+	
+	extra0 = 0;
+	@fmod val $3F800000 frac fint; ! $3F800000 is 1.0.
+	@ftonumz fint int;
+	! This converts the integer part of the value to an integer value;
+	! in our example, 123.
+	
+	if (int == $7FFFFFFF) {
+		! Looks like the integer part of the value is bigger than
+		! we can store in an int variable. (It could be as large
+		! as 3e+38.) We're going to have to use a log function to
+		! reduce it by some number of factors of 10, and then pad
+		! with zeroes.
+		@log fint sp;
+		@fdiv sp $40135D8E log10val; ! $40135D8E is log(10)
+		@ftonumz log10val extra0;
+		@sub extra0 8 extra0;
+		! extra0 is the number of zeroes we'll be padding with.
+		@numtof extra0 sp;
+		@fsub log10val sp sp;
+		@fmul sp $40135D8E sp;
+		@exp sp sp;
+		! The stack value is now exp((log10val - extra0) * log(10)).
+		! We've shifted the decimal point far enough left to leave
+		! about eight digits, which is all we can print as an integer.
+		@ftonumz sp int;
+	}
+
+	! Print the integer part.
+	@streamnum int;
+	for (ix=0 : ix<extra0 : ix++)
+		@streamchar '0';
+
+	@streamchar '.';
+
+	! Now we need to print the frac part, which is .5.
+	
+	@log frac sp;
+	@fdiv sp $40135D8E log10val; ! $40135D8E is log(10)
+	@numtof prec sp;
+	@fadd log10val sp sp;
+	@fmul sp $40135D8E sp;
+	@exp sp sp;
+	! The stack value is now exp((frac + prec) * log(10)).
+	! We've shifted the decimal point right by prec
+	! digits. In our example, that would be 50000.0.
+	@ftonumn sp idig;
+	! Round to an integer, and we have 50000. Notice that this is
+	! exactly the (post-decimal-point) digits we want to print.
+
+	.DoPrint;
+	
+	if (idig >= pow10) {
+		! Rounding errors have left us outside the decimal range of
+		! [0.0, 1.0) where we should be. I'm not sure this is possible,
+		! actually, but we'll just adjust downward.
+		idig = pow10 - 1;
+	}
+
+	! Trim off trailing zeroes, as long as there's at least one digit
+	! after the decimal point. (Delete this stanza if you want to
+	! keep the trailing zeroes.)
+	while (prec > 1) {
+		@mod idig 10 sp;
+		@jnz sp ?DoneTrimming;
+		@div pow10 10 pow10;
+		@div idig 10 idig;
+		prec--;
+	}
+	.DoneTrimming;
+	
+	@div pow10 10 pow10;
+	for (ix=0 : ix<prec : ix++) {
+		@div idig pow10 sp;
+		@mod sp 10 sp;
+		@streamnum sp;
+		@div pow10 10 pow10;
+	}
+	rtrue;
+
+	.IsNan;
+	@streamstr "NaN";
+	rtrue;
+
+	.IsInf;
+	@streamstr "Inf";
+	rtrue;
+];
+  
+Include "Grammar";
+
+
+Verb 'type' * FloatToken -> TypeVague
+	* FloatToken 'on' noun -> TypeOn;
+
+[ TypeVagueSub;
+	ReportTyping(float_understood, tkeyboard);
+];
+
+[ TypeOnSub;
+	ReportTyping(float_understood, noun);
+];
+
+[ ReportTyping float dest
+	sign expon mant;
+
+	if (dest ~= tkeyboard)
+		print "(typing on ", (the) dest, " makes no sense; I'll just use the keyboard)^";
+	
+	@jisnan float ?IsNaN;
+	@jisinf float ?IsInf;
+	print "You type the number ", (Float) float;
+
+	! We could break the number down to its IEEE float fields, but that's
+	! just confusing.
+	if (false) {
+		if (float & $80000000)
+			sign = "-";
+		else
+			sign = "+";
+		expon = float;
+		@ushiftr expon 23 expon;
+		expon = expon & $FF;
+		mant = (float & $7FFFFF);
+		print " (sign ", (string) sign, ", exponent ", expon, ", mantissa ", mant, ")";
+	}
+	
+	print_ret ".";
+
+	.IsInf;
+	if (float & $80000000)
+		sign = "Negative";
+	else
+		sign = "Positive";
+	print_ret "The teletype chimes and complains, ~", (string) sign, " infinity!~";
+	
+	.IsNaN;
+	print_ret "The teletype buzzes and complains, ~Not a number!~ The nerve.";
+];
+
+! A bunch of test strings, and what they should parse to:
+Array parsetestlist -->
+	"0" $+0
+	"+0" $+0
+	"-0" $-0
+	"1" $+1
+	"+1" $+1
+	"-1" $-1
+	"05" $+5
+	"1234" $+1234
+	"-0123456" $-0123456
+	"9876543210" $+9876543210
+	"0.0" $+0
+	"1.5" $+1.5
+	"-1.5" $-1.5
+	"0.5" $+0.5
+	".5" $+0.5
+	"-.25" $-0.25
+	"4." $+4
+	"-4." $-4
+	"-1234.5" $-1234.5
+	"0123456.5" $+0123456.5
+	"+9876543210.5" $+9876543210.5
+	"0.0125" $+0.0125
+	"1e0" $+1
+	"1e1" $+10
+	"1e+1" $+10
+	"1e-1" $+0.1
+	"2e+02" $+200
+	"2e-10" $+2e-10
+	"1.25e0" $+1.25
+	"1.25e-0" $+1.25
+	"-1.25e+0" $-1.25
+	"4.25e1" $+42.5
+	"-01e02" $-100
+	"+1.234E3" $+1234
+	"0.25e1" $+2.5
+	"0.25e-1" $+0.025
+	"-0.0125e1" $-0.125
+	"-100e1" $-1000
+	"-125e-2" $-1.25
+	"+3.4e38" $+3.4e38  ! close to the largest representable number
+	"-3.4e38" $-3.4e38  ! same thing, minus-side
+	"+3.5e38" FLOAT_INFINITY  ! too large; overflow to infinity
+	"-3.5e38" FLOAT_NINFINITY ! ditto, negative infinity
+	"+1e-35" $+1e-35    ! denormalized number close to zero
+	"-1e-40" $-1e-40    ! ditto
+	"+1e-46" $+0      ! underflow to zero
+	"-1e-46" $-0      ! underflow to negative zero
+	! For the following cases, note that @{5E} is the ^ sign, and
+	! @{D7} is a multiplication sign
+	"1*10@{5E}2" $+100
+	"-1 * 10@{5E}2" $-100
+	"-2* 10@{5E}-1" $-0.2
+	"2 *10@{5E}+1" $+20
+	"1.5  *  10@{5E}0" $+1.5
+	"1.50*10@{5E}-0" $+1.5
+	"-1.500*10@{5E}+0" $-1.5
+	".5*10@{5E}+1" $+5
+	"5.*10@{5E}-1" $+0.5
+	"-1x10@{5E}0" $-1
+	"-1X10@{5E}1" $-10
+	"1@{D7}10@{5E}0" $+1
+	"-3 @{D7} 10@{5E}0" $-3
+	"2 @{D7}10@{5E}1" $+20
+	"2.5@{D7} 10@{5E}1" $+25
+	0 0;
+
+! And now, a bunch of cases that *shouldn't* parse:
+Array parsebadlist -->
+	""
+	"."
+	"x"
+	" 1"
+	"1 "
+	"1 .2"
+	"1d1"
+	"1+2"
+	"-+3"
+	"+-3"
+	"1..2"
+	"1.3.2"
+	"1.23x"
+	"1.23-"
+	"1e"
+	"-1e"
+	"+1e-"
+	"e1"
+	"-e0"
+	".e1"
+	"1 e1"
+	"1ee1"
+	"1.2e 2"
+	"1.2e.3"
+	"1.2e-.3"
+	"1.2e-3."
+	"1+10@{5E}3"
+	"110@{5E}3"
+	"1y10@{5E}3"
+	"1*8@{5E}3"
+	"1e*10@{5E}0"
+	"1*10@{5E}+-1"
+	"1*10@{5E} 1"
+	"1*100@{5E}0"
+	"1*e@{5E}2"
+	"1 * 10 @{5E}1"
+	"*10@{5E}1"
+	".*10@{5E}1"
+	"1*10@{5E}"
+	"1*10"
+	"1*1"
+	"1*"
+	"1* "
+	"1 *"
+	0;
+
+Global failures;
+Constant BUFFERSIZE 256;
+Array tempbuffer -> BUFFERSIZE;
+Array bigbuffer2 -> BUFFERSIZE;
+
+[ check_str str len  newlen ix good ch;
+	good = true;
+	newlen = string_to_array(str, bigbuffer2, BUFFERSIZE);
+	if (newlen ~= len) {
+		good = false;
+	}
+	else {
+		for (ix=0 : ix<len : ix++) {
+			if (tempbuffer->ix ~= bigbuffer2->ix)
+				good = false;
+		}
+	}
+	print "~";
+	for (ix=0 : ix<len : ix++) {
+		ch = tempbuffer->ix;
+		@streamchar ch;
+	}
+	print "~";
+	if (~~good) {
+		failures++;
+		print " (should be ~";
+		for (ix=0 : ix<newlen : ix++) {
+			ch = bigbuffer2->ix;
+			@streamchar ch;
+		}
+		print "~ len ", newlen, ", FAIL)";
+	}
+];
+
+[ string_to_array val arr arrlen    str oldstr len;
+	oldstr = glk($0048); ! stream_get_current
+	str = glk($0043, arr, arrlen, 1, 0); ! stream_open_memory
+	if (str == 0) return 0;
+
+	glk($0047, str); ! stream_set_current
+
+	if (val->0 == $c0 or $c1)
+		val();
+	else
+		@streamstr val;
+
+	glk($0047, oldstr); ! stream_set_current
+	@copy $ffffffff sp;
+	@copy str sp;
+	@glk $0044 2 0; ! stream_close
+	@copy sp len;
+	@copy sp 0;
+
+	return len;
+];
+
+[ func_to_array _vararg_count arr arrlen func    str oldstr len;
+	@copy sp arr;
+	@copy sp arrlen;
+	@copy sp func;
+	_vararg_count = _vararg_count-3;
+	
+	oldstr = glk($0048); ! stream_get_current
+	str = glk($0043, arr, arrlen, 1, 0); ! stream_open_memory
+	if (str == 0) return 0;
+
+	glk($0047, str); ! stream_set_current
+
+	@call func _vararg_count 0;
+
+	glk($0047, oldstr); ! stream_set_current
+	@copy $ffffffff sp;
+	@copy str sp;
+	@glk $0044 2 0; ! stream_close
+	@copy sp len;
+	@copy sp 0;
+
+	return len;
+];
+
+! This test calls FloatParse() and then checks the result with exact
+! comparison. This is generally a bad idea! It works here because I've
+! chosen test cases that have exact float representation, or that happen
+! to work out correctly on all my interpreters.
+[ RunParseTest ix str wanted got len;
+	print "You begin reading numbers from the chart...^^";
+	failures = 0;
+	
+	ix = 0;
+	while (true) {
+		str = parsetestlist-->ix;
+		ix++;
+		wanted = parsetestlist-->ix;
+		ix++;
+		if (~~str)
+			break;
+
+		print "~", (string) str, "~: ";
+		
+		len = PrintAnyToArray(tempbuffer, BUFFERSIZE, str);
+		got = FloatParse(tempbuffer, len, true);
+		print (Float) got;
+
+		if (wanted ~= got) {
+			failures++;
+			print " (ERROR: wanted ", (Float) wanted, ")";
+		}
+		
+		new_line;
+	}
+
+	print "^Then some numbers which should be invalid:^^";
+
+	ix = 0;
+	while (true) {
+		str = parsebadlist-->ix;
+		ix++;
+		if (~~str)
+			break;
+
+		print "~", (string) str, "~: ";
+		
+		len = PrintAnyToArray(tempbuffer, BUFFERSIZE, str);
+		got = FloatParse(tempbuffer, len, true);
+
+		if (got == FLOAT_NAN) {
+			print "invalid";
+		}
+		else {
+			failures++;
+			print (Float) got, " (ERROR: should not parse)";		
+		}
+
+		new_line;
+	}
+
+	new_line;
+	if (failures)
+		print failures, " errors found!^";
+	else
+		print "All tests passed.^";
+];
+
+! For future reference, a Python function to convert float to hex:
+! (This assumes a 64-bit environment, where 'i' is a four-byte int.)
+!
+! import array
+! def conv(val):
+!   s = array.array('f', [val]).tostring()
+!   a = array.array('i')
+!   a.fromstring(s)
+!   return hex(a[0] & 0xFFFFFFFF)
+
+[ RunPrintTest val;
+	print "You look at a list of printed-out numbers...^^";
+	failures = 0;
+
+	print "First, scientific notation:^^";
+	! This part of the test assumes literary, rather than programmatic,
+	! exponents. Note that "@{5E}" is just a ^ sign.
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $0);
+	check_str("0.0 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $80000000);
+	check_str("-0.0 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $3F800000);
+	check_str("1.0 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $BF800000);
+	check_str("-1.0 * 10@{5E}0", val); print "^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $3DCCCCCD);
+	check_str("1.0 * 10@{5E}-1", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $3D088889);
+	check_str("3.33333 * 10@{5E}-2", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $40000000);
+	check_str("2.0 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $42C80000);
+	check_str("1.0 * 10@{5E}2", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $42C7FFFE);
+	check_str("1.0 * 10@{5E}2", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $42C7FFFD);
+	check_str("1.0 * 10@{5E}2", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $42C7FFF0);
+	check_str("9.99999 * 10@{5E}1", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $42FA0000);
+	check_str("1.25 * 10@{5E}2", val); print "^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $0E736390);
+	check_str("3.0 * 10@{5E}-30", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $72B0B471);
+	check_str("6.99998 * 10@{5E}30", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $0003444A);
+	check_str("3.00004 * 10@{5E}-40", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $7957B443);
+	check_str("6.99998 * 10@{5E}34", val); print "^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $3F800000, 1);
+	check_str("1.0 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $3F800000, 4);
+	check_str("1.0 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $3F800000, 8);
+	check_str("1.00000024 * 10@{5E}0", val); print "^";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $C0100000, 1);
+	check_str("-2.3 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $C0100000, 2);
+	check_str("-2.25 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $C0100000, 3);
+	check_str("-2.25 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $C0100000, 4);
+	check_str("-2.25 * 10@{5E}0", val); print "^";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $40D945F4, 1);
+	check_str("6.8 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $40D945F4, 3);
+	check_str("6.79 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $40D945F4, 4);
+	check_str("6.7898 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $40D945F4, 6);
+	check_str("6.789789 * 10@{5E}0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $40D945F4, 8);
+	check_str("6.7897952 * 10@{5E}0", val); print "^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, FLOAT_INFINITY);
+	check_str("Inf", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, FLOAT_NINFINITY);
+	check_str("-Inf", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, FLOAT_NAN);
+	check_str("NaN", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatExp, $FFFFFFFF);
+	check_str("-NaN", val); print "^";
+
+	print "^Then, ordinary notation:^^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $0);
+	check_str("0.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $80000000);
+	check_str("-0.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $3F800000);
+	check_str("1.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $BF800000);
+	check_str("-1.0", val); print "^";
+
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $3DCCCCCD);
+	check_str("0.1", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $3CA3D70A);
+	check_str("0.02", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $3D088889);
+	check_str("0.03333", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $414587E7);
+	check_str("12.34568", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $C2F0B0FD);
+	check_str("-120.34568", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $47C3502C);
+	check_str("100000.34375", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $49742406);
+	check_str("1000000.375", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $4B189680);
+	check_str("10000000.0", val); print "^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $1E3CE508);
+	check_str("0.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $9E3CE508);
+	check_str("-0.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $4F800000);
+	check_str("4294965440.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $7149F2CA);
+	check_str("1000000240000000000000000000000.0", val); print "^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $3F800000, 1);
+	check_str("1.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $3F800000, 4);
+	check_str("1.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $3F800000, 8);
+	check_str("1.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $C0100000, 1);
+	check_str("-2.3", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $C0100000, 2);
+	check_str("-2.25", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $C0100000, 3);
+	check_str("-2.25", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $C0100000, 4);
+	check_str("-2.25", val); print "^";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $4120020C, 1);
+	check_str("10.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $4120020C, 3);
+	check_str("10.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $4120020C, 4);
+	check_str("10.0005", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $4120020C, 5);
+	check_str("10.0005", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $40D945F4, 1);
+	check_str("6.8", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $40D945F4, 3);
+	check_str("6.79", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $40D945F4, 4);
+	check_str("6.7898", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $40D945F4, 6);
+	check_str("6.789789", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $40D945F4, 8);
+	check_str("6.78978832", val); print "^";
+	
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, FLOAT_INFINITY);
+	check_str("Inf", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, FLOAT_NINFINITY);
+	check_str("-Inf", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, FLOAT_NAN);
+	check_str("NaN", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, FloatDec, $FFFFFFFF);
+	check_str("-NaN", val); print "^";
+
+	print "^Finally, a form that selects scientific or normal as appropriate:^^";
+
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $3F800000, 2);
+	check_str("1.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $3F800000);
+	check_str("1.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $497423F0);
+	check_str("999999.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $C97423F0);
+	check_str("-999999.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $497424A0);
+	check_str("1.00001 * 10@{5E}6", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $C97424A0);
+	check_str("-1.00001 * 10@{5E}6", val); print "^";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $38D1B717);
+	check_str("0.0001", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $B8D1B717);
+	check_str("-0.0001", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $38D1B717, 2);
+	check_str("0.0", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $38D1B717, 4);
+	check_str("0.0001", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $38D1B717, 5);
+	check_str("0.0001", val); print "^";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $38BCBE62, 4);
+	check_str("9.0 * 10@{5E}-5", val); print ", ";
+	val = func_to_array(tempbuffer, BUFFERSIZE, Float, $B8BCBE62, 4);
+	check_str("-9.0 * 10@{5E}-5", val); print "^";
+
+	new_line;
+	if (failures)
+		print failures, " errors found!^";
+	else
+		print "All tests passed.^";
+];

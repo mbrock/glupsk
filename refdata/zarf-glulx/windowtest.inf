@@ -1,0 +1,905 @@
+Constant Story "WindowExplorer";
+Constant Headline "Not a game.^";
+
+Release 2;
+
+Global mainwin = 0;
+Global altwin = 0;
+Global altwininput = false;
+Global curtimer = 0;
+Global timer_counter = 0;
+Array gg_event --> 4;
+Constant BUFLEN = 80;
+Array input_buffer -> 4+BUFLEN;
+Array inputalt_buffer -> 4+BUFLEN;
+Array gg_tokenbuf -> DICT_WORD_SIZE;
+Constant MAX_BUFFER_WORDS = 20;
+Constant PARSE_BUFFER_LEN = 244;    ! 4 + MAX_BUFFER_WORDS*4;
+Array parse_buffer --> PARSE_BUFFER_LEN/WORDSIZE;
+
+Global num_understood;
+Global dir_understood;
+Global split_understood;
+Global border_understood;
+Global type_understood;
+Global size_understood;
+Global win_understood;
+Global filemode_understood;
+Global operand_understood;
+
+Global testglobal;
+
+Constant HDR_GLULXVERSION  $04;     ! long word
+Constant ROM_GAMERELEASE   $34;     ! short word
+Constant ROM_GAMESERIAL    $36;     ! six ASCII characters
+
+Constant MAINWIN_ROCK 100;
+Constant ALTWIN_ROCK 101;
+
+[ Main;
+  @setiosys 2 0; ! select Glk I/O system
+  mainwin = glk($0023, 0, 0, 0, 3, MAINWIN_ROCK); ! glk_window_open
+  glk($002F, mainwin); ! glk_set_window
+
+  new_line;
+  Banner();
+  new_line;
+
+  RoomDesc();
+
+  mainloop();
+];
+
+[ mainloop numwords wd addr win olddir val wintype;
+
+  val = glk($0004, 12, 3); ! gestalt HyperlinkInput, wintype_TextBuffer
+  if (val)
+    glk($0102, mainwin); ! request_hyperlink_event
+
+  while (true) {
+    print "^>";
+    readline();
+
+    addr = input_buffer;
+    if (addr-->0 == 0) {
+      print "(Zero-length input.)^";
+      continue;
+    }
+
+    tokenise(input_buffer, parse_buffer);
+    numwords = parse_buffer-->0;
+    if (numwords == 0) {
+      print "(Whitespace input.)^";
+      continue;
+    }
+
+    wd = parse_buffer-->1;  ! the first word
+    switch (wd) {
+    
+    'look', 'l//', 'help', '?//':
+      RoomDesc();
+
+    'version':
+      Banner();
+
+    'quit', 'q//':
+      print "Exiting via @@64quit... Goodbye!^";
+      @quit;
+
+    'exit':
+      print "Exiting via glk_exit()... Goodbye!^";
+      glk($0001);
+
+    'return':
+      print "Exiting via returning from Main()... Goodbye!^";
+      return;
+
+    'windows', 'win', 'list':
+      show_windows();
+
+    'open', 'split':
+      if (altwin) {
+        print "The window is already split.^";
+        continue;
+      }
+      parse_window_params();
+      altwin = glk($0023, mainwin, dir_understood+split_understood+border_understood, size_understood, type_understood, ALTWIN_ROCK); ! glk_window_open
+      if (~~altwin) {
+        print "Failed.^";
+        continue;
+      }
+      print "Created ", (printwindow) altwin, "^";
+      announce_window_sizes(true);
+      val = glk($0004, 12, 3); ! gestalt HyperlinkInput, wintype_TextBuffer
+      if (val)
+        glk($0102, altwin); ! request_hyperlink_event
+
+    'close', 'unsplit':
+      if (~~altwin) {
+        print "The window is not split.^";
+        continue;
+      }
+      glk($00D1, altwin, gg_event); ! cancel_line_event
+      if (gg_event-->0 == 3) {
+        print "Window had line input pending";
+        print " (", gg_event-->2, " chars)";
+        if (gg_event-->2) {
+          print " ~";
+          for (val=0 : val<gg_event-->2 : val++)
+            print (char) inputalt_buffer->val;
+          print "~";
+        }
+        print ".^";
+      }
+      glk($0024, altwin, gg_event); ! window_close
+      altwin = 0;
+      altwininput = false;
+      print "Window closed; it had printed ", gg_event-->1,
+        " characters and read in ", gg_event-->0, ".^";
+
+    'setsize', 'resize', 'arrange', 'rearrange':
+      if (~~altwin) {
+        print "The window is not split.^";
+        continue;
+      }
+      win = glk($0029, altwin); ! window_get_parent
+      if (~~win) {
+        print "Unable to locate parent of secondary window.^";
+        continue;
+      }
+      parse_window_params();
+      glk($0027, win, gg_event+0, gg_event+4, gg_event+8); ! window_get_arrangement
+      olddir = (gg_event-->0) & $0F;
+      if ((olddir == 0 or 1) && (dir_understood == 2 or 3)) {
+        print "Cannot change split axis to horizontal.^";
+        continue;
+      }
+      if ((olddir == 2 or 3) && (dir_understood == 0 or 1)) {
+        print "Cannot change split axis to vertical.^";
+        continue;
+      }
+      glk($0026, win, dir_understood+split_understood+border_understood, size_understood, win_understood); ! glk_window_set_arrangement
+      print "Changed the parameters of the window split.^";
+      announce_window_sizes();
+
+    'size', 'sizes':
+      announce_window_sizes();
+
+    'echo':
+      echo_window();
+
+    'streams', 'str':
+      show_streams();
+
+    'styles':
+      show_styles();
+
+    'getline':
+      if (~~altwin) {
+        print "The window is not split.^";
+        continue;
+      }
+      if (altwininput) {
+        print "The secondary window is already reading line input.^";
+        continue;
+      }
+      glk($002F, altwin); ! glk_set_window
+      wintype = glk($0028, altwin); ! window_get_type
+      if (wintype == 4)
+        glk($002A, altwin); ! glk_clear_window
+      print ">";
+      glk($002F, mainwin); ! glk_set_window
+      glk($00D0, altwin, inputalt_buffer, BUFLEN, 0); ! request_line_event
+      altwininput = true;
+      print "Requested line input from secondary window.^";
+
+    'dropline':
+      if (~~altwin) {
+        print "The window is not split.^";
+        continue;
+      }
+      if (~~altwininput) {
+        print "The secondary window is not reading line input.^";
+        continue;
+      }
+      glk($00D1, altwin, gg_event); ! cancel_line_event
+      if (gg_event-->0 == 3) {
+        print "Window had line input pending";
+        print " (", gg_event-->2, " chars)";
+        if (gg_event-->2) {
+          print " ~";
+          for (val=0 : val<gg_event-->2 : val++)
+            print (char) inputalt_buffer->val;
+          print "~";
+        }
+        print ".^";
+      }
+      altwininput = false;
+      glk($002F, altwin); ! glk_set_window
+      print "(cancel)^";
+      glk($002F, mainwin); ! glk_set_window
+      print "Cancelled line input from secondary window.^";
+      
+    'echoline':
+      if (~~altwin) {
+        print "The window is not split.^";
+        continue;
+      }
+      val = glk($0004, 17, 0); ! gestalt LineInputEcho
+      if (~~val) {
+        print "This library claims to not support glk_set_echo_line_event!^";
+        continue;
+      }
+      if (~~parse_number()) 
+        val = 0;
+      else 
+        val = num_understood;
+      glk($0150, altwin, val); ! glk_set_echo_line_event
+      if (val)
+        print "Future line input events in secondary window will auto-echo.^";
+      else
+        print "Future line input events in secondary window will NOT auto-echo.^";
+
+    'dialog':
+      parse_file_params();
+      parse_operand_params();
+      select_file_dialog();
+
+    'timer':
+      if (~~parse_number()) {
+        if (curtimer)
+          val = 0;
+        else
+          val = 1;
+      }
+      else {
+        val = num_understood;
+      }
+      if (val > 60)
+        val = 60;
+      curtimer = val;
+      val = glk($0004, 5, 0); ! gestalt Timer
+      if (~~val)
+        print "This library claims to not support timer events! Testing anyway...^^";
+      glk($00D6, curtimer*1000); ! request_timer_events
+      if (curtimer)
+        print "Timer will fire every ", curtimer, " seconds.^";
+      else
+        print "Timer is now off.^";
+
+    'link', 'links':
+      val = glk($0004, 11, 0); ! gestalt Hyperlinks
+      if (~~val)
+        print "This library claims to not support hyperlinks! Testing anyway...^^";
+      print_hyperlink_text();
+
+    'poll':
+      glk($00C1, gg_event); ! select_poll
+      print "Event poll: ", (printeventtype) gg_event-->0, "^";
+
+    default:
+      print "I didn't understand that.^";
+      
+    }
+  }
+];
+
+! Read a line of Unicode input. This imitates the I6 library format for
+! the input buffer: the first word is the number of characters read,
+! and the actual characters follow after that.
+
+[ readline count   addr;
+  glk($00D0, mainwin, input_buffer+4, BUFLEN, 0); ! request_line_event
+  while (true) {
+    glk($00C0, gg_event); ! select
+    if (gg_event-->0 == 1) {
+      ! timer input
+      handle_timer();
+      continue;
+    }
+    if (gg_event-->0 == 8) {
+      ! hyperlink input
+      glk($0102, gg_event-->1); ! request_hyperlink_event
+      handle_hyperlink(gg_event-->1, gg_event-->2);
+      continue;
+    }
+    if (gg_event-->0 == 3 && gg_event-->1 == altwin) {
+      ! line input
+      altwininput = false;
+      handle_secondary_getline(gg_event-->2);
+      continue;
+    }
+    if (gg_event-->0 == 3 && gg_event-->1 == mainwin) {
+      ! line input
+      count = gg_event-->2;
+      break;
+    }
+  }
+  addr = input_buffer;
+  addr-->0 = count;
+];
+
+[ tokenise buf tab
+    cx numwords len bx ix wx wpos wlen val res dictlen entrylen;
+    len = buf-->0;
+    buf = buf+WORDSIZE;
+
+    ! First, split the buffer up into words. We use the standard Infocom
+    ! list of word separators (comma, period, double-quote).
+
+    cx = 0;
+    numwords = 0;
+    while (cx < len) {
+        while (cx < len && buf->cx == ' ') cx++;
+        if (cx >= len) break;
+        bx = cx;
+        if (buf->cx == '.' or ',' or '"') cx++;
+        else {
+            while (cx < len && buf->cx ~= ' ' or '.' or ',' or '"') cx++;
+        }
+        tab-->(numwords*3+2) = (cx-bx);
+        tab-->(numwords*3+3) = WORDSIZE+bx;
+        numwords++;
+        if (numwords >= MAX_BUFFER_WORDS) break;
+    }
+    tab-->0 = numwords;
+
+    ! Now we look each word up in the dictionary.
+
+    dictlen = #dictionary_table-->0;
+    entrylen = DICT_WORD_SIZE + 7;
+
+    for (wx=0 : wx<numwords : wx++) {
+        wlen = tab-->(wx*3+2);
+        wpos = tab-->(wx*3+3);
+
+        ! Copy the word into the gg_tokenbuf array, clipping to DICT_WORD_SIZE
+        ! characters and lower case.
+        if (wlen > DICT_WORD_SIZE) wlen = DICT_WORD_SIZE;
+        cx = wpos - WORDSIZE;
+        for (ix=0 : ix<wlen : ix++) gg_tokenbuf->ix = glk($00A0, buf->(cx+ix));
+        for (: ix<DICT_WORD_SIZE : ix++) gg_tokenbuf->ix = 0;
+
+        val = #dictionary_table + WORDSIZE;
+        @binarysearch gg_tokenbuf DICT_WORD_SIZE val entrylen dictlen 1 1 res;
+        tab-->(wx*3+1) = res;
+    }
+];
+
+[ isnumber wx  wlen wpos ix val ch;
+    wlen = parse_buffer-->(wx*3+2);
+    wpos = parse_buffer-->(wx*3+3);
+    val = 0;
+    for (ix=0 : ix<wlen : ix++) {
+        ch = input_buffer->(wpos+ix);
+        if (ch < '0' || ch > '9')
+            return false;
+        val = val * 10 + (ch - '0');
+    }
+    num_understood = val;
+    return true;
+];
+
+[ parse_number  numwords wx;
+  num_understood = 0;
+  numwords = parse_buffer-->0;
+  for (wx=1 : wx<numwords : wx++) {
+    if (isnumber(wx))
+      rtrue;
+  }
+  rfalse;
+];
+
+[ parse_file_params  numwords wx wd;
+  filemode_understood = 2;
+  
+  numwords = parse_buffer-->0;
+  for (wx=1 : wx<numwords : wx++) {
+    wd = parse_buffer-->(wx*3+1);
+    switch (wd) {
+      'write', 'w//': filemode_understood = 1;
+      'read', 'r//': filemode_understood = 2;
+      'readwrite', 'rw': filemode_understood = 3;
+      'writeappend', 'a//', 'append': filemode_understood = 5;
+    }
+  }
+];
+
+[ parse_operand_params  numwords wx wd;
+  operand_understood = 'local';
+  
+  numwords = parse_buffer-->0;
+  for (wx=1 : wx<numwords : wx++) {
+    wd = parse_buffer-->(wx*3+1);
+    switch (wd) {
+      'stack': operand_understood = 'stack';
+      'offstack': operand_understood = 'offstack';
+      'local': operand_understood = 'local';
+      'global': operand_understood = 'global';
+    }
+  }
+];
+
+[ parse_window_params  numwords wx wd;
+  dir_understood = 2;
+  split_understood = $10;
+  type_understood = 4;
+  size_understood = 1;
+  win_understood = mainwin;
+  border_understood = $0;
+  
+  numwords = parse_buffer-->0;
+  for (wx=1 : wx<numwords : wx++) {
+    wd = parse_buffer-->(wx*3+1);
+    switch (wd) {
+      'left': dir_understood = 0;
+      'right': dir_understood = 1;
+      'top', 'above': dir_understood = 2;
+      'bottom', 'below': dir_understood = 3;
+
+      'fixed': split_understood = $10;
+      'prop', 'proportional': split_understood = $20;
+
+      'border', 'borders': border_understood = $0;
+      'noborder', 'noborders': border_understood = $100;
+      
+      'grid', 'textgrid': type_understood = 4;
+      'buffer', 'textbuffer': type_understood = 3;
+      'blank': type_understood = 2;
+      'graphic', 'graphics': type_understood = 5;
+      'pair': type_understood = 1;
+
+      'main': win_understood = mainwin;
+      'alt', 'second', 'other': win_understood = altwin;
+
+      default:
+        if (isnumber(wx))
+          size_understood = num_understood;
+    }
+  }
+];
+
+[ Banner  i ix;
+   if (Story ~= 0) {
+    glk($0086, 3); ! set header style
+    print (string) Story;
+    glk($0086, 0); ! set normal style
+  }
+  if (Headline ~= 0) print ": ", (string) Headline;
+  print "Release ";
+  @aloads ROM_GAMERELEASE 0 i;
+  print i;
+  print " / Serial number ";
+  for (i=0 : i<6 : i++) print (char) ROM_GAMESERIAL->i;
+  print " / Inform v"; inversion;
+  print ", compiler options ";
+  i = false;
+  #Ifdef STRICT_MODE;
+  print "S"; i++;
+  #Endif; ! STRICT_MODE
+  #Ifdef INFIX;
+  print "X"; i++;
+  #Ifnot;
+  #Ifdef DEBUG;
+  print "D"; i++;
+  #Endif; ! DEBUG
+  #Endif; ! INFIX
+  if (~~i) print "(none)";
+  new_line;
+
+  @gestalt 1 0 ix;
+  print "Interpreter version ", ix / $10000, ".", (ix & $FF00) / $100,
+  ".", ix & $FF, " / ";
+  @gestalt 0 0 ix;
+  print "VM ", ix / $10000, ".", (ix & $FF00) / $100, ".", ix & $FF, " / ";
+  ix = HDR_GLULXVERSION-->0;
+  print "game file format ", ix / $10000, ".", (ix & $FF00) / $100, ".", ix & $FF, "^";
+];
+
+[ RoomDesc;
+    print "A voice booooms out: Welcome to the test chamber.^^";
+    print "Type ~help~ to repeat this message, ~quit~/~exit~/~return~ to exit,
+        or one of the following:^^";
+    print "  ~windows~: List all open windows.^";
+    print "  ~size~: Show the sizes of all open windows.^";
+    print "  ~open PARAMS~: Open a second window. PARAMS can include any of
+        left/right/top/bottom, fixed/proportional, border/noborder,
+        grid/buffer/blank/graphic,
+        and a (numeric) size.^";
+    print "  ~close~: Close the second window.^";
+    print "  ~arrange PARAMS~: Change the second window arrangement. The
+        PARAMS are the same as above. (Note: not all parameters are legal,
+        so you can cause a Glk error with this command.)^";
+    print "  ~getline~: Request line input in the second window.^";
+    print "  ~dropline~: Cancel line input in the second window.^";
+    print "  ~echoline NUM~: Begin/end line-input echoing in the second window.^";
+    print "  ~echo~: Begin echoing all output from the first window to
+        the second window. (Causes a Glk error if mixed with ~getline~.)^";
+    print "  ~streams~: List all open streams.^";
+    print "  ~styles~: Display a sample line of each text style.^";
+    print "  ~dialog MODE~: Open a file-selection dialog.^";
+    print "  ~timer NUM~: Start (or stop) a timer, which fires every NUM
+        seconds (default 1).^";
+    print "  ~poll~: Poll for upcoming events. (There will normally not be
+        any.)^";
+    print "  ~link~: Display some clickable hyperlinks.^";
+];
+
+[ printeventtype evtype;
+    switch (evtype) {
+        0: print "none";
+        1: print "timer";
+        2: print "char input";
+        3: print "line input";
+        4: print "mouse input";
+        5: print "window arrangement";
+        6: print "graphics redraw";
+        7: print "sound notify";
+        8: print "hyperlink";
+    }
+];
+
+[ printwintype wintype;
+    switch (wintype) {
+        1: print "pair";
+        2: print "blank";
+        3: print "textbuffer";
+        4: print "textgrid";
+        5: print "graphics";
+        default: print "???";
+    }
+];
+
+[ printwinmethod val;
+    switch (val & $0F) {
+        0: print "left";
+        1: print "right";
+        2: print "above";
+        3: print "below";
+        default: print "???";
+    }
+    print "/";
+    switch (val & $F0) {
+        $10: print "fixed";
+        $20: print "proportional";
+        default: print "???";
+    }
+    print "/";
+    switch (val & $100) {
+        $0: print "border";
+        $100: print "noborder";
+    }
+];
+
+[ printwindow win  rock wintype;
+    if (~~win) {
+        print "no window";
+        return;
+    }
+    rock = glk($0021, win); ! window_get_rock
+    wintype = glk($0028, win); ! window_get_type
+    print "window ", win, " (", (printwintype) wintype, "), rock ", rock;
+];
+
+[ printstream str  rock;
+    if (~~str) {
+        print "no stream";
+        return;
+    }
+    rock = glk($0041, str); ! stream_get_rock
+    print "stream ", str, ", rock ", rock;
+];
+
+[ announce_window_sizes altisnew   wintype cancelled;
+    glk($0025, mainwin, gg_event+0, gg_event+4); ! window_get_size
+    print "This window is now ", gg_event-->0, " by ", gg_event-->1, "^";
+
+    if (altwin) {
+        if (altwininput) {
+            glk($00D1, altwin, gg_event); ! cancel_line_event
+            cancelled = true;
+            altwininput = false;
+        }
+        wintype = glk($0028, altwin); ! window_get_type
+        glk($002F, altwin); ! glk_set_window
+        if (wintype == 4)
+            glk($002A, altwin); ! glk_clear_window
+        if (cancelled)
+            print "(Cancelled input) ";
+            
+        if (wintype == 3) {
+            if (altisnew)
+                print "This is a new buffer window, size ";
+            else
+                print "Buffer window size now ";
+        }
+        else if (wintype == 4) {
+            if (altisnew)
+                print "This is a new grid window, size ";
+            else
+                print "Grid window size now ";
+        }
+        else {
+            if (altisnew)
+                print "This is a new ??? window, size ";
+            else
+                print "??? window size now ";
+        }
+        glk($0025, altwin, gg_event+0, gg_event+4); ! window_get_size
+        print gg_event-->0, " by ", gg_event-->1, "^";
+        glk($002F, mainwin); ! glk_set_window
+    }
+];
+
+[ print_hyperlink_text   wintype cancelled;
+    print "Here is ";
+    glk($0100, 1); ! set_hyperlink
+    print "link 1";
+    glk($0100, 0); ! set_hyperlink
+    print " and ";
+    glk($0086, 1); ! set emphasized style
+    print "(in ";
+    glk($0100, 2); ! set_hyperlink
+    print "italics) ";
+    glk($0086, 0); ! set normal style
+    print "link 2";
+    glk($0100, 0); ! set_hyperlink
+    print ".^";
+
+    if (altwin) {
+        if (altwininput) {
+            glk($00D1, altwin, gg_event); ! cancel_line_event
+            cancelled = true;
+            altwininput = false;
+        }
+        wintype = glk($0028, altwin); ! window_get_type
+        glk($002F, altwin); ! glk_set_window
+        if (wintype == 4)
+            glk($002A, altwin); ! glk_clear_window
+        if (cancelled)
+            print "(Cancelled input) ";
+        
+        if (wintype == 3) {
+            print "Buffer: ";
+            glk($0100, 3); ! set_hyperlink
+            print "link 3...";
+            glk($0100, 4); ! set_hyperlink
+            print "link 4";
+            glk($0100, 0); ! set_hyperlink
+            print ".^";
+        }
+        else if (wintype == 4) {
+            print "Grid: ";
+            glk($0100, 3); ! set_hyperlink
+            print "link 3...";
+            glk($0100, 4); ! set_hyperlink
+            print "link 4";
+            glk($0100, 0); ! set_hyperlink
+            print ".";
+        }
+        glk($002F, mainwin); ! glk_set_window
+    }
+];
+
+[ show_windows win  rock parent sibling wintype str;
+    win = glk($0022); ! window_get_root
+    print "Root window: ", (printwindow) win, "^";
+    print "^";
+    
+    print "All open windows (in no particular order):^^";
+    win = 0;
+    while (true) {
+        win = glk($0020, win, gg_event); ! window_iterate
+        if (~~win)
+            break;
+        print (printwindow) win, "^";
+        
+        rock = glk($0021, win); ! window_get_rock
+        if (rock ~= gg_event-->0)
+            print "(warning: rock does not match window_iterate output)^";
+            
+        parent = glk($0029, win); ! window_get_parent
+        print "  parent: ", (printwindow) parent, "^";
+        
+        sibling = glk($0030, win); ! window_get_sibling
+        print "  sibling: ", (printwindow) sibling, "^";
+
+        str = glk($002C, win); ! window_get_stream
+        print "  stream: ", (printstream) str, "^";
+        
+        str = glk($002E, win); ! window_get_echo_stream
+        print "  echo stream: ", (printstream) str, "^";
+        
+        wintype = glk($0028, win); ! window_get_type
+        if (wintype == 1) { ! Pair
+            glk($0027, win, gg_event+0, gg_event+4, gg_event+8); ! window_get_arrangement
+            print "  arrangement: ", (printwinmethod) gg_event-->0, ", size spec ", gg_event-->1, ", keywin ", (printwindow) gg_event-->2, "^";
+        }
+        
+        glk($0025, win, gg_event+0, gg_event+4); ! window_get_size
+        print "  size: ", gg_event-->0, " by ", gg_event-->1, ".^";
+    }
+];
+
+[ echo_window str curstr;
+    if (~~altwin) {
+        print "You must open a second window before using the ~echo~ command.^";
+        return;
+    }
+
+    curstr = glk($002E, mainwin); ! window_get_echo_stream
+    if (curstr) {
+        print "Switching off window echo...^";
+        glk($002D, mainwin, 0); ! window_set_echo_stream
+        return;
+    }
+    
+    str = glk($002C, altwin); ! window_get_stream
+    glk($002D, mainwin, str); ! window_set_echo_stream
+    print "Everything printed to the main window will be echoed to the second window.^";
+];
+
+[ show_streams str  rock val;
+    print "All open streams (in no particular order):^^";
+    str = 0;
+    while (true) {
+        str = glk($0040, str, gg_event); ! stream_iterate
+        if (~~str)
+            break;
+        print (printstream) str, "^";
+        
+        rock = glk($0041, str); ! stream_get_rock
+        if (rock ~= gg_event-->0)
+            print "(warning: rock does not match stream_iterate output)^";
+
+        val = glk($0046, str); ! stream_get_position
+        print "  position: ", val, "^";
+    }
+];
+
+Array style_names --> "Normal" "Emphasized" "Preformatted" "Header"
+  "Subheader" "Alert" "Note" "BlockQuote" "Input" "User1" "User2";
+
+[ show_styles ix;
+    print "The eleven standard Glk styles:^^";
+    for (ix=0 : ix<11 : ix++) {
+        glk($0086, ix); ! set the given style
+        print "This is style ", ix, ": ", (string) style_names-->ix;
+        new_line;
+    }
+    glk($0086, 0); ! set normal style
+];
+
+[ select_file_dialog fref val;
+    print "Select a data file. (It will not actually be created or read.)^";
+
+    if (operand_understood == 'local') {
+        fref = -1;
+        @push 123; ! rock
+        @push filemode_understood;
+        @push $100; ! fileusage_Data | fileusage_TextMode
+        @glk $0062 3 fref; ! fileref_create_by_prompt
+    }
+    else if (operand_understood == 'global') {
+        testglobal = -1;
+        @push 123; ! rock
+        @push filemode_understood;
+        @push $100; ! fileusage_Data | fileusage_TextMode
+        @glk $0062 3 testglobal; ! fileref_create_by_prompt
+        fref = testglobal;
+    }
+    else if (operand_understood == 'stack') {
+        fref = -1;
+        @push 123; ! rock
+        @push filemode_understood;
+        @push $100; ! fileusage_Data | fileusage_TextMode
+        noop();
+        @glk $0062 3 sp; ! fileref_create_by_prompt
+        @copy sp fref;
+    }
+    else if (operand_understood == 'offstack') {
+        fref = -1;
+        @push 123; ! rock
+        @push filemode_understood;
+        @push $100; ! fileusage_Data | fileusage_TextMode
+        @glk $0062 3 sp; ! fileref_create_by_prompt
+        @copy sp fref;
+    }
+    else {
+        print "Operand mode not understood.^";
+        return;
+    }
+    
+    if (~~fref) {
+        print "No file selected.^";
+        return;
+    }
+
+    val = glk($0065, fref); ! fileref_get_rock
+    print "Created fileref (rock ", val, "), for a file";
+    val = glk($0067, fref); ! fileref_does_file_exist
+    if (val)
+        print " which exists.^";
+    else
+        print " which does not exist.^";
+    glk($0063, fref); ! fileref_destroy
+];
+
+[ noop;
+];
+
+[ handle_timer  count wintype;
+  timer_counter++;
+  
+  if (altwin && ~~altwininput) {
+    wintype = glk($0028, altwin); ! window_get_type
+    if (wintype == 4) 
+      glk($002A, altwin); ! glk_clear_window
+    glk($002F, altwin); ! glk_set_window
+    print "Timer event ", timer_counter, "!^";
+    glk($002F, mainwin); ! glk_set_window
+  }
+  else {
+    glk($00D1, mainwin, gg_event); ! cancel_line_event
+    print "Input interrupted by timer event.";
+    count = 0;
+    if (gg_event-->0 == 3 && gg_event-->1 == mainwin) {
+      count = gg_event-->2;
+      if (count == 0) {
+        print " (Input line was empty.)^";
+      }
+      else {
+        print " (Input line had ", count, " chars: ~";
+        glk($0084, input_buffer+4, count); ! put_buffer
+        print "~)^";
+      }
+    }
+    else {
+      print " (No input line??)^";
+    }
+    print "^>";
+    glk($00D0, mainwin, input_buffer+4, BUFLEN, count); ! request_line_event
+  }
+];
+
+[ handle_secondary_getline count wintype val;
+  wintype = glk($0028, altwin); ! window_get_type
+  if (wintype == 4) 
+    glk($002A, altwin); ! glk_clear_window
+  glk($002F, altwin); ! glk_set_window
+  print "Line input (", count, " chars): ~";
+  for (val=0 : val<count : val++)
+    print (char) inputalt_buffer->val;
+  print "~.^";
+  glk($002F, mainwin); ! glk_set_window
+];
+
+[ handle_hyperlink win linkval   count;
+  glk($00D1, mainwin, gg_event); ! cancel_line_event
+  print "Input interrupted by hyperlink event";
+  print ", link ", linkval, ",";
+  if (win == mainwin)
+    print " in main window";
+  else if (win == altwin)
+    print " in second window";
+  else
+    print " in ??? window";
+  print ".";
+  count = 0;
+  if (gg_event-->0 == 3 && gg_event-->1 == mainwin) {
+    count = gg_event-->2;
+    if (count == 0) {
+      print " (Input line was empty.)^";
+    }
+    else {
+      print " (Input line had ", count, " chars: ~";
+      glk($0084, input_buffer+4, count); ! put_buffer
+      print "~)^";
+    }
+  }
+  else {
+    print " (No input line??)^";
+  }
+  print "^>";
+  glk($00D0, mainwin, input_buffer+4, BUFLEN, count); ! request_line_event
+];

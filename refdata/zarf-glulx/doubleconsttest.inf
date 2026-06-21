@@ -1,0 +1,338 @@
+Constant Story "DoubleConstTest";
+Constant Headline "Not a game.^";
+
+! This is a compiler unit test for double-precision float literals.
+!     $>1.0, $<1.0
+! We also test the @dload, @dstore macros, which are meant to be used
+! with doubles.
+
+Release 1;
+
+Global gg_mainwin;
+
+Constant HDR_GLULXVERSION  $04;     ! long word
+Constant ROM_GAMERELEASE   $34;     ! short word
+Constant ROM_GAMESERIAL    $36;     ! six ASCII characters
+
+Global failures;
+
+[ Main loc;
+	@setiosys 2 0;
+	@push 201; @push 3; @push 0; @push 0; @push 0;
+	@glk $0023 5 gg_mainwin;
+
+	@push gg_mainwin;
+	@glk $002F 1 loc;
+
+	Banner();
+	new_line;
+	RunTest();
+];
+
+[ Banner  i ix;
+    if (Story ~= 0) {
+        glk($0086, 3); ! set header style
+        print (string) Story;
+        glk($0086, 0); ! set normal style
+    }
+    if (Headline ~= 0) print ": ", (string) Headline;
+    print "Release ";
+    @aloads ROM_GAMERELEASE 0 i;
+    print i;
+    print " / Serial number ";
+    for (i=0 : i<6 : i++) print (char) ROM_GAMESERIAL->i;
+    print " / Inform v"; inversion;
+    print ", compiler options ";
+    i = false;
+    #Ifdef STRICT_MODE;
+    print "S"; i++;
+    #Endif; ! STRICT_MODE
+    #Ifdef INFIX;
+    print "X"; i++;
+    #Ifnot;
+    #Ifdef DEBUG;
+    print "D"; i++;
+    #Endif; ! DEBUG
+    #Endif; ! INFIX
+    if (~~i) print "(none)";
+    new_line;
+
+    @gestalt 1 0 ix;
+    print "Interpreter version ", ix / $10000, ".", (ix & $FF00) / $100,
+    ".", ix & $FF, " / ";
+    @gestalt 0 0 ix;
+    print "VM ", ix / $10000, ".", (ix & $FF00) / $100, ".", ix & $FF, " / ";
+    ix = HDR_GLULXVERSION-->0;
+    print "game file format ", ix / $10000, ".", (ix & $FF00) / $100, ".", ix & $FF, "^";
+];
+
+[ Hex val   byte initial ix;
+	print "$";
+	initial = true;
+	for (ix=0 : ix<8 : ix++) {
+		@ushiftr val 28 byte;
+		@shiftl val 4 val;
+		byte = byte & $0F;
+		if (byte == 0 && initial && ix < 7)
+			continue;
+		initial = false;
+		if (byte <= 9)
+			print (char) (byte+'0');
+		else
+			print (char) (byte-10+'A');
+	}
+];
+
+[ Hex8 val   byte ix;
+	print "$";
+	for (ix=0 : ix<8 : ix++) {
+		@ushiftr val 28 byte;
+		@shiftl val 4 val;
+		byte = byte & $0F;
+		if (byte <= 9)
+			print (char) (byte+'0');
+		else
+			print (char) (byte-10+'A');
+	}
+];
+
+[ check2 label valhi vallo targethi targetlo;
+	if (valhi == targethi && vallo == targetlo) {
+		print (string) label, ": ", (Hex) valhi, " ", (Hex8) vallo, "^";
+		rtrue;
+	}
+	
+	failures++;
+	print (string) label, ": ", (Hex) valhi, " ", (Hex8) vallo;
+	print " FAIL -- should be ", (Hex) targethi, " ", (Hex8) targetlo, "^";
+];
+
+! Allow a margin of one unit-in-the-last-place
+[ check2ulp label valhi vallo targethi targetlo   tmphi tmplo;
+	if (valhi == targethi && vallo == targetlo) {
+		print (string) label, ": ", (Hex) valhi, " ", (Hex8) vallo, "^";
+		rtrue;
+	}
+
+	tmphi = targethi;
+	tmplo = targetlo;
+	tmplo++;
+	if (tmplo == 0) tmphi++;
+	if (valhi == tmphi && vallo == tmplo) {
+		print (string) label, ": ", (Hex) valhi, " ", (Hex8) vallo, " (minus epsilon)^";
+		rtrue;
+	}
+	
+	tmphi = targethi;
+	tmplo = targetlo;
+	tmplo--;
+	if (tmplo == $FFFFFFFF) tmphi--;
+	if (valhi == tmphi && vallo == tmplo) {
+		print (string) label, ": ", (Hex) valhi, " ", (Hex8) vallo, " (plus epsilon)^";
+		rtrue;
+	}
+	
+	failures++;
+	print (string) label, ": ", (Hex) valhi, " ", (Hex8) vallo;
+	print " FAIL -- should be ", (Hex) targethi, " ", (Hex8) targetlo, "^";
+];
+
+[ RunTest;
+	failures = 0;
+
+	RunLiteralTest();
+	RunMacroTest();
+	
+	new_line;
+	if (failures == 0) {
+		print "All tests passed.^";
+	}
+	else {
+		print failures, " tests failed!^";
+	}
+];
+
+[ RunLiteralTest;
+	check2("+Inf", DOUBLE_HI_INFINITY, DOUBLE_LO_INFINITY, $7FF00000, $00000000);
+	check2("-Inf", DOUBLE_HI_NINFINITY, DOUBLE_LO_NINFINITY, $FFF00000, $00000000);
+	check2("NaN", DOUBLE_HI_NAN, DOUBLE_LO_NAN, $7FF80000, $00000001);
+
+	check2("$+0", $>+0, $<+0, $00000000, $00000000);
+	check2("$+0.", $>+0., $<+0., $00000000, $00000000);
+	check2("$+.0", $>+.0, $<+.0, $00000000, $00000000);
+	check2("$+0.0", $>+0.0, $<+0.0, $00000000, $00000000);
+	check2("$+0000000000000000000.000000000000000000e000000000000000000", $>+0000000000000000000.000000000000000000e000000000000000000, $<+0000000000000000000.000000000000000000e000000000000000000, $00000000, $00000000);
+
+	check2("$+1", $>+1, $<+1, $3FF00000, $00000000);
+	check2("$+1.", $>+1., $<+1., $3FF00000, $00000000);
+	check2("$+1.0", $>+1.0, $<+1.0, $3FF00000, $00000000);
+	check2("$+1e0", $>+1e0, $<+1e0, $3FF00000, $00000000);
+	check2("$+1E0", $>+1E0, $<+1E0, $3FF00000, $00000000);
+	check2("$+1.0e0", $>+1.0e0, $<+1.0e0, $3FF00000, $00000000);
+	check2("$+1e+0", $>+1e+0, $<+1e+0, $3FF00000, $00000000);
+	check2("$+1.0e+0", $>+1.0e+0, $<+1.0e+0, $3FF00000, $00000000);
+	check2("$+1e-0", $>+1e-0, $<+1e-0, $3FF00000, $00000000);
+	check2("$+1.0e-0", $>+1.0e-0, $<+1.0e-0, $3FF00000, $00000000);
+
+	check2("$+10e-1", $>+10e-1, $<+10e-1, $3FF00000, $00000000);
+	check2("$+10.e-01", $>+10.e-01, $<+10.e-01, $3FF00000, $00000000);
+	check2("$+.1e1", $>+.1e1, $<+.1e1, $3FF00000, $00000000);
+	check2("$+0.1e1", $>+0.1e1, $<+0.1e1, $3FF00000, $00000000);
+	check2ulp("$+.01e+2", $>+0.01e+2, $<+0.01e+2, $3FF00000, $00000000);
+
+	check2("$-0", $>-0, $<-0, $80000000, $00000000);
+	check2("$-.0", $>-.0, $<-.0, $80000000, $00000000);
+	check2("$-1", $>-1, $<-1, $BFF00000, $00000000);
+	check2("$+2", $>+2, $<+2, $40000000, $00000000);
+	check2("$+10", $>+10, $<+10, $40240000, $00000000);
+	check2("$-123", $>-123, $<-123, $C05EC000, $00000000);
+
+	check2("$+.5", $>+.5, $<+.5, $3FE00000, $00000000);
+	check2("$+0.5", $>+0.5, $<+0.5, $3FE00000, $00000000);
+	check2("$+00.50", $>+00.50, $<+00.50, $3FE00000, $00000000);
+	check2("$-00.50000", $>-00.50000, $<-00.50000, $BFE00000, $00000000);
+	check2("$-5.5", $>-5.5, $<-5.5, $C0160000, $00000000);
+	check2("$-0000000000005.5", $>-0000000000005.5, $<-0000000000005.5, $C0160000, $00000000);
+	check2("$+5.50000000000000", $>+5.50000000000000, $<+5.50000000000000, $40160000, $00000000);
+	check2ulp("$-3.333333333333333", $>-3.333333333333333, $<-3.333333333333333, $C00AAAAA, $AAAAAAAA);
+	
+	check2("$+1e1", $>+1e1, $<+1e1, $40240000, $00000000);
+	check2("$+1e2", $>+1e2, $<+1e2, $40590000, $00000000);
+	check2("$+1e3", $>+1e3, $<+1e3, $408F4000, $00000000);
+	check2("$+1e4", $>+1e4, $<+1e4, $40C38800, $00000000);
+	check2("$+1e5", $>+1e5, $<+1e5, $40F86A00, $00000000);
+	check2("$+1e6", $>+1e6, $<+1e6, $412E8480, $00000000);
+	check2("$+1e7", $>+1e7, $<+1e7, $416312D0, $00000000);
+	check2("$+1e8", $>+1e8, $<+1e8, $4197D784, $00000000);
+	check2("$+1e9", $>+1e9, $<+1e9, $41CDCD65, $00000000);
+	check2("$+1e10", $>+1e10, $<+1e10, $4202A05F, $20000000);
+	check2("$+1e11", $>+1e11, $<+1e11, $42374876, $E8000000);
+	check2("$+1e12", $>+1e12, $<+1e12, $426D1A94, $A2000000);
+	check2("$+1e13", $>+1e13, $<+1e13, $42A2309C, $E5400000);
+	check2("$+1e14", $>+1e14, $<+1e14, $42D6BCC4, $1E900000);
+	check2("$+1e15", $>+1e15, $<+1e15, $430C6BF5, $26340000);
+	check2("$+1e16", $>+1e16, $<+1e16, $4341C379, $37E08000);
+	check2("$+1e20", $>+1e20, $<+1e20, $4415AF1D, $78B58C40);
+	check2ulp("$+1e25", $>+1e25, $<+1e25, $45208B2A, $2C280291);
+	check2("$+1e30", $>+1e30, $<+1e30, $46293E59, $39A08CEA);
+	check2("$+1e40", $>+1e40, $<+1e40, $483D6329, $F1C35CA5);
+	check2("$+1e50", $>+1e50, $<+1e50, $4A511B0E, $C57E649A);
+	check2("$+1e75", $>+1e75, $<+1e75, $4F81AFD6, $EC0E1411);
+	check2("$+1e100", $>+1e100, $<+1e100, $54B249AD, $2594C37D);
+	check2ulp("$+1e200", $>+1e200, $<+1e200, $6974E718, $D7D7625A);
+	
+	check2("$+1e-1", $>+1e-1, $<+1e-1, $3FB99999, $9999999A);
+	check2("$+1e-2", $>+1e-2, $<+1e-2, $3F847AE1, $47AE147B);
+	check2("$+1e-3", $>+1e-3, $<+1e-3, $3F50624D, $D2F1A9FC);
+	check2("$+1e-4", $>+1e-4, $<+1e-4, $3F1A36E2, $EB1C432D);
+	check2("$+1e-5", $>+1e-5, $<+1e-5, $3EE4F8B5, $88E368F1);
+	check2("$+1e-6", $>+1e-6, $<+1e-6, $3EB0C6F7, $A0B5ED8D);
+	check2("$+1e-7", $>+1e-7, $<+1e-7, $3E7AD7F2, $9ABCAF48);
+	check2("$+1e-8", $>+1e-8, $<+1e-8, $3E45798E, $E2308C3A);
+	check2("$+1e-9", $>+1e-9, $<+1e-9, $3E112E0B, $E826D695);
+	check2ulp("$+1e-10", $>+1e-10, $<+1e-10, $3DDB7CDF, $D9D7BDBB);
+	check2ulp("$+1e-11", $>+1e-11, $<+1e-11, $3DA5FD7F, $E1796495);
+	check2ulp("$+1e-12", $>+1e-12, $<+1e-12, $3D719799, $812DEA11);
+	check2ulp("$+1e-13", $>+1e-13, $<+1e-13, $3D3C25C2, $68497682);
+	check2ulp("$+1e-14", $>+1e-14, $<+1e-14, $3D06849B, $86A12B9B);
+	check2ulp("$+1e-15", $>+1e-15, $<+1e-15, $3CD203AF, $9EE75616);
+	check2ulp("$+1e-16", $>+1e-16, $<+1e-16, $3C9CD2B2, $97D889BC);
+	check2ulp("$+1e-20", $>+1e-20, $<+1e-20, $3BC79CA1, $0C924223);
+	check2ulp("$+1e-25", $>+1e-25, $<+1e-25, $3ABEF2D0, $F5DA7DD9);
+	check2ulp("$+1e-30", $>+1e-30, $<+1e-30, $39B4484B, $FEEBC2A0);
+	check2ulp("$+1e-40", $>+1e-40, $<+1e-40, $37A16C26, $2777579C);
+	check2ulp("$+1e-50", $>+1e-50, $<+1e-50, $358DEE7A, $4AD4B81F);
+	
+	check2ulp("$+123.456e-01", $>+123.456e-01, $<+123.456e-01, $4028B0F2, $7BB2FEC5);
+	check2ulp("$+123.456e+02", $>+123.456e+02, $<+123.456e+02, $40C81CCC, $CCCCCCCD);
+
+	check2("$+.9999999999999999", $>+.9999999999999999, $<+.9999999999999999, $3FEFFFFF, $FFFFFFFF);
+	check2("$+.99999999999999999", $>+.99999999999999999, $<+.99999999999999999, $3FF00000, $00000000);
+
+	check2("$+100000000", $>+100000000, $<+100000000, $4197D784, $00000000);
+	check2("$-200000000", $>-200000000, $<-200000000, $C1A7D784, $00000000);
+
+	check2ulp("$+2e-310", $>+2e-310, $<+2e-310, $000024D1, $16E1CC56);
+	check2ulp("$+2e-315", $>+2e-315, $<+2e-315, $00000000, $1820D39B);
+	check2ulp("$+2e-320", $>+2e-320, $<+2e-320, $00000000, $00000FD0);
+
+];
+
+Array arr-->4;
+Global globhi;
+Global globlo;
+
+[ RunMacroTest addr xhi xlo;
+	arr-->0 = 111;
+	arr-->1 = -222;
+	arr-->2 = -333;
+	arr-->3 = 444;
+
+	@dload arr xlo xhi;
+	check2("dload arr xlo xhi", xhi, xlo, 111, -222);
+
+	@dload arr globlo globhi;
+	check2("dload arr globlo globhi", globhi, globlo, 111, -222);
+
+	addr = arr+(2*WORDSIZE);
+	@dload addr xlo xhi;
+	check2("dload addr xlo xhi", xhi, xlo, -333, 444);
+
+	@dload arr sp sp;
+	@pull xhi;
+	@pull xlo;
+	check2("dload arr sp sp", xhi, xlo, 111, -222);
+
+	addr = arr+(2*WORDSIZE);
+	@dload addr sp sp;
+	@pull xhi;
+	@pull xlo;
+	check2("dload addr sp sp", xhi, xlo, -333, 444);
+
+	@push arr;
+	@dload sp xlo xhi;
+	check2("dload sp xlo xhi", xhi, xlo, 111, -222);
+
+	addr = arr+(1*WORDSIZE);
+	@push addr;
+	@dload sp sp sp;
+	@pull xhi;
+	@pull xlo;
+	check2("dload sp sp sp", xhi, xlo, -222, -333);
+
+	xhi = 555;
+	xlo = -666;
+	@dstore arr xhi xlo;
+	check2("dstore arr xhi xlo", arr-->0, arr-->1, 555, -666);
+
+	globhi = 777;
+	globlo = -888;
+	@dstore arr globhi globlo;
+	check2("dstore arr globhi globlo", arr-->0, arr-->1, 777, -888);
+
+	addr = arr+(2*WORDSIZE);
+	xhi = 555;
+	xlo = -666;
+	@dstore addr xhi xlo;
+	check2("dstore addr xhi xlo", arr-->2, arr-->3, 555, -666);
+
+	xhi = 888;
+	xlo = -999;
+	@push xlo;
+	@push xhi;
+	@dstore arr sp sp;
+	check2("dstore arr sp sp", arr-->0, arr-->1, 888, -999);
+
+	@push arr;
+	@dstore sp 123 456;
+	check2("dstore sp 123 456", arr-->0, arr-->1, 123, 456);
+
+	xhi = 555;
+	xlo = -666;
+	addr = arr+(1*WORDSIZE);
+	@push xlo;
+	@push xhi;
+	@push addr;
+	@dstore sp sp sp;
+	check2("dstore sp sp sp", arr-->1, arr-->2, 555, -666);
+];
