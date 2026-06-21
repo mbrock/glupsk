@@ -9,7 +9,7 @@
 namespace glupsk {
 namespace {
 
-GlulxHeader parse_header(const std::vector<std::uint8_t>& bytes) {
+GlulxHeader parse_header(span<const u8> bytes) {
     GlulxHeader header;
     header.magic = read_u32_be(bytes, 0);
     header.version = read_u32_be(bytes, 4);
@@ -31,7 +31,7 @@ void require(bool condition, const std::string& message) {
 
 }  // namespace
 
-std::uint32_t compute_glulx_checksum(const std::vector<std::uint8_t>& bytes) {
+std::uint32_t compute_glulx_checksum(span<const u8> bytes) {
     require(bytes.size() % 4 == 0,
             "Glulx story length must be a multiple of four bytes");
 
@@ -51,23 +51,23 @@ Story Story::load(const std::filesystem::path& path) {
         throw std::runtime_error("could not open story file: " + path.string());
     }
 
-    std::vector<std::uint8_t> bytes(
+    Bytes bytes(
         (std::istreambuf_iterator<char>(file)),
         std::istreambuf_iterator<char>());
     return Story::from_bytes(std::move(bytes));
 }
 
-Story Story::from_bytes(std::vector<std::uint8_t> bytes) {
+Story Story::from_bytes(Bytes bytes) {
     return Story(std::move(bytes));
 }
 
-Story::Story(std::vector<std::uint8_t> bytes) : bytes_(std::move(bytes)) {
+Story::Story(Bytes owned_bytes) : bytes_(std::move(owned_bytes)) {
     require(bytes_.size() >= kHeaderSize,
             "Glulx story is shorter than the 36-byte header");
     require(bytes_.size() % 4 == 0,
             "Glulx story length must be a multiple of four bytes");
 
-    header_ = parse_header(bytes_);
+    header_ = parse_header(bytes());
 
     require(header_.magic == kGlulxMagic, "Glulx magic number is not 'Glul'");
     require(header_.version >= kSupportedMinVersion &&
@@ -81,7 +81,7 @@ Story::Story(std::vector<std::uint8_t> bytes) : bytes_(std::move(bytes)) {
     require(header_.endmem >= header_.extstart,
             "ENDMEM must not be less than EXTSTART");
 
-    computed_checksum_ = compute_glulx_checksum(bytes_);
+    computed_checksum_ = compute_glulx_checksum(bytes());
 }
 
 Version Story::version() const {

@@ -1,10 +1,11 @@
 #pragma once
 
+#include "core/types.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
 #include <string>
-#include <vector>
 
 namespace glupsk {
 
@@ -34,9 +35,9 @@ struct Version {
 class Story {
   public:
     static Story load(const std::filesystem::path& path);
-    static Story from_bytes(std::vector<std::uint8_t> bytes);
+    static Story from_bytes(Bytes bytes);
 
-    const std::vector<std::uint8_t>& bytes() const { return bytes_; }
+    span<const u8> bytes() const { return bytes_; }
     const GlulxHeader& header() const { return header_; }
 
     Version version() const;
@@ -45,13 +46,13 @@ class Story {
     bool checksum_ok() const { return computed_checksum_ == header_.checksum; }
 
   private:
-    explicit Story(std::vector<std::uint8_t> bytes);
+    explicit Story(Bytes bytes);
 
-    std::vector<std::uint8_t> bytes_;
+    Bytes bytes_;
     GlulxHeader header_;
     std::uint32_t computed_checksum_ = 0;
 };
 
-std::uint32_t compute_glulx_checksum(const std::vector<std::uint8_t>& bytes);
+std::uint32_t compute_glulx_checksum(span<const u8> bytes);
 
 }  // namespace glupsk

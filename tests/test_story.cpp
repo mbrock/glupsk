@@ -7,12 +7,11 @@
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace {
 
-std::vector<std::uint8_t> minimal_story() {
-    std::vector<std::uint8_t> bytes(256, 0);
+glupsk::Bytes minimal_story() {
+    glupsk::Bytes bytes(256, 0);
     glupsk::write_u32_be(bytes, 0, glupsk::kGlulxMagic);
     glupsk::write_u32_be(bytes, 4, 0x00030103);
     glupsk::write_u32_be(bytes, 8, 256);
@@ -46,7 +45,7 @@ void test_minimal_story() {
 }
 
 void test_rejects_bad_inputs() {
-    expect_throw([] { glupsk::Story::from_bytes(std::vector<std::uint8_t>(35)); },
+    expect_throw([] { glupsk::Story::from_bytes(glupsk::Bytes(35)); },
                  "short header");
 
     auto bad_magic = minimal_story();
