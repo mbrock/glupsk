@@ -1,0 +1,6 @@
+[submodule "refimpl/glulxe"]
+	path = refimpl/glulxe
+	url = https://github.com/erkyrath/glulxe
+[submodule "refimpl/quixe"]
+	path = refimpl/quixe
+	url = https://github.com/erkyrath/quixe

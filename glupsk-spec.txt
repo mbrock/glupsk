@@ -1,0 +1,304 @@
+Project Spec: Minimal Explicit-State Glulx Runtime
+
+Goal
+
+Build a small, modern C++ Glulx interpreter capable of running a basic compiled Inform 7 Glulx game.
+
+The implementation should prioritize clarity, correctness, explicit machine state, easy serialization, and eventual WebAssembly portability over aggressive optimization.
+
+Core Principles
+
+The VM state must be explicit and pointerless.
+
+All persistent VM data should be stored in flat buffers or index-addressed records. No internal VM state should depend on host pointers, native call stack frames, object identity, or heap-allocated instruction objects.
+
+The interpreter should execute one small step at a time:
+
+StepResult step(Machine& machine);
+
+The hot execution loop should perform no heap allocation.
+
+Glk should be treated as the host ABI. For WebAssembly builds, Glk replaces WASI as the imported environment.
+
+Non-Goals
+
+No JIT.
+
+No AOT Glulx-to-C or Glulx-to-Wasm compiler.
+
+No C++ class hierarchy per opcode.
+
+No attempt to outperform Git or Quixe initially.
+
+No full Glk UI implementation in the VM core.
+
+No dependency on Emscripten or WASI for the core runtime.
+
+Architecture
+
+Main modules:
+
+core/
+  machine.hpp
+  memory.hpp
+  stack.hpp
+  decode.hpp
+  execute.hpp
+  heap.hpp
+  strings.hpp
+  save.hpp
+  glk.hpp
+hosts/
+  cli/
+  wasm/
+  test/
+
+Machine State
+
+The VM state should be structurally flat:
+
+struct Machine {
+    Memory memory;
+    Stack stack;
+    Heap heap;
+    Registers regs;
+    GlkHost* glk;       // host boundary only, not part of save state
+    Status status;
+};
+
+Memory is one byte-addressed big-endian Glulx address space.
+
+0 .. ramstart-1
+    ROM/static code and data
+ramstart .. endgamefile-1
+    initialized RAM
+endgamefile .. origendmem-1
+    zero-filled RAM
+origendmem .. endmem-1
+    resized memory / heap area
+
+The stack is separate from main memory and represented as flat words plus frame records.
+
+struct Registers {
+    uint32_t pc;
+    uint32_t string_table;
+    uint32_t endmem;
+    uint32_t iosys_mode;
+    uint32_t iosys_rock;
+    uint32_t protect_start;
+    uint32_t protect_end;
+};
+
+All addresses are Glulx addresses, not host pointers.
+
+Save and Checkpoint Model
+
+There are two save layers.
+
+Fast checkpoints are implementation-native snapshots for undo/autosave:
+
+writev:
+  registers
+  memory bytes
+  stack words
+  frame records
+  heap used blocks
+  heap free blocks
+
+These may be same-version/same-architecture only.
+
+Portable saves should eventually support Quetzal-compatible Glulx save files.
+
+The VM should be designed so that both formats are easy. No pointer graph traversal should be required.
+
+Execution Model
+
+The interpreter decodes and executes one instruction at a time.
+
+StepResult step(Machine& m) {
+    Instruction insn = decode(m.memory, m.regs.pc);
+    return execute(m, insn);
+}
+
+Instruction and Operand are small POD values.
+
+struct Operand {
+    OperandKind kind;
+    uint32_t value;
+};
+struct Instruction {
+    Opcode opcode;
+    Operand operands[8];
+    uint8_t operand_count;
+    uint32_t next_pc;
+};
+
+Operand decoding may use temporary stack/local arrays but must not allocate.
+
+MVP Opcode Scope
+
+The first milestone should support enough opcodes to run a very small Inform 7 game.
+
+Required early groups:
+
+arithmetic:
+  add, sub, mul, div, mod, neg
+  bitand, bitor, bitxor, bitnot
+  shiftl, sshiftr, ushiftr
+control flow:
+  jump, jumpabs
+  jz, jnz
+  jeq, jne
+  jlt, jle, jgt, jge
+  unsigned variants
+calls:
+  call, callf, callfi, callfii, callfiii
+  return, tailcall
+  catch, throw
+memory:
+  copy, copys, copyb
+  aload, aloads, aloadb, aloadbit
+  astore, astores, astoreb, astorebit
+  sexs, sexb
+  mzero, mcopy
+stack:
+  stkcount, stkpeek, stkswap, stkroll, stkcopy
+system:
+  gestalt
+  quit
+  restart
+  verify
+  getmemsize, setmemsize
+I/O:
+  streamchar, streamnum, streamstr, streamunichar
+  getiosys, setiosys
+  getstringtbl, setstringtbl
+  glk
+random:
+  random, setrandom
+heap:
+  malloc, mfree
+
+Float/double opcodes can be deferred unless the target game requires them.
+
+Acceleration opcodes can initially be accepted as no-ops or minimally implemented, but full Inform 7 compatibility likely requires them later.
+
+Glk Boundary
+
+The VM core should not know about windows, DOM, terminal rendering, files, or browser events.
+
+It should only issue Glk calls through a narrow interface:
+
+struct GlkCall {
+    uint32_t selector;
+    std::span<uint32_t> args;
+    OperandStore result_store;
+};
+enum class GlkResultKind {
+    Returned,
+    Blocked,
+    FatalError
+};
+struct GlkResult {
+    GlkResultKind kind;
+    uint32_t value;
+};
+
+If a Glk call blocks, the VM records enough resume state and returns control to the host.
+
+VM executes @glk select
+  -> host returns Blocked
+  -> VM status = blocked
+  -> host later writes event data
+  -> vm_resume()
+
+This is essential for browser and WebAssembly embedding.
+
+WebAssembly Target
+
+The core should be compilable to wasm32-unknown-unknown.
+
+The Wasm module should export a small C ABI:
+
+vm_create
+vm_load_story
+vm_step
+vm_run_until_blocked
+vm_resume
+vm_snapshot_size
+vm_snapshot_write
+vm_snapshot_read
+vm_destroy
+
+The module should import only Glk-like host functions, memory growth hooks if needed, and optional logging/trap functions.
+
+No WASI dependency should be required.
+
+Testing Strategy
+
+Start with a tiny hand-written Glulx fixture suite.
+
+Then add compiled Inform 7 smoke tests:
+
+The Lab is a room.
+The apple is in the Lab.
+
+Required initial behavior:
+
+look
+inventory
+take apple
+drop apple
+examine apple
+save/restore smoke test
+undo smoke test
+
+The test host can use a fake Glk implementation that records output and feeds scripted input.
+
+A trace mode should exist from the beginning:
+
+pc=0x1234 add local[0], const(1) -> stack
+pc=0x1239 call 0x80420 argc=2 -> local[4]
+
+Trace output is not part of the core semantics, but it is critical for debugging.
+
+Implementation Style
+
+Use modern C++ as a clarity tool, not as a framework.
+
+Prefer:
+
+flat structs
+enum class
+std::span
+std::vector for owning buffers
+fixed-width integers
+small POD instruction records
+explicit error values or exceptions at API boundaries
+
+Avoid:
+
+virtual dispatch per opcode
+allocation per instruction
+host pointers in VM state
+native C++ call stack for Glulx calls
+template-heavy opcode machinery
+implicit ownership
+
+Milestones
+
+Milestone 1: Load and validate .ulx header.
+
+Milestone 2: Execute hand-written arithmetic/control-flow bytecode.
+
+Milestone 3: Implement calls, frames, locals, and return values.
+
+Milestone 4: Implement basic Glk output and blocking input through a fake host.
+
+Milestone 5: Run a minimal Inform 7 game through one command loop.
+
+Milestone 6: Implement save/restore checkpoints.
+
+Milestone 7: Add heap, strings, and enough Inform acceleration support for practical games.
+
+Milestone 8: Compile the same core to WebAssembly with a JavaScript Glk host.
