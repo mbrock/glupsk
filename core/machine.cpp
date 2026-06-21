@@ -185,7 +185,7 @@ void TranscriptGlk::add_input_line(std::string line) {
 }
 
 bool TranscriptGlk::select_would_block() const {
-    return line_pending && input_lines.empty();
+    return !line_pending || input_lines.empty();
 }
 
 u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {

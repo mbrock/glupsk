@@ -3,6 +3,8 @@
 #include "core/machine.hpp"
 #include "core/types.hpp"
 
+#include <string_view>
+
 namespace glupsk {
 
 enum class Opcode : u32 {
@@ -138,5 +140,7 @@ OpcodeHeader decode_opcode_header(const Memory& memory, u32 pc);
 OpcodeHeader fetch_opcode_header(const Machine& machine);
 Instruction decode_instruction(const Memory& memory, u32 pc);
 Instruction fetch_instruction(const Machine& machine);
+std::string_view opcode_name(Opcode opcode);
+std::string_view operand_mode_name(OperandMode mode);
 
 }  // namespace glupsk

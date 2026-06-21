@@ -13,6 +13,7 @@ core_lib = static_library(
   'glupsk_core',
   files(
     'core/decode.cpp',
+    'core/execute.cpp',
     'core/machine.cpp',
     'core/story.cpp',
   ),
@@ -26,11 +27,19 @@ glupsk_info = executable(
   link_with: core_lib,
 )
 
+glupsk_trace = executable(
+  'glupsk-trace',
+  files('tools/glupsk-trace.cpp'),
+  include_directories: root_inc,
+  link_with: core_lib,
+)
+
 test_story = executable(
   'test_story',
   files(
     'tests/test-main.cpp',
     'tests/test_decode.cpp',
+    'tests/test_execute.cpp',
     'tests/test_machine.cpp',
     'tests/test_story.cpp',
   ),

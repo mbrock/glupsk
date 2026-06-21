@@ -85,4 +85,11 @@ static suite decode_tests{"Decode", [] {
             [&] { (void) glupsk::decode_opcode_header(memory, 0); }))
             << "two-byte opcode header should require two bytes";
     };
+
+    "names opcodes and operand modes for tracing"_test = [] {
+        expect(glupsk::opcode_name(glupsk::Opcode::glk) == "glk");
+        expect(glupsk::opcode_name(glupsk::Opcode::return_) == "return");
+        expect(glupsk::operand_mode_name(glupsk::OperandMode::local8) == "local8");
+        expect(glupsk::operand_mode_name(glupsk::OperandMode::ram32) == "ram32");
+    };
 }};
