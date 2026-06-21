@@ -53,10 +53,43 @@ struct Registers {
 
 struct Machine;
 
+enum class TranscriptStreamKind : u8 {
+    none,
+    window,
+    memory,
+    unicode_memory,
+};
+
+struct TranscriptStream {
+    TranscriptStreamKind kind = TranscriptStreamKind::none;
+    u32 id = 0;
+    u32 address = 0;
+    u32 len = 0;
+    u32 pos = 0;
+    u32 read_count = 0;
+    u32 write_count = 0;
+    u32 mode = 0;
+    u32 rock = 0;
+};
+
+struct TranscriptWindow {
+    u32 id = 0;
+    u32 rock = 0;
+    u32 stream_id = 0;
+    u32 type = 0;
+};
+
 struct TranscriptGlk {
     std::string transcript;
     std::deque<std::string> input_lines;
+    std::array<TranscriptWindow, 16> windows = {};
+    std::array<TranscriptStream, 64> streams = {};
+    u32 root_window = 0;
+    u32 next_window_id = 1;
+    u32 next_stream_id = 1;
+    u32 current_stream = 0;
     bool line_pending = false;
+    bool line_unicode = false;
     u32 line_window = 0;
     u32 line_buffer = 0;
     u32 line_maxlen = 0;
@@ -65,7 +98,7 @@ struct TranscriptGlk {
     void add_input_line(std::string line);
     bool select_would_block() const;
     u32 call(Machine& machine, u32 selector, span<const u32> args);
-    void put_char(u32 ch);
+    void put_char(Machine& machine, u32 ch);
 };
 
 struct AccelerationEntry {

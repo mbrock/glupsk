@@ -18,6 +18,8 @@ Use C++23. Prefer `std::format`, `std::print`, and `std::println` over iostream 
 
 In VM execution code, avoid heap-allocating temporary containers. Prefer fixed-size local arrays, spans over existing storage, or in-place algorithms when an opcode can be implemented without dynamic allocation.
 
+Do not stub missing VM or Glk functionality by returning a plausible zero-ish value unless the spec makes that result unambiguous, such as an unsupported `gestalt` feature or the end of an iterator. If story code attempts an unsupported opcode, selector, or invalid nonzero Glk handle, fail loudly with an exception/error so the missing behavior is visible in tests and traces.
+
 Tests use the lightweight harness in `tests/test.hpp`: register static `suite`s and write cases with `"name"_test = [] { ... };` plus `expect(...)`.
 
 ## Commit Style

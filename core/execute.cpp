@@ -3,7 +3,6 @@
 #include "core/decode.hpp"
 
 #include <array>
-#include <cctype>
 #include <charconv>
 #include <cstdint>
 #include <format>
@@ -78,6 +77,22 @@ struct Arguments {
 u32 sign_extend(u32 value, int bits) {
     const auto mask = u32{1} << (bits - 1);
     return (value ^ mask) - mask;
+}
+
+u32 glk_char_to_lower(u32 ch) {
+    if ((ch >= 0x41 && ch <= 0x5a) || (ch >= 0xc0 && ch <= 0xd6) ||
+        (ch >= 0xd8 && ch <= 0xde)) {
+        return ch + 0x20;
+    }
+    return ch;
+}
+
+u32 glk_char_to_upper(u32 ch) {
+    if ((ch >= 0x61 && ch <= 0x7a) || (ch >= 0xe0 && ch <= 0xf6) ||
+        (ch >= 0xf8 && ch <= 0xfe)) {
+        return ch - 0x20;
+    }
+    return ch;
 }
 
 std::int32_t as_signed(u32 value) {
@@ -436,7 +451,7 @@ void output_char(Machine& machine, u32 ch) {
         throw std::runtime_error("unsupported I/O system");
     }
     if (machine.glk) {
-        machine.glk->put_char(ch);
+        machine.glk->put_char(machine, ch);
     }
 }
 
@@ -547,6 +562,88 @@ void output_string_object(Machine& machine, u32 address) {
 
 bool accel_function_supported(u32 function);
 
+bool is_store_operand(Opcode opcode, u8 index) {
+    switch (opcode) {
+        using enum Opcode;
+        case add:
+        case sub:
+        case mul:
+        case div:
+        case mod:
+        case bitand_:
+        case bitor_:
+        case bitxor_:
+        case shiftl:
+        case sshiftr:
+        case ushiftr:
+        case aload:
+        case aloads:
+        case aloadb:
+        case aloadbit:
+        case gestalt:
+        case glk:
+            return index == 2;
+
+        case neg:
+        case bitnot_:
+        case copy:
+        case copys:
+        case copyb:
+        case sexs:
+        case sexb:
+        case stkpeek:
+        case getmemsize:
+        case setmemsize:
+        case random:
+        case save:
+        case restore:
+        case malloc:
+            return index == 1;
+
+        case catch_:
+        case stkcount:
+        case verify:
+        case saveundo:
+        case restoreundo:
+        case hasundo:
+        case getstringtbl:
+            return index == 0;
+
+        case getiosys:
+            return index == 0 || index == 1;
+
+        case call:
+            return index == 2;
+        case callf:
+            return index == 1;
+        case callfi:
+            return index == 2;
+        case callfii:
+            return index == 3;
+        case callfiii:
+            return index == 4;
+
+        case linearsearch:
+        case binarysearch:
+            return index == 7;
+        case linkedsearch:
+            return index == 6;
+
+        default:
+            return false;
+    }
+}
+
+u8 load_width_for(Opcode opcode, u8 index) {
+    if (index == 0 && opcode == Opcode::copys) {
+        return 2;
+    }
+    if (index == 0 && opcode == Opcode::copyb) {
+        return 1;
+    }
+    return 4;
+}
+
 u32 gestalt(u32 selector, u32 arg) {
     switch (static_cast<GestaltSelector>(selector)) {
         case GestaltSelector::glulx_version:
@@ -575,6 +672,85 @@ u32 gestalt(u32 selector, u32 arg) {
     }
 }
 
+bool is_zero_key(const Machine& machine, u32 address, u32 key_size) {
+    for (u32 index = 0; index < key_size; ++index) {
+        if (machine.memory.read8(address + index) != 0) {
+            return false;
+        }
+    }
+    return true;
+}
+
+u8 key_byte(const Machine& machine,
+            u32 key,
+            u32 key_size,
+            bool key_indirect,
+            u32 index) {
+    if (key_indirect) {
+        return machine.memory.read8(key + index);
+    }
+    if (key_size != 1 && key_size != 2 && key_size != 4) {
+        throw std::runtime_error("direct search key size must be 1, 2, or 4");
+    }
+    return static_cast<u8>((key >> ((key_size - index - 1) * 8)) & 0xff);
+}
+
+int compare_key_at(Machine& machine,
+                   u32 key,
+                   u32 key_size,
+                   u32 address,
+                   bool key_indirect) {
+    for (u32 index = 0; index < key_size; ++index) {
+        const auto want = key_byte(machine, key, key_size, key_indirect, index);
+        const auto got = machine.memory.read8(address + index);
+        if (want < got) {
+            return -1;
+        }
+        if (want > got) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+u32 failed_search(bool return_index) {
+    return return_index ? 0xffffffffu : 0;
+}
+
+u32 successful_search(u32 start, u32 struct_size, u32 index, bool return_index) {
+    return return_index ? index : start + index * struct_size;
+}
+
+u32 linear_search(Machine& machine,
+                  u32 key,
+                  u32 key_size,
+                  u32 start,
+                  u32 struct_size,
+                  u32 num_structs,
+                  u32 key_offset,
+                  u32 options) {
+    if ((options & ~0x07u) != 0) {
+        throw std::runtime_error("linearsearch received unsupported options");
+    }
+    const auto key_indirect = (options & 0x01) != 0;
+    const auto zero_key_terminates = (options & 0x02) != 0;
+    const auto return_index = (options & 0x04) != 0;
+
+    for (u32 index = 0; num_structs == 0xffffffffu || index < num_structs;
+         ++index) {
+        const auto entry_key = start + index * struct_size + key_offset;
+        const auto cmp = compare_key_at(machine, key, key_size, entry_key,
+                                        key_indirect);
+        if (cmp == 0) {
+            return successful_search(start, struct_size, index, return_index);
+        }
+        if (zero_key_terminates && is_zero_key(machine, entry_key, key_size)) {
+            return failed_search(return_index);
+        }
+    }
+    return failed_search(return_index);
+}
+
 u32 binary_search(Machine& machine,
                   u32 key,
                   u32 key_size,
@@ -583,44 +759,21 @@ u32 binary_search(Machine& machine,
                   u32 num_structs,
                   u32 key_offset,
                   u32 options) {
+    if ((options & ~0x05u) != 0) {
+        throw std::runtime_error("binarysearch received unsupported options");
+    }
     const auto key_indirect = (options & 0x01) != 0;
     const auto return_index = (options & 0x04) != 0;
-
-    auto read_key_byte = [&](u32 source, u32 index) -> u8 {
-        if (key_indirect) {
-            return machine.memory.read8(source + index);
-        }
-        if (key_size == 1) {
-            return static_cast<u8>(source);
-        }
-        if (key_size == 2) {
-            return static_cast<u8>((source >> ((1 - index) * 8)) & 0xff);
-        }
-        return static_cast<u8>((source >> ((3 - index) * 8)) & 0xff);
-    };
-
-    auto compare_at = [&](u32 index) {
-        const auto entry = start + index * struct_size + key_offset;
-        for (u32 ix = 0; ix < key_size; ++ix) {
-            const auto want = read_key_byte(key, ix);
-            const auto got = machine.memory.read8(entry + ix);
-            if (want < got) {
-                return -1;
-            }
-            if (want > got) {
-                return 1;
-            }
-        }
-        return 0;
-    };
 
     auto low = u32{0};
     auto high = num_structs;
     while (low < high) {
         const auto mid = low + (high - low) / 2;
-        const auto cmp = compare_at(mid);
+        const auto cmp = compare_key_at(machine, key, key_size,
+                                        start + mid * struct_size + key_offset,
+                                        key_indirect);
         if (cmp == 0) {
-            return return_index ? mid : start + mid * struct_size;
+            return successful_search(start, struct_size, mid, return_index);
         }
         if (cmp < 0) {
             high = mid;
@@ -628,7 +781,36 @@ u32 binary_search(Machine& machine,
             low = mid + 1;
         }
     }
-    return return_index ? 0xffffffffu : 0;
+    return failed_search(return_index);
+}
+
+u32 linked_search(Machine& machine,
+                  u32 key,
+                  u32 key_size,
+                  u32 start,
+                  u32 key_offset,
+                  u32 next_offset,
+                  u32 options) {
+    if ((options & ~0x03u) != 0) {
+        throw std::runtime_error("linkedsearch received unsupported options");
+    }
+    const auto key_indirect = (options & 0x01) != 0;
+    const auto zero_key_terminates = (options & 0x02) != 0;
+
+    auto entry = start;
+    while (entry != 0) {
+        const auto entry_key = entry + key_offset;
+        const auto cmp = compare_key_at(machine, key, key_size, entry_key,
+                                        key_indirect);
+        if (cmp == 0) {
+            return entry;
+        }
+        if (zero_key_terminates && is_zero_key(machine, entry_key, key_size)) {
+            return 0;
+        }
+        entry = machine.memory.read32(entry + next_offset);
+    }
+    return 0;
 }
 
 u32 accel_arg(span<const u32> args, std::size_t index) {
@@ -882,9 +1064,15 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
     machine.regs.pc = insn.next_pc;
     const auto op = insn.opcode;
     const auto& a = insn.operands;
+    auto values = std::array<u32, 8>{};
+    for (u8 index = 0; index < insn.operand_count; ++index) {
+        if (!is_store_operand(op, index)) {
+            values[index] = load_operand(machine, a[index], load_width_for(op, index));
+        }
+    }
 
-    auto l = [&](int index, u8 width = 4) {
-        return load_operand(machine, a[index], width);
+    auto l = [&](int index) {
+        return values[static_cast<std::size_t>(index)];
     };
     auto s = [&](int index, u32 value, u8 width = 4) {
         store_value(machine, a[index], value, width);
@@ -1027,10 +1215,10 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             s(1, l(0));
             return;
         case Opcode::copys:
-            s(1, l(0, 2), 2);
+            s(1, l(0), 2);
             return;
         case Opcode::copyb:
-            s(1, l(0, 1), 1);
+            s(1, l(0), 1);
             return;
         case Opcode::sexs:
             s(1, sign_extend(l(0) & 0xffff, 16));
@@ -1198,10 +1386,10 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             auto result = u32{0};
             if (static_cast<GlkSelector>(selector) == GlkSelector::char_to_lower &&
                 args.count == 1) {
-                result = static_cast<u8>(std::tolower(static_cast<unsigned char>(args.values[0])));
+                result = glk_char_to_lower(args.values[0]);
             } else if (static_cast<GlkSelector>(selector) == GlkSelector::char_to_upper &&
                        args.count == 1) {
-                result = static_cast<u8>(std::toupper(static_cast<unsigned char>(args.values[0])));
+                result = glk_char_to_upper(args.values[0]);
             } else if (machine.glk) {
                 result = machine.glk->call(machine, selector, args.as_span());
             }
@@ -1225,8 +1413,15 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
                 machine.regs.iosys_mode = 0;
             }
             return;
+        case Opcode::linearsearch:
+            s(7, linear_search(machine, l(0), l(1), l(2), l(3), l(4), l(5),
+                                l(6)));
+            return;
         case Opcode::binarysearch:
             s(7, binary_search(machine, l(0), l(1), l(2), l(3), l(4), l(5), l(6)));
+            return;
+        case Opcode::linkedsearch:
+            s(6, linked_search(machine, l(0), l(1), l(2), l(3), l(4), l(5)));
             return;
         case Opcode::callf: {
             const auto fn = l(0);
@@ -1286,10 +1481,9 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             return;
         }
         case Opcode::malloc:
-            s(1, 0);
-            return;
+            throw std::runtime_error("malloc is not implemented");
         case Opcode::mfree:
-            return;
+            throw std::runtime_error("mfree is not implemented");
         case Opcode::accelfunc:
             set_accelerated_function(machine, l(0), l(1));
             return;

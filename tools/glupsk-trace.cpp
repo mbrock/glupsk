@@ -18,6 +18,11 @@
 
 namespace {
 
+struct Watch {
+    glupsk::u32 address = 0;
+    glupsk::u32 words = 4;
+};
+
 struct Options {
     const char* story_path = nullptr;
     glupsk::u64 skip = 0;
@@ -26,12 +31,14 @@ struct Options {
     std::optional<glupsk::u32> start_pc;
     bool print_transcript_tail = false;
     std::vector<std::string> input_lines;
+    std::vector<Watch> watches;
 };
 
 void usage() {
     std::println(stderr,
                  "usage: glupsk-trace [--skip N] [--count N] [--max-steps N] "
-                 "[--start-pc ADDR] [--input LINE] [--transcript-tail] STORY.ulx");
+                 "[--start-pc ADDR] [--input LINE] [--watch ADDR[:WORDS]] "
+                 "[--transcript-tail] STORY.ulx");
 }
 
 glupsk::u64 parse_u64(std::string_view text) {
@@ -48,6 +55,17 @@ glupsk::u64 parse_u64(std::string_view text) {
         throw std::runtime_error("invalid integer option");
     }
     return value;
+}
+
+Watch parse_watch(std::string_view text) {
+    auto watch = Watch{};
+    if (const auto colon = text.find(':'); colon != std::string_view::npos) {
+        watch.address = static_cast<glupsk::u32>(parse_u64(text.substr(0, colon)));
+        watch.words = static_cast<glupsk::u32>(parse_u64(text.substr(colon + 1)));
+        return watch;
+    }
+    watch.address = static_cast<glupsk::u32>(parse_u64(text));
+    return watch;
 }
 
 Options parse_options(int argc, char** argv) {
@@ -71,6 +89,8 @@ Options parse_options(int argc, char** argv) {
             options.start_pc = static_cast<glupsk::u32>(parse_u64(need_value(arg)));
         } else if (arg == "--input") {
             options.input_lines.emplace_back(need_value(arg));
+        } else if (arg == "--watch") {
+            options.watches.push_back(parse_watch(need_value(arg)));
         } else if (arg == "--transcript-tail") {
             options.print_transcript_tail = true;
         } else if (arg == "--help" || arg == "-h") {
@@ -118,9 +138,23 @@ std::string_view glk_selector_name(glupsk::u32 selector) {
     switch (selector) {
         case 0x0001: return "exit";
         case 0x0004: return "gestalt";
+        case 0x0020: return "window_iterate";
+        case 0x0021: return "window_get_rock";
+        case 0x0022: return "window_get_root";
         case 0x0023: return "window_open";
+        case 0x0025: return "window_get_size";
+        case 0x002a: return "window_clear";
+        case 0x002b: return "window_move_cursor";
         case 0x002c: return "window_get_stream";
         case 0x002f: return "set_window";
+        case 0x0040: return "stream_iterate";
+        case 0x0041: return "stream_get_rock";
+        case 0x0043: return "stream_open_memory";
+        case 0x0044: return "stream_close";
+        case 0x0047: return "stream_set_current";
+        case 0x0048: return "stream_get_current";
+        case 0x0064: return "fileref_iterate";
+        case 0x0065: return "fileref_get_rock";
         case 0x0080: return "put_char";
         case 0x0081: return "put_char_stream";
         case 0x0082: return "put_string";
@@ -130,14 +164,22 @@ std::string_view glk_selector_name(glupsk::u32 selector) {
         case 0x0086: return "set_style";
         case 0x00a0: return "char_to_lower";
         case 0x00a1: return "char_to_upper";
+        case 0x00b0: return "stylehint_set";
         case 0x00c0: return "select";
         case 0x00d0: return "request_line_event";
-        case 0x0120: return "put_char_uni";
-        case 0x0121: return "put_string_uni";
-        case 0x0122: return "put_buffer_uni";
-        case 0x0123: return "put_char_stream_uni";
-        case 0x0124: return "put_string_stream_uni";
-        case 0x0125: return "put_buffer_stream_uni";
+        case 0x0120: return "buffer_to_lower_case_uni";
+        case 0x0121: return "buffer_to_upper_case_uni";
+        case 0x0122: return "buffer_to_title_case_uni";
+        case 0x0123: return "buffer_canon_decompose_uni";
+        case 0x0124: return "buffer_canon_normalize_uni";
+        case 0x0128: return "put_char_uni";
+        case 0x0129: return "put_string_uni";
+        case 0x012a: return "put_buffer_uni";
+        case 0x012b: return "put_char_stream_uni";
+        case 0x012c: return "put_string_stream_uni";
+        case 0x012d: return "put_buffer_stream_uni";
+        case 0x0139: return "stream_open_memory_uni";
+        case 0x0141: return "request_line_event_uni";
         default: return "unknown";
     }
 }
@@ -278,6 +320,25 @@ void print_stack_top(const glupsk::Machine& machine) {
     std::print("]");
 }
 
+void print_watches(const glupsk::Machine& machine, std::span<const Watch> watches) {
+    for (const auto watch : watches) {
+        std::print("watch @0x{:08x}=[", watch.address);
+        for (glupsk::u32 index = 0; index < watch.words; ++index) {
+            if (index != 0) {
+                std::print(" ");
+            }
+            const auto address = watch.address + index * 4;
+            try {
+                std::print("0x{:08x}", machine.memory.read32(address));
+            } catch (const std::exception& ex) {
+                std::print("err:{}", ex.what());
+                break;
+            }
+        }
+        std::println("]");
+    }
+}
+
 void print_opcode_annotation(
     const glupsk::Machine& machine,
     const glupsk::Instruction& instruction,
@@ -386,11 +447,16 @@ int main(int argc, char** argv) {
                 tracing_started = true;
                 start_step = step + options.skip;
             }
-            if (tracing_started && step >= start_step && printed < options.count) {
+            const auto should_trace =
+                tracing_started && step >= start_step && printed < options.count;
+            if (should_trace) {
                 print_instruction(machine, glk, instruction, step);
                 ++printed;
             }
             glupsk::step(machine);
+            if (should_trace && !options.watches.empty()) {
+                print_watches(machine, options.watches);
+            }
         }
 
         std::println("status halted={} blocked={} pc=0x{:08x} sp={} fp={} out={}",

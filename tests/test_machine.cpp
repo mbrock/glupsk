@@ -4,6 +4,7 @@
 
 #include "tests/test.hpp"
 
+#include <array>
 #include <stdexcept>
 
 namespace {
@@ -154,5 +155,101 @@ static suite machine_tests{"Machine", [] {
         stack.push32(0x11223344);
         expect(throws<std::runtime_error>([&] { stack.push32(0x55667788); }))
             << "push past stack capacity should fail";
+    };
+
+    "tracks TranscriptGlk windows and streams by handle"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto glk = glupsk::TranscriptGlk{};
+
+        auto open_root_args = std::array<glupsk::u32, 5>{0, 0, 0, 3, 201};
+        const auto root = glk.call(machine, 0x23, open_root_args);
+        expect(root != 0);
+        expect(glk.call(machine, 0x22, {}) == root);
+        expect(glk.call(machine, 0x21, std::array<glupsk::u32, 1>{root}) == 201);
+
+        auto open_status_args = std::array<glupsk::u32, 5>{root, 0x12, 1, 4, 202};
+        const auto status = glk.call(machine, 0x23, open_status_args);
+        expect(status != 0);
+        expect(status != root);
+
+        constexpr auto rock_address = glupsk::u32{256};
+        auto iterate_args = std::array<glupsk::u32, 2>{0, rock_address};
+        expect(glk.call(machine, 0x20, iterate_args) == root);
+        expect(machine.memory.read32(rock_address) == 201);
+
+        iterate_args[0] = root;
+        expect(glk.call(machine, 0x20, iterate_args) == status);
+        expect(machine.memory.read32(rock_address) == 202);
+
+        iterate_args[0] = status;
+        expect(glk.call(machine, 0x20, iterate_args) == 0);
+        expect(machine.memory.read32(rock_address) == 0);
+
+        const auto root_stream =
+            glk.call(machine, 0x2c, std::array<glupsk::u32, 1>{root});
+        expect(root_stream != 0);
+        expect(glk.call(machine, 0x41, std::array<glupsk::u32, 1>{root_stream}) ==
+               0);
+
+        auto stream_iterate_args = std::array<glupsk::u32, 2>{0, rock_address};
+        expect(glk.call(machine, 0x40, stream_iterate_args) == root_stream);
+        expect(machine.memory.read32(rock_address) == 0);
+    };
+
+    "rejects unsupported TranscriptGlk selectors and invalid handles"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto glk = glupsk::TranscriptGlk{};
+
+        expect(throws<std::runtime_error>([&] { (void) glk.call(machine, 0xffff, {}); }))
+            << "unsupported Glk selectors should be visible";
+        expect(throws<std::runtime_error>([&] {
+            (void) glk.call(machine, 0x2c, std::array<glupsk::u32, 1>{99});
+        })) << "invalid nonzero window handles should fail";
+        expect(throws<std::runtime_error>([&] {
+            (void) glk.call(machine, 0x41, std::array<glupsk::u32, 1>{99});
+        })) << "invalid nonzero stream handles should fail";
+    };
+
+    "writes Glk output references to the stack when requested"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto glk = glupsk::TranscriptGlk{};
+
+        const auto stream = glk.call(
+            machine, 0x43,
+            std::array<glupsk::u32, 4>{machine.memory.ramstart, 8, 1, 0});
+        glk.call(machine, 0x81, std::array<glupsk::u32, 2>{stream, 'x'});
+        glk.call(machine, 0x44, std::array<glupsk::u32, 2>{stream, 0xffffffffu});
+
+        expect(machine.stack.pop32() == 1);
+        expect(machine.stack.pop32() == 0);
+    };
+
+    "handles Glk Unicode buffer case selectors"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto glk = glupsk::TranscriptGlk{};
+
+        constexpr auto text = glupsk::u32{256};
+        machine.memory.write32(text, 'L');
+        machine.memory.write32(text + 4, 'o');
+        machine.memory.write32(text + 8, 'O');
+        machine.memory.write32(text + 12, 'K');
+
+        expect(glk.call(machine, 0x0120, std::array<glupsk::u32, 3>{text, 4, 4}) ==
+               4);
+        expect(machine.memory.read32(text) == 'l');
+        expect(machine.memory.read32(text + 4) == 'o');
+        expect(machine.memory.read32(text + 8) == 'o');
+        expect(machine.memory.read32(text + 12) == 'k');
+
+        glk.call(machine, 0x0128, std::array<glupsk::u32, 1>{'x'});
+        expect(glk.transcript == "x");
     };
 }};
