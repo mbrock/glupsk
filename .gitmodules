@@ -4,3 +4,6 @@
 [submodule "refimpl/quixe"]
 	path = refimpl/quixe
 	url = https://github.com/erkyrath/quixe
+[submodule "refimpl/git"]
+	path = refimpl/git
+	url = https://github.com/DavidKinder/Git
