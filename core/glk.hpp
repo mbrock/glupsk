@@ -6,6 +6,7 @@
 #include <concepts>
 #include <deque>
 #include <string>
+#include <utility>
 #include <variant>
 
 namespace glupsk {
@@ -73,16 +74,29 @@ struct GlkEvent {
     u32 val2 = 0;
 };
 
-enum class GlkCallStatus : u8 {
-    returned,
-    blocked,
-    fatal,
-};
-
-struct GlkCallResult {
-    GlkCallStatus status = GlkCallStatus::returned;
+struct GlkReturned {
     u32 value = 0;
 };
+
+struct GlkBlocked {};
+
+struct GlkFatal {
+    std::string message;
+};
+
+using GlkCallResult = std::variant<GlkReturned, GlkBlocked, GlkFatal>;
+
+inline GlkCallResult glk_returned(u32 value = 0) {
+    return GlkReturned{.value = value};
+}
+
+inline GlkCallResult glk_blocked() {
+    return GlkBlocked{};
+}
+
+inline GlkCallResult glk_fatal(std::string message) {
+    return GlkFatal{.message = std::move(message)};
+}
 
 struct GlkWindowStream {};
 
@@ -134,14 +148,18 @@ concept SemanticGlkHost = requires(Host host,
     { host.stream_get_current() } -> std::same_as<typename Host::Stream>;
     { host.stream_get_rock(stream) } -> std::same_as<typename Host::Rock>;
 
-    // Text and memory buffers are still VM-addressed at this boundary.
-    { host.put_char(machine, value) } -> std::same_as<void>;
-    { host.put_buffer(machine, address, length, false) } -> std::same_as<void>;
-    { host.put_string(machine, address, false) } -> std::same_as<void>;
+    // Text and memory buffers are still VM-addressed at this boundary: the host
+    // receives a Machine plus Glulx address/length values, not native pointers.
+    // That lets retained Glk buffers survive memory movement and keeps copying
+    // decisions in the host.
+    { host.put_char(machine, value) } -> std::same_as<GlkCallResult>;
+    { host.put_buffer(machine, address, length, false) }
+        -> std::same_as<GlkCallResult>;
+    { host.put_string(machine, address, false) } -> std::same_as<GlkCallResult>;
 
     // Input requests arm a later event; select either writes one or blocks.
     { host.request_line_event(machine, window, address, length, value, false) }
-        -> std::same_as<void>;
+        -> std::same_as<GlkCallResult>;
     { host.select(machine, address) } -> std::same_as<GlkCallResult>;
 };
 
