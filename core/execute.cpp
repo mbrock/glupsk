@@ -54,12 +54,6 @@ enum class GestaltSelector : u32 {
     double_ = 13,
 };
 
-enum class GlkSelector : u32 {
-    char_to_lower = 0x00a0,
-    char_to_upper = 0x00a1,
-    select = 0x00c0,
-};
-
 struct StoreRef {
     StoreDest type = StoreDest::discard;
     u32 address = 0;

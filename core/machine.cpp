@@ -6,63 +6,10 @@
 #include <format>
 #include <stdexcept>
 #include <string_view>
+#include <variant>
 
 namespace glupsk {
 namespace {
-
-enum class GlkSelector : u32 {
-    exit = 0x0001,
-    gestalt = 0x0004,
-    window_iterate = 0x0020,
-    window_get_rock = 0x0021,
-    window_get_root = 0x0022,
-    window_open = 0x0023,
-    window_get_size = 0x0025,
-    window_clear = 0x002a,
-    window_move_cursor = 0x002b,
-    window_get_stream = 0x002c,
-    set_window = 0x002f,
-    stream_iterate = 0x0040,
-    stream_get_rock = 0x0041,
-    stream_open_memory = 0x0043,
-    stream_close = 0x0044,
-    stream_set_current = 0x0047,
-    stream_get_current = 0x0048,
-    fileref_iterate = 0x0064,
-    fileref_get_rock = 0x0065,
-    put_char = 0x0080,
-    put_char_stream = 0x0081,
-    put_string = 0x0082,
-    put_string_stream = 0x0083,
-    put_buffer = 0x0084,
-    put_buffer_stream = 0x0085,
-    set_style = 0x0086,
-    char_to_lower = 0x00a0,
-    char_to_upper = 0x00a1,
-    stylehint_set = 0x00b0,
-    select = 0x00c0,
-    request_line_event = 0x00d0,
-    buffer_to_lower_case_uni = 0x0120,
-    buffer_to_upper_case_uni = 0x0121,
-    buffer_to_title_case_uni = 0x0122,
-    buffer_canon_decompose_uni = 0x0123,
-    buffer_canon_normalize_uni = 0x0124,
-    put_char_uni = 0x0128,
-    put_string_uni = 0x0129,
-    put_buffer_uni = 0x012a,
-    put_char_stream_uni = 0x012b,
-    put_string_stream_uni = 0x012c,
-    put_buffer_stream_uni = 0x012d,
-    stream_open_memory_uni = 0x0139,
-    request_line_event_uni = 0x0141,
-};
-
-enum class GlkGestaltSelector : u32 {
-    version = 0,
-    char_output = 3,
-    unicode = 15,
-    unicode_norm = 16,
-};
 
 std::size_t checked_offset(const Memory& memory, u32 address, std::size_t width) {
     const auto offset = static_cast<std::size_t>(address);
@@ -103,7 +50,7 @@ TranscriptStream* find_stream(TranscriptGlk& glk, u32 id) {
         return nullptr;
     }
     for (auto& stream : glk.streams) {
-        if (stream.kind != TranscriptStreamKind::none && stream.id == id) {
+        if (stream.allocated() && stream.id == id) {
             return &stream;
         }
     }
@@ -162,29 +109,32 @@ void write_glk_struct_field(Machine& machine, u32 address, u32 field, u32 value)
     machine.memory.write32(address + field * 4, value);
 }
 
+u32 memory_stream_mode(const GlkStreamBacking& backing) {
+    if (const auto* stream = std::get_if<GlkMemoryStream>(&backing)) {
+        return stream->mode;
+    }
+    if (const auto* stream = std::get_if<GlkUnicodeMemoryStream>(&backing)) {
+        return stream->mode;
+    }
+    return 0;
+}
+
 TranscriptStream& allocate_stream(TranscriptGlk& glk,
-                                  TranscriptStreamKind kind,
-                                  u32 address,
-                                  u32 len,
-                                  u32 mode,
+                                  GlkStreamBacking backing,
                                   u32 rock) {
-    if ((kind == TranscriptStreamKind::memory ||
-         kind == TranscriptStreamKind::unicode_memory) &&
-        mode != 1 && mode != 2 && mode != 3) {
+    const auto mode = memory_stream_mode(backing);
+    if (mode != 0 && mode != 1 && mode != 2 && mode != 3) {
         throw std::runtime_error(
             std::format("unsupported memory stream mode {}", mode));
     }
     for (auto& stream : glk.streams) {
-        if (stream.kind == TranscriptStreamKind::none) {
+        if (!stream.allocated()) {
             stream = {
-                .kind = kind,
+                .backing = std::move(backing),
                 .id = glk.next_stream_id++,
-                .address = address,
-                .len = len,
                 .pos = 0,
                 .read_count = 0,
                 .write_count = 0,
-                .mode = mode,
                 .rock = rock,
             };
             return stream;
@@ -196,8 +146,7 @@ TranscriptStream& allocate_stream(TranscriptGlk& glk,
 u32 allocate_window(TranscriptGlk& glk, u32 type, u32 rock) {
     for (auto& window : glk.windows) {
         if (window.id == 0) {
-            auto& stream = allocate_stream(glk, TranscriptStreamKind::window,
-                                           0, 0, 0, 0);
+            auto& stream = allocate_stream(glk, GlkWindowStream{}, 0);
             window = {
                 .id = glk.next_window_id++,
                 .rock = rock,
@@ -243,7 +192,7 @@ u32 iterate_streams(TranscriptGlk& glk, u32 previous_id, u32 rock_address,
     auto return_next = previous_id == 0;
     auto found_previous = previous_id == 0;
     for (const auto& stream : glk.streams) {
-        if (stream.kind == TranscriptStreamKind::none) {
+        if (!stream.allocated()) {
             continue;
         }
         if (return_next) {
@@ -264,7 +213,7 @@ u32 iterate_streams(TranscriptGlk& glk, u32 previous_id, u32 rock_address,
 }
 
 void close_stream(Machine& machine, TranscriptStream& stream, u32 result_address) {
-    if (stream.kind == TranscriptStreamKind::window) {
+    if (std::holds_alternative<GlkWindowStream>(stream.backing)) {
         throw std::runtime_error("stream_close cannot close a window stream");
     }
     write_glk_struct_field(machine, result_address, 0, stream.read_count);
@@ -276,34 +225,33 @@ void write_stream_char(Machine& machine,
                        TranscriptGlk& glk,
                        TranscriptStream& stream,
                        u32 ch) {
-    switch (stream.kind) {
-        case TranscriptStreamKind::window:
-            glk.transcript.push_back(ch <= 0x7f ? static_cast<char>(ch) : '?');
-            ++stream.write_count;
-            return;
-        case TranscriptStreamKind::memory:
-            if (stream.mode == 2) {
-                throw std::runtime_error("cannot write to read-only memory stream");
-            }
-            if (stream.pos < stream.len && stream.address != 0) {
-                machine.memory.write8(stream.address + stream.pos, static_cast<u8>(ch));
-            }
-            ++stream.pos;
-            ++stream.write_count;
-            return;
-        case TranscriptStreamKind::unicode_memory:
-            if (stream.mode == 2) {
-                throw std::runtime_error(
-                    "cannot write to read-only unicode memory stream");
-            }
-            if (stream.pos < stream.len && stream.address != 0) {
-                machine.memory.write32(stream.address + stream.pos * 4, ch);
-            }
-            ++stream.pos;
-            ++stream.write_count;
-            return;
-        case TranscriptStreamKind::none:
-            return;
+    if (std::holds_alternative<GlkWindowStream>(stream.backing)) {
+        glk.transcript.push_back(ch <= 0x7f ? static_cast<char>(ch) : '?');
+        ++stream.write_count;
+        return;
+    }
+    if (const auto* memory = std::get_if<GlkMemoryStream>(&stream.backing)) {
+        if (memory->mode == 2) {
+            throw std::runtime_error("cannot write to read-only memory stream");
+        }
+        if (stream.pos < memory->len && memory->address != 0) {
+            machine.memory.write8(memory->address + stream.pos, static_cast<u8>(ch));
+        }
+        ++stream.pos;
+        ++stream.write_count;
+        return;
+    }
+    if (const auto* memory =
+            std::get_if<GlkUnicodeMemoryStream>(&stream.backing)) {
+        if (memory->mode == 2) {
+            throw std::runtime_error(
+                "cannot write to read-only unicode memory stream");
+        }
+        if (stream.pos < memory->len && memory->address != 0) {
+            machine.memory.write32(memory->address + stream.pos * 4, ch);
+        }
+        ++stream.pos;
+        ++stream.write_count;
     }
 }
 
@@ -547,15 +495,23 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
             return 0;
         case GlkSelector::stream_open_memory:
             if (args.size() >= 4) {
-                return allocate_stream(*this, TranscriptStreamKind::memory, args[0],
-                                       args[1], args[2], args[3])
+                return allocate_stream(
+                           *this,
+                           GlkMemoryStream{.address = args[0],
+                                           .len = args[1],
+                                           .mode = args[2]},
+                           args[3])
                     .id;
             }
             return 0;
         case GlkSelector::stream_open_memory_uni:
             if (args.size() >= 4) {
-                return allocate_stream(*this, TranscriptStreamKind::unicode_memory,
-                                       args[0], args[1], args[2], args[3])
+                return allocate_stream(
+                           *this,
+                           GlkUnicodeMemoryStream{.address = args[0],
+                                                  .len = args[1],
+                                                  .mode = args[2]},
+                           args[3])
                     .id;
             }
             return 0;
