@@ -4,6 +4,8 @@
 
 #include "tests/test.hpp"
 
+#include <stdexcept>
+
 namespace {
 
 glupsk::Bytes synthetic_story_with_extra_memory() {
@@ -75,5 +77,51 @@ static suite machine_tests{"Machine", [] {
         expect(machine.stack.bytes.size() == 65536);
         expect(machine.regs.pc == 0x3c);
         expect(machine.regs.string_table == 0x690b1);
+    };
+
+    "reads memory in big-endian order"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+
+        machine.memory.bytes[300] = 0x12;
+        machine.memory.bytes[301] = 0x34;
+        machine.memory.bytes[302] = 0x56;
+        machine.memory.bytes[303] = 0x78;
+
+        expect(machine.memory.read8(300) == 0x12);
+        expect(machine.memory.read16(300) == 0x1234);
+        expect(machine.memory.read32(300) == 0x12345678);
+    };
+
+    "writes only to RAM in big-endian order"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+
+        machine.memory.write8(256, 0xab);
+        machine.memory.write16(258, 0xcdef);
+        machine.memory.write32(260, 0x12345678);
+
+        expect(machine.memory.bytes[256] == 0xab);
+        expect(machine.memory.bytes[258] == 0xcd);
+        expect(machine.memory.bytes[259] == 0xef);
+        expect(machine.memory.read32(260) == 0x12345678);
+    };
+
+    "rejects out-of-range memory access and ROM writes"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+
+        expect(throws<std::runtime_error>(
+            [&] { (void) machine.memory.read8(320); }))
+            << "read at ENDMEM should fail";
+        expect(throws<std::runtime_error>(
+            [&] { (void) machine.memory.read32(318); }))
+            << "wide read past ENDMEM should fail";
+        expect(throws<std::runtime_error>(
+            [&] { machine.memory.write8(255, 0); }))
+            << "ROM writes should fail";
     };
 }};

@@ -369,6 +369,16 @@ inline expectation expect(bool ok) {
     return {ok};
 }
 
+template <typename Exception, typename Fn>
+bool throws(Fn&& fn) {
+    try {
+        std::forward<Fn>(fn)();
+    } catch (const Exception&) {
+        return true;
+    }
+    return false;
+}
+
 struct run_options {
     int argc = 0;
     char** argv = nullptr;
