@@ -95,6 +95,23 @@ u32 glk_char_to_upper(u32 ch) {
     return ch;
 }
 
+u32 next_random(Machine& machine) {
+    machine.rng_state = machine.rng_state * 1664525u + 1013904223u;
+    return machine.rng_state;
+}
+
+u32 random_in_range(Machine& machine, u32 bound) {
+    const auto value = next_random(machine);
+    if (bound == 0) {
+        return value;
+    }
+    if ((bound & 0x80000000u) == 0) {
+        return value % bound;
+    }
+    const auto count = 0u - bound;
+    return 0u - (value % count);
+}
+
 std::int32_t as_signed(u32 value) {
     return static_cast<std::int32_t>(value);
 }
@@ -650,11 +667,12 @@ u32 gestalt(u32 selector, u32 arg) {
             return 0x00030103;
         case GestaltSelector::terp_version:
             return 0x00000001;
-        case GestaltSelector::resize_mem:
         case GestaltSelector::undo:
         case GestaltSelector::malloc_:
         case GestaltSelector::ext_undo:
             return 0;
+        case GestaltSelector::resize_mem:
+            return 1;
         case GestaltSelector::io_system:
             return (arg == 0 || arg == 1 || arg == 2) ? 1 : 0;
         case GestaltSelector::unicode:
@@ -1346,16 +1364,24 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
         case Opcode::getmemsize:
             s(0, static_cast<u32>(machine.memory.bytes.size()));
             return;
-        case Opcode::setmemsize:
-            s(1, 1);
+        case Opcode::setmemsize: {
+            const auto new_size = l(0);
+            if ((new_size & 0xffu) != 0 || new_size < machine.memory.endmem) {
+                s(1, 1);
+                return;
+            }
+            machine.memory.bytes.resize(new_size);
+            s(1, 0);
             return;
+        }
         case Opcode::jumpabs:
             machine.regs.pc = l(0);
             return;
         case Opcode::random:
-            s(1, 0);
+            s(1, random_in_range(machine, l(0)));
             return;
         case Opcode::setrandom:
+            machine.rng_state = l(0) == 0 ? 0x6d2b79f5 : l(0);
             return;
         case Opcode::quit:
             machine.halted = true;

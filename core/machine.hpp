@@ -110,6 +110,7 @@ struct Machine {
     Memory memory;
     Stack stack;
     Registers regs;
+    u32 rng_state = 0x6d2b79f5;
     std::array<u32, 9> accel_params = {};
     std::array<AccelerationEntry, 64> accel_entries = {};
     bool running = false;
