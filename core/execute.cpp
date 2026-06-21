@@ -2,7 +2,6 @@
 
 #include "core/decode.hpp"
 
-#include <algorithm>
 #include <array>
 #include <cctype>
 #include <cstdint>
@@ -99,6 +98,26 @@ u32 locals_base(const Machine& machine) {
 
 u32 value_stack_base(const Machine& machine) {
     return machine.regs.frame_ptr + frame_len(machine);
+}
+
+void swap_stack_words(Stack& stack, u32 left, u32 right) {
+    const auto value = stack.read32(left);
+    stack.write32(left, stack.read32(right));
+    stack.write32(right, value);
+}
+
+void reverse_stack_words(Stack& stack, u32 start, u32 count) {
+    if (count == 0) {
+        return;
+    }
+
+    auto left = start;
+    auto right = start + (count - 1) * 4;
+    while (left < right) {
+        swap_stack_words(stack, left, right);
+        left += 4;
+        right -= 4;
+    }
 }
 
 u32 ram_address(const Machine& machine, u32 offset) {
@@ -821,18 +840,15 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             if (count == 0 || places_signed == 0) {
                 return;
             }
-            auto values = std::vector<u32>(count);
-            for (u32 index = 0; index < count; ++index) {
-                values[count - 1 - index] = machine.stack.pop32();
-            }
             auto places = places_signed % static_cast<std::int32_t>(count);
             if (places < 0) {
                 places += static_cast<std::int32_t>(count);
             }
-            std::rotate(values.begin(), values.end() - places, values.end());
-            for (const auto value : values) {
-                machine.stack.push32(value);
-            }
+            const auto start = machine.stack.sp - count * 4;
+            reverse_stack_words(machine.stack, start, count);
+            reverse_stack_words(machine.stack, start, static_cast<u32>(places));
+            reverse_stack_words(machine.stack, start + static_cast<u32>(places) * 4,
+                                count - static_cast<u32>(places));
             return;
         }
         case Opcode::stkcopy: {
