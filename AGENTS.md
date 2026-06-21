@@ -8,6 +8,10 @@ Read `glupsk-spec.txt` first for the project goals, architecture sketch, constra
 
 Reference implementations live under `refimpl/` as git submodules. Reference games, test data, and archived external fixtures live under `refdata/`. Tooling or compiler-packaging helpers live under `tools/`.
 
+## Build
+
+Use the root GNU `Makefile`; do not introduce CMake or another build system unless explicitly asked. `make` builds the default C++ tool, `make test` runs the lightweight test binary, `make info` inspects the committed AA Glulx story, and `make aa` rebuilds `refdata/aa.ulx` through the Inform 7 Nix tooling.
+
 ## Commit Style
 
 Keep the repository in clean checkpoints. Commits are cheap and should usually be made after reasonable self-contained steps, especially after adding dependencies, reference material, scaffolding, or other coherent chunks of work.
