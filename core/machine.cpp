@@ -69,7 +69,19 @@ TranscriptWindow* find_window(TranscriptGlk& glk, u32 id) {
     return nullptr;
 }
 
-TranscriptWindow& require_window(TranscriptGlk& glk, u32 id,
+TranscriptFileRef* find_fileref(TranscriptGlk& glk, u32 id) {
+    if (id == 0) {
+        return nullptr;
+    }
+    for (auto& fileref : glk.filerefs) {
+        if (fileref.id == id) {
+            return &fileref;
+        }
+    }
+    return nullptr;
+}
+
+TranscriptWindow& require_window_record(TranscriptGlk& glk, u32 id,
                                  std::string_view operation) {
     if (auto* window = find_window(glk, id)) {
         return *window;
@@ -78,13 +90,22 @@ TranscriptWindow& require_window(TranscriptGlk& glk, u32 id,
         std::format("{} received invalid window {}", operation, id));
 }
 
-TranscriptStream& require_stream(TranscriptGlk& glk, u32 id,
+TranscriptStream& require_stream_record(TranscriptGlk& glk, u32 id,
                                  std::string_view operation) {
     if (auto* stream = find_stream(glk, id)) {
         return *stream;
     }
     throw std::runtime_error(
         std::format("{} received invalid stream {}", operation, id));
+}
+
+TranscriptFileRef& require_fileref_record(TranscriptGlk& glk, u32 id,
+                                   std::string_view operation) {
+    if (auto* fileref = find_fileref(glk, id)) {
+        return *fileref;
+    }
+    throw std::runtime_error(
+        std::format("{} received invalid fileref {}", operation, id));
 }
 
 void write_glk_ref(Machine& machine, u32 address, u32 value) {
@@ -413,6 +434,39 @@ void TranscriptGlk::add_input_line(std::string line) {
     input_lines.push_back(std::move(line));
 }
 
+TranscriptWindow& TranscriptGlk::require_window(GlkWindowHandle window) {
+    return require_window_record(*this, window.id, "registry require_window");
+}
+
+TranscriptStream& TranscriptGlk::require_stream(GlkStreamHandle stream) {
+    return require_stream_record(*this, stream.id, "registry require_stream");
+}
+
+TranscriptFileRef& TranscriptGlk::require_fileref(GlkFileRefHandle fileref) {
+    return require_fileref_record(*this, fileref.id, "registry require_fileref");
+}
+
+GlkWindowHandle TranscriptGlk::intern_window(TranscriptWindow& window) {
+    if (window.id == 0) {
+        throw std::runtime_error("cannot intern unallocated window");
+    }
+    return {.id = window.id};
+}
+
+GlkStreamHandle TranscriptGlk::intern_stream(TranscriptStream& stream) {
+    if (!stream.allocated() || stream.id == 0) {
+        throw std::runtime_error("cannot intern unallocated stream");
+    }
+    return {.id = stream.id};
+}
+
+GlkFileRefHandle TranscriptGlk::intern_fileref(TranscriptFileRef& fileref) {
+    if (fileref.id == 0) {
+        throw std::runtime_error("cannot intern unallocated fileref");
+    }
+    return {.id = fileref.id};
+}
+
 bool TranscriptGlk::select_would_block() const {
     return !line_pending || input_lines.empty();
 }
@@ -444,7 +498,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
                                    args.size() >= 2 ? args[1] : 0, machine);
         case GlkSelector::window_get_rock:
             if (!args.empty()) {
-                return require_window(*this, args[0], "window_get_rock").rock;
+                return require_window_record(*this, args[0], "window_get_rock").rock;
             }
             return 0;
         case GlkSelector::window_get_root:
@@ -456,32 +510,32 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
             return allocate_window(*this, 0, 0);
         case GlkSelector::window_get_size:
             if (args.size() >= 3) {
-                (void) require_window(*this, args[0], "window_get_size");
+                (void) require_window_record(*this, args[0], "window_get_size");
                 write_glk_ref(machine, args[1], 80);
                 write_glk_ref(machine, args[2], 24);
             }
             return 0;
         case GlkSelector::window_clear:
             if (!args.empty()) {
-                (void) require_window(*this, args[0], "window_clear");
+                (void) require_window_record(*this, args[0], "window_clear");
             }
             return 0;
         case GlkSelector::window_move_cursor:
             if (!args.empty()) {
-                (void) require_window(*this, args[0], "window_move_cursor");
+                (void) require_window_record(*this, args[0], "window_move_cursor");
             }
             return 0;
         case GlkSelector::window_get_stream:
             if (args.empty()) {
                 return 0;
             }
-            return require_window(*this, args[0], "window_get_stream").stream_id;
+            return require_window_record(*this, args[0], "window_get_stream").stream_id;
         case GlkSelector::set_window:
             current_stream = 0;
             if (!args.empty()) {
                 if (args[0] != 0) {
                     current_stream =
-                        require_window(*this, args[0], "set_window").stream_id;
+                        require_window_record(*this, args[0], "set_window").stream_id;
                 }
             }
             return 0;
@@ -490,7 +544,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
                                    args.size() >= 2 ? args[1] : 0, machine);
         case GlkSelector::stream_get_rock:
             if (!args.empty()) {
-                return require_stream(*this, args[0], "stream_get_rock").rock;
+                return require_stream_record(*this, args[0], "stream_get_rock").rock;
             }
             return 0;
         case GlkSelector::stream_open_memory:
@@ -517,7 +571,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
             return 0;
         case GlkSelector::stream_close:
             if (!args.empty()) {
-                auto& stream = require_stream(*this, args[0], "stream_close");
+                auto& stream = require_stream_record(*this, args[0], "stream_close");
                 if (current_stream == stream.id) {
                     current_stream = 0;
                 }
@@ -527,7 +581,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
         case GlkSelector::stream_set_current:
             current_stream = 0;
             if (!args.empty() && args[0] != 0) {
-                (void) require_stream(*this, args[0], "stream_set_current");
+                (void) require_stream_record(*this, args[0], "stream_set_current");
                 current_stream = args[0];
             }
             return 0;
@@ -557,7 +611,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
         case GlkSelector::put_char_stream:
         case GlkSelector::put_char_stream_uni:
             if (args.size() >= 2) {
-                (void) require_stream(*this, args[0], "put_char_stream");
+                (void) require_stream_record(*this, args[0], "put_char_stream");
                 const auto old_stream = current_stream;
                 current_stream = args[0];
                 put_char(machine, args[1]);
@@ -570,7 +624,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
                 const auto old_stream = current_stream;
                 if (static_cast<GlkSelector>(selector) == GlkSelector::put_string_stream &&
                     args.size() >= 2) {
-                    (void) require_stream(*this, args[0], "put_string_stream");
+                    (void) require_stream_record(*this, args[0], "put_string_stream");
                     current_stream = args[0];
                 }
                 put_c_string(*this, machine, args.back() + 1);
@@ -584,7 +638,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
                 if (static_cast<GlkSelector>(selector) ==
                         GlkSelector::put_string_stream_uni &&
                     args.size() >= 2) {
-                    (void) require_stream(*this, args[0],
+                    (void) require_stream_record(*this, args[0],
                                           "put_string_stream_uni");
                     current_stream = args[0];
                 }
@@ -599,7 +653,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
             return 0;
         case GlkSelector::put_buffer_stream:
             if (args.size() >= 3) {
-                (void) require_stream(*this, args[0], "put_buffer_stream");
+                (void) require_stream_record(*this, args[0], "put_buffer_stream");
                 const auto old_stream = current_stream;
                 current_stream = args[0];
                 put_byte_buffer(*this, machine, args[1], args[2]);
@@ -613,7 +667,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
             return 0;
         case GlkSelector::put_buffer_stream_uni:
             if (args.size() >= 3) {
-                (void) require_stream(*this, args[0], "put_buffer_stream_uni");
+                (void) require_stream_record(*this, args[0], "put_buffer_stream_uni");
                 const auto old_stream = current_stream;
                 current_stream = args[0];
                 put_uni_buffer(*this, machine, args[1], args[2]);
@@ -643,7 +697,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
             return args.size() >= 3 ? args[2] : 0;
         case GlkSelector::request_line_event:
             if (args.size() >= 3) {
-                (void) require_window(*this, args[0], "request_line_event");
+                (void) require_window_record(*this, args[0], "request_line_event");
                 line_pending = true;
                 line_unicode = false;
                 line_window = args[0];
@@ -654,7 +708,7 @@ u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
             return 0;
         case GlkSelector::request_line_event_uni:
             if (args.size() >= 3) {
-                (void) require_window(*this, args[0], "request_line_event_uni");
+                (void) require_window_record(*this, args[0], "request_line_event_uni");
                 line_pending = true;
                 line_unicode = true;
                 line_window = args[0];
