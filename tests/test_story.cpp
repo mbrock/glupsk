@@ -1,10 +1,8 @@
 #include "core/bytes.hpp"
 #include "core/story.hpp"
 
-#include <cassert>
-#include <cstdlib>
-#include <cstdio>
-#include <print>
+#include "tests/test.hpp"
+
 #include <stdexcept>
 #include <string>
 
@@ -25,60 +23,59 @@ glupsk::Bytes minimal_story() {
 }
 
 template <typename Fn>
-void expect_throw(Fn fn, const std::string& label) {
+bool throws_runtime_error(Fn fn) {
     try {
         fn();
     } catch (const std::runtime_error&) {
-        return;
+        return true;
     }
-    std::println(stderr, "expected runtime_error: {}", label);
-    std::abort();
-}
-
-void test_minimal_story() {
-    const auto story = glupsk::Story::from_bytes(minimal_story());
-    assert(story.header().magic == glupsk::kGlulxMagic);
-    assert(story.version_string() == "3.1.3");
-    assert(story.header().ramstart == 256);
-    assert(story.header().extstart == story.bytes().size());
-    assert(story.checksum_ok());
-}
-
-void test_rejects_bad_inputs() {
-    expect_throw([] { glupsk::Story::from_bytes(glupsk::Bytes(35)); },
-                 "short header");
-
-    auto bad_magic = minimal_story();
-    bad_magic[0] = 0;
-    expect_throw([&] { glupsk::Story::from_bytes(bad_magic); }, "bad magic");
-
-    auto bad_length = minimal_story();
-    bad_length.push_back(0);
-    expect_throw([&] { glupsk::Story::from_bytes(bad_length); },
-                 "unaligned length");
-}
-
-void test_aa_story() {
-    const auto story = glupsk::Story::load("refdata/aa.ulx");
-    assert(story.version_string() == "3.1.2");
-    assert(story.bytes().size() == 874240);
-    assert(story.header().ramstart == 669952);
-    assert(story.header().extstart == 874240);
-    assert(story.header().endmem == 874240);
-    assert(story.header().stack_size == 65536);
-    assert(story.header().start_func == 0x3c);
-    assert(story.header().decoding_table == 0x690b1);
-    assert(story.header().checksum == 0xbb6436aa);
-    assert(story.computed_checksum() == 0xbb6436aa);
-    assert(story.checksum_ok());
+    return false;
 }
 
 }  // namespace
 
-int main() {
-    test_minimal_story();
-    test_rejects_bad_inputs();
-    test_aa_story();
-    std::println("test_story: ok");
-    return 0;
-}
+using namespace glupsk::test;
+
+static suite story_tests{"Story", [] {
+    "parses a minimal synthetic story"_test = [] {
+        const auto story = glupsk::Story::from_bytes(minimal_story());
+        expect(story.header().magic == glupsk::kGlulxMagic);
+        expect(story.version_string() == "3.1.3");
+        expect(story.header().ramstart == 256);
+        expect(story.header().extstart == story.bytes().size());
+        expect(story.checksum_ok());
+    };
+
+    "rejects malformed story bytes"_test = [] {
+        expect(throws_runtime_error(
+            [] { glupsk::Story::from_bytes(glupsk::Bytes(35)); }))
+            << "short headers should be rejected";
+
+        auto bad_magic = minimal_story();
+        bad_magic[0] = 0;
+        expect(throws_runtime_error(
+            [&] { glupsk::Story::from_bytes(bad_magic); }))
+            << "bad magic should be rejected";
+
+        auto bad_length = minimal_story();
+        bad_length.push_back(0);
+        expect(throws_runtime_error(
+            [&] { glupsk::Story::from_bytes(bad_length); }))
+            << "unaligned lengths should be rejected";
+    };
+
+    "parses the committed AA story"_test = [] {
+        const auto story = glupsk::Story::load("refdata/aa.ulx");
+        expect(story.version_string() == "3.1.2");
+        expect(story.bytes().size() == 874240);
+        expect(story.header().ramstart == 669952);
+        expect(story.header().extstart == 874240);
+        expect(story.header().endmem == 874240);
+        expect(story.header().stack_size == 65536);
+        expect(story.header().start_func == 0x3c);
+        expect(story.header().decoding_table == 0x690b1);
+        expect(story.header().checksum == 0xbb6436aa);
+        expect(story.computed_checksum() == 0xbb6436aa);
+        expect(story.checksum_ok());
+    };
+}};

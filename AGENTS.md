@@ -16,6 +16,8 @@ Meson is also available for editor tooling and a conventional compile database. 
 
 Use C++23. Prefer `std::format`, `std::print`, and `std::println` over iostream formatting for new code.
 
+Tests use the lightweight harness in `tests/test.hpp`: register static `suite`s and write cases with `"name"_test = [] { ... };` plus `expect(...)`.
+
 ## Commit Style
 
 Keep the repository in clean checkpoints. Commits are cheap and should usually be made after reasonable self-contained steps, especially after adding dependencies, reference material, scaffolding, or other coherent chunks of work.

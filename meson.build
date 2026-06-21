@@ -24,7 +24,10 @@ glupsk_info = executable(
 
 test_story = executable(
   'test_story',
-  files('tests/test_story.cpp'),
+  files(
+    'tests/test-main.cpp',
+    'tests/test_story.cpp',
+  ),
   include_directories: root_inc,
   link_with: core_lib,
 )

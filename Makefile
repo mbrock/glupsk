@@ -13,6 +13,8 @@ MESON_BUILD_DIR := $(BUILD_DIR)/meson
 CORE_OBJS := $(BUILD_DIR)/core/story.o
 GLUPSK_INFO := $(BUILD_DIR)/glupsk-info
 TEST_STORY := $(BUILD_DIR)/test_story
+TEST_STORY_SRCS := tests/test-main.cpp tests/test_story.cpp
+TEST_STORY_DEPS := tests/test.hpp
 
 .PHONY: all aa clean clean-aa compile-commands info meson meson-setup meson-test test
 
@@ -31,9 +33,9 @@ $(GLUPSK_INFO): tools/glupsk-info.cpp $(CORE_OBJS)
 	@mkdir -p $(dir $@)
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
 
-$(TEST_STORY): tests/test_story.cpp $(CORE_OBJS)
+$(TEST_STORY): $(TEST_STORY_SRCS) $(TEST_STORY_DEPS) $(CORE_OBJS)
 	@mkdir -p $(dir $@)
-	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $^ -o $@
+	$(CXX) $(CPPFLAGS) $(CXXFLAGS) $(TEST_STORY_SRCS) $(CORE_OBJS) -o $@
 
 test: $(TEST_STORY)
 	$(TEST_STORY)
