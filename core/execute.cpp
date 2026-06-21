@@ -19,6 +19,15 @@ struct StoreRef {
     u32 address = 0;
 };
 
+struct Arguments {
+    std::array<u32, 32> values = {};
+    u32 count = 0;
+
+    span<const u32> as_span() const {
+        return {values.data(), static_cast<std::size_t>(count)};
+    }
+};
+
 u32 sign_extend(u32 value, int bits) {
     const auto mask = u32{1} << (bits - 1);
     return (value ^ mask) - mask;
@@ -186,10 +195,15 @@ void store_value(Machine& machine, Operand operand, u32 value, u8 width = 4) {
     store_value(machine, store_ref(machine, operand), value, width);
 }
 
-std::vector<u32> pop_arguments(Machine& machine, u32 argc) {
-    auto args = std::vector<u32>(argc);
+Arguments pop_arguments(Machine& machine, u32 argc) {
+    if (argc > 32) {
+        throw std::runtime_error("too many temporary arguments");
+    }
+
+    Arguments args;
+    args.count = argc;
     for (u32 index = 0; index < argc; ++index) {
-        args[index] = machine.stack.pop32();
+        args.values[index] = machine.stack.pop32();
     }
     return args;
 }
@@ -232,17 +246,17 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
     }
 
     const auto frame_ptr = machine.stack.sp;
-    auto format_bytes = std::vector<u8>{};
+    const auto format_start = address;
+    auto format_cursor = address;
+    auto format_pair_count = u32{0};
     auto local_len = u32{0};
     while (true) {
-        const auto local_type = machine.memory.read8(address++);
-        const auto local_count = machine.memory.read8(address++);
-        format_bytes.push_back(local_type);
-        format_bytes.push_back(local_count);
+        const auto local_type = machine.memory.read8(format_cursor++);
+        const auto local_count = machine.memory.read8(format_cursor++);
+        ++format_pair_count;
         if (local_type == 0) {
-            if ((format_bytes.size() / 2) & 1) {
-                format_bytes.push_back(0);
-                format_bytes.push_back(0);
+            if (format_pair_count & 1) {
+                ++format_pair_count;
             }
             break;
         }
@@ -254,7 +268,9 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
     }
     local_len = align_to(local_len, 4);
 
-    const auto locals_pos_value = static_cast<u32>(8 + format_bytes.size());
+    const auto raw_format_bytes = format_cursor - format_start;
+    const auto format_bytes = format_pair_count * 2;
+    const auto locals_pos_value = 8 + format_bytes;
     const auto frame_len_value = locals_pos_value + local_len;
 
     if (static_cast<std::size_t>(frame_ptr) + frame_len_value >
@@ -264,9 +280,12 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
 
     machine.stack.write32(frame_ptr, frame_len_value);
     machine.stack.write32(frame_ptr + 4, locals_pos_value);
-    for (auto index = std::size_t{0}; index < format_bytes.size(); ++index) {
-        machine.stack.write8(frame_ptr + 8 + static_cast<u32>(index),
-                             format_bytes[index]);
+    for (u32 index = 0; index < raw_format_bytes; ++index) {
+        machine.stack.write8(frame_ptr + 8 + index,
+                             machine.memory.read8(format_start + index));
+    }
+    for (u32 index = raw_format_bytes; index < format_bytes; ++index) {
+        machine.stack.write8(frame_ptr + 8 + index, 0);
     }
     for (u32 offset = 0; offset < local_len; ++offset) {
         machine.stack.write8(frame_ptr + locals_pos_value + offset, 0);
@@ -274,7 +293,7 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
 
     machine.regs.frame_ptr = frame_ptr;
     machine.stack.sp = frame_ptr + frame_len_value;
-    machine.regs.pc = address;
+    machine.regs.pc = format_cursor;
 
     if (type == 0xc0) {
         for (auto it = args.rbegin(); it != args.rend(); ++it) {
@@ -284,12 +303,12 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
         return;
     }
 
-    auto format_cursor = frame_ptr + 8;
+    auto frame_format_cursor = frame_ptr + 8;
     auto local_cursor = frame_ptr + locals_pos_value;
     auto arg_index = std::size_t{0};
     while (arg_index < args.size()) {
-        const auto local_type = machine.stack.read8(format_cursor++);
-        const auto local_count = machine.stack.read8(format_cursor++);
+        const auto local_type = machine.stack.read8(frame_format_cursor++);
+        const auto local_count = machine.stack.read8(frame_format_cursor++);
         if (local_type == 0) {
             break;
         }
@@ -638,7 +657,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             const auto dest = store_ref(machine, a[2]);
             const auto args = pop_arguments(machine, argc);
             push_call_stub(machine, dest, insn.next_pc);
-            enter_function(machine, fn, args);
+            enter_function(machine, fn, args.as_span());
             return;
         }
         case 0x31:
@@ -665,7 +684,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             const auto argc = l(1);
             const auto args = pop_arguments(machine, argc);
             machine.stack.sp = machine.regs.frame_ptr;
-            enter_function(machine, fn, args);
+            enter_function(machine, fn, args.as_span());
             return;
         }
         case 0x40:
@@ -828,12 +847,12 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             const auto dest = store_ref(machine, a[2]);
             auto args = pop_arguments(machine, argc);
             auto result = u32{0};
-            if (selector == 0x00a0 && args.size() == 1) {
-                result = static_cast<u8>(std::tolower(static_cast<unsigned char>(args[0])));
-            } else if (selector == 0x00a1 && args.size() == 1) {
-                result = static_cast<u8>(std::toupper(static_cast<unsigned char>(args[0])));
+            if (selector == 0x00a0 && args.count == 1) {
+                result = static_cast<u8>(std::tolower(static_cast<unsigned char>(args.values[0])));
+            } else if (selector == 0x00a1 && args.count == 1) {
+                result = static_cast<u8>(std::toupper(static_cast<unsigned char>(args.values[0])));
             } else if (machine.glk) {
-                result = machine.glk->call(selector, args);
+                result = machine.glk->call(selector, args.as_span());
             }
             store_value(machine, dest, result);
             return;
