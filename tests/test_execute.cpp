@@ -283,6 +283,29 @@ static suite execute_tests{"Execute", [] {
             << glk.transcript;
     };
 
+    "runs an AA opening command script"_test = [&] {
+        auto glk = glupsk::TranscriptGlk{};
+        glk.add_input_line("south");
+        glk.add_input_line("south");
+        glk.add_input_line("look");
+        glk.add_input_line("listen");
+        glk.add_input_line("quit");
+        glk.add_input_line("y");
+        auto machine = load_with_transcript("refdata/aa.ulx", glk);
+
+        const auto result = glupsk::run_until_blocked(machine, 20'000'000);
+        expect(result.halted) << glk.transcript;
+        expect(!result.blocked) << glk.transcript;
+        expect(glk.transcript.find("Carlyle Lobby") != std::string::npos)
+            << glk.transcript;
+        expect(glk.transcript.find("Bemelmans Bar") != std::string::npos)
+            << glk.transcript;
+        expect(glk.transcript.find("You listen.") != std::string::npos)
+            << glk.transcript;
+        expect(glk.transcript.find("Fatal Error") == std::string::npos)
+            << glk.transcript;
+    };
+
     "runs the tiny Inform 7 command script"_test = [&] {
         auto glk = glupsk::TranscriptGlk{};
         glk.add_input_line("look");
