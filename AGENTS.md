@@ -10,7 +10,9 @@ Reference implementations live under `refimpl/` as git submodules. Reference gam
 
 ## Build
 
-Use the root GNU `Makefile`; do not introduce CMake or another build system unless explicitly asked. `make` builds the default C++ tool, `make test` runs the lightweight test binary, `make info` inspects the committed AA Glulx story, and `make aa` rebuilds `refdata/aa.ulx` through the Inform 7 Nix tooling.
+Use the root GNU `Makefile` for the simple local loop. `make` builds the default C++ tool, `make test` runs the lightweight test binary, `make info` inspects the committed AA Glulx story, and `make aa` rebuilds `refdata/aa.ulx` through the Inform 7 Nix tooling.
+
+Meson is also available for editor tooling and a conventional compile database. `make compile-commands` creates `build/meson/compile_commands.json` and links it at the repo root for clangd. `make meson-test` verifies the Meson build.
 
 ## Commit Style
 

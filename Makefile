@@ -1,4 +1,5 @@
 NIX ?= nix
+MESON ?= meson
 CXX ?= c++
 CPPFLAGS ?= -I.
 CXXFLAGS ?= -std=c++20 -Wall -Wextra -Wpedantic -O2 -g
@@ -8,11 +9,12 @@ AA_STORY := refdata/aa.ulx
 I7_FLAKE := ./tools/inform7-nix
 
 BUILD_DIR := build
+MESON_BUILD_DIR := $(BUILD_DIR)/meson
 CORE_OBJS := $(BUILD_DIR)/core/story.o
 GLUPSK_INFO := $(BUILD_DIR)/glupsk-info
 TEST_STORY := $(BUILD_DIR)/test_story
 
-.PHONY: all aa clean clean-aa info test
+.PHONY: all aa clean clean-aa compile-commands info meson meson-setup meson-test test
 
 all: $(GLUPSK_INFO)
 
@@ -39,8 +41,24 @@ test: $(TEST_STORY)
 info: $(GLUPSK_INFO)
 	$(GLUPSK_INFO) $(AA_STORY)
 
+meson-setup:
+	@if [ -d "$(MESON_BUILD_DIR)" ]; then \
+		$(MESON) setup --reconfigure "$(MESON_BUILD_DIR)"; \
+	else \
+		$(MESON) setup "$(MESON_BUILD_DIR)"; \
+	fi
+
+meson: meson-setup
+	$(MESON) compile -C "$(MESON_BUILD_DIR)"
+
+meson-test: meson
+	$(MESON) test -C "$(MESON_BUILD_DIR)"
+
+compile-commands: meson-setup
+	ln -sf "$(MESON_BUILD_DIR)/compile_commands.json" compile_commands.json
+
 clean:
-	rm -rf $(BUILD_DIR)
+	rm -rf $(BUILD_DIR) compile_commands.json
 
 clean-aa:
 	rm -f $(AA_STORY)
