@@ -16,6 +16,8 @@ Meson is also available for editor tooling and a conventional compile database. 
 
 Use C++23. Prefer `std::format`, `std::print`, and `std::println` over iostream formatting for new code.
 
+In VM execution code, avoid heap-allocating temporary containers. Prefer fixed-size local arrays, spans over existing storage, or in-place algorithms when an opcode can be implemented without dynamic allocation.
+
 Tests use the lightweight harness in `tests/test.hpp`: register static `suite`s and write cases with `"name"_test = [] { ... };` plus `expect(...)`.
 
 ## Commit Style

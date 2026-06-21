@@ -8,7 +8,6 @@
 #include <format>
 #include <stdexcept>
 #include <string>
-#include <vector>
 
 namespace glupsk {
 namespace {
@@ -982,12 +981,17 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             const auto count = l(0);
             const auto source = l(1);
             const auto dest = l(2);
-            auto temp = std::vector<u8>(count);
-            for (u32 offset = 0; offset < count; ++offset) {
-                temp[offset] = machine.memory.read8(source + offset);
-            }
-            for (u32 offset = 0; offset < count; ++offset) {
-                machine.memory.write8(dest + offset, temp[offset]);
+            if (dest < source) {
+                for (u32 offset = 0; offset < count; ++offset) {
+                    machine.memory.write8(dest + offset,
+                                          machine.memory.read8(source + offset));
+                }
+            } else {
+                for (u32 offset = count; offset > 0; --offset) {
+                    machine.memory.write8(
+                        dest + offset - 1,
+                        machine.memory.read8(source + offset - 1));
+                }
             }
             return;
         }
