@@ -14,8 +14,51 @@
 namespace glupsk {
 namespace {
 
+enum class StoreDest : u8 {
+    discard = 0,
+    memory = 1,
+    local = 2,
+    stack = 3,
+};
+
+enum class StringNodeType : u8 {
+    branch = 0x00,
+    terminator = 0x01,
+    character = 0x02,
+    c_string = 0x03,
+    unicode_character = 0x04,
+    unicode_string = 0x05,
+    indirect = 0x08,
+    double_indirect = 0x09,
+    indirect_args = 0x0a,
+    double_indirect_args = 0x0b,
+};
+
+enum class StringObjectType : u8 {
+    c_string = 0xe0,
+    compressed = 0xe1,
+    unicode = 0xe2,
+};
+
+enum class GestaltSelector : u32 {
+    glulx_version = 0,
+    terp_version = 1,
+    resize_mem = 2,
+    undo = 3,
+    io_system = 4,
+    unicode = 5,
+    mem_copy = 6,
+    malloc_ = 7,
+    malloc_heap = 8,
+    acceleration = 9,
+    accel_func = 10,
+    float_ = 11,
+    ext_undo = 12,
+    double_ = 13,
+};
+
 struct StoreRef {
-    u8 type = 0;
+    StoreDest type = StoreDest::discard;
     u32 address = 0;
 };
 
@@ -95,17 +138,18 @@ void write_local(Machine& machine, u32 address, u32 value, u8 width) {
 
 u32 load_operand(Machine& machine, Operand operand, u8 width = 4) {
     switch (operand.mode) {
-        case 0x0:
+        using enum OperandMode;
+        case zero:
             return 0;
-        case 0x1:
+        case const8:
             return sign_extend(operand.data, 8);
-        case 0x2:
+        case const16:
             return sign_extend(operand.data, 16);
-        case 0x3:
+        case const32:
             return operand.data;
-        case 0x5:
-        case 0x6:
-        case 0x7:
+        case mem8:
+        case mem16:
+        case mem32:
             switch (width) {
                 case 1:
                     return machine.memory.read8(operand.data);
@@ -115,15 +159,15 @@ u32 load_operand(Machine& machine, Operand operand, u8 width = 4) {
                     return machine.memory.read32(operand.data);
             }
             break;
-        case 0x8:
+        case stack:
             return machine.stack.pop32();
-        case 0x9:
-        case 0xa:
-        case 0xb:
+        case local8:
+        case local16:
+        case local32:
             return read_local(machine, operand.data, width);
-        case 0xd:
-        case 0xe:
-        case 0xf:
+        case ram8:
+        case ram16:
+        case ram32:
             switch (width) {
                 case 1:
                     return machine.memory.read8(ram_address(machine, operand.data));
@@ -141,22 +185,24 @@ u32 load_operand(Machine& machine, Operand operand, u8 width = 4) {
 
 StoreRef store_ref(const Machine& machine, Operand operand) {
     switch (operand.mode) {
-        case 0x0:
-            return {.type = 0, .address = 0};
-        case 0x5:
-        case 0x6:
-        case 0x7:
-            return {.type = 1, .address = operand.data};
-        case 0x8:
-            return {.type = 3, .address = 0};
-        case 0x9:
-        case 0xa:
-        case 0xb:
-            return {.type = 2, .address = operand.data};
-        case 0xd:
-        case 0xe:
-        case 0xf:
-            return {.type = 1, .address = ram_address(machine, operand.data)};
+        using enum OperandMode;
+        case zero:
+            return {.type = StoreDest::discard, .address = 0};
+        case mem8:
+        case mem16:
+        case mem32:
+            return {.type = StoreDest::memory, .address = operand.data};
+        case stack:
+            return {.type = StoreDest::stack, .address = 0};
+        case local8:
+        case local16:
+        case local32:
+            return {.type = StoreDest::local, .address = operand.data};
+        case ram8:
+        case ram16:
+        case ram32:
+            return {.type = StoreDest::memory,
+                    .address = ram_address(machine, operand.data)};
         default:
             throw std::runtime_error("invalid store operand");
     }
@@ -164,9 +210,9 @@ StoreRef store_ref(const Machine& machine, Operand operand) {
 
 void store_value(Machine& machine, StoreRef ref, u32 value, u8 width = 4) {
     switch (ref.type) {
-        case 0:
+        case StoreDest::discard:
             return;
-        case 1:
+        case StoreDest::memory:
             switch (width) {
                 case 1:
                     machine.memory.write8(ref.address, static_cast<u8>(value));
@@ -179,10 +225,10 @@ void store_value(Machine& machine, StoreRef ref, u32 value, u8 width = 4) {
                     return;
             }
             break;
-        case 2:
+        case StoreDest::local:
             write_local(machine, ref.address, value, width);
             return;
-        case 3:
+        case StoreDest::stack:
             machine.stack.push32(value);
             return;
         default:
@@ -209,7 +255,7 @@ Arguments pop_arguments(Machine& machine, u32 argc) {
 }
 
 void push_call_stub(Machine& machine, StoreRef dest, u32 pc) {
-    machine.stack.push32(dest.type);
+    machine.stack.push32(static_cast<u32>(dest.type));
     machine.stack.push32(dest.address);
     machine.stack.push32(pc);
     machine.stack.push32(machine.regs.frame_ptr);
@@ -223,7 +269,7 @@ void pop_call_stub(Machine& machine, u32 value) {
     }
 
     machine.stack.sp -= 16;
-    const auto dest = StoreRef{.type = static_cast<u8>(machine.stack.read32(machine.stack.sp)),
+    const auto dest = StoreRef{.type = static_cast<StoreDest>(machine.stack.read32(machine.stack.sp)),
                                .address = machine.stack.read32(machine.stack.sp + 4)};
     const auto pc = machine.stack.read32(machine.stack.sp + 8);
     const auto frame_ptr = machine.stack.read32(machine.stack.sp + 12);
@@ -382,33 +428,35 @@ void output_uni_string(Machine& machine, u32 address) {
 }
 
 void output_huffman_leaf(Machine& machine, u32 node) {
-    const auto type = machine.memory.read8(node);
+    const auto type = static_cast<StringNodeType>(machine.memory.read8(node));
     switch (type) {
-        case 0x02:
+        case StringNodeType::character:
             output_char(machine, machine.memory.read8(node + 1));
             return;
-        case 0x03:
+        case StringNodeType::c_string:
             output_c_string(machine, node + 1);
             return;
-        case 0x04:
+        case StringNodeType::unicode_character:
             output_char(machine, machine.memory.read32(node + 1));
             return;
-        case 0x05:
+        case StringNodeType::unicode_string:
             output_uni_string(machine, node + 1);
             return;
-        case 0x08: {
+        case StringNodeType::indirect: {
             const auto address = machine.memory.read32(node + 1);
             output_string_object(machine, address);
             return;
         }
-        case 0x09: {
+        case StringNodeType::double_indirect: {
             const auto address = machine.memory.read32(machine.memory.read32(node + 1));
             output_string_object(machine, address);
             return;
         }
-        case 0x0a:
-        case 0x0b:
+        case StringNodeType::indirect_args:
+        case StringNodeType::double_indirect_args:
             throw std::runtime_error("string function references are not implemented");
+        case StringNodeType::branch:
+        case StringNodeType::terminator:
         default:
             throw std::runtime_error("unknown string leaf node");
     }
@@ -424,7 +472,8 @@ void output_compressed_string(Machine& machine, u32 address) {
 
     while (true) {
         auto node = root;
-        while (machine.memory.read8(node) == 0) {
+        while (static_cast<StringNodeType>(machine.memory.read8(node)) ==
+               StringNodeType::branch) {
             const auto byte = machine.memory.read8(byte_address);
             const auto take_right = (byte >> bit) & 1;
             ++bit;
@@ -435,7 +484,8 @@ void output_compressed_string(Machine& machine, u32 address) {
             node = machine.memory.read32(node + (take_right ? 5 : 1));
         }
 
-        if (machine.memory.read8(node) == 1) {
+        if (static_cast<StringNodeType>(machine.memory.read8(node)) ==
+            StringNodeType::terminator) {
             return;
         }
         output_huffman_leaf(machine, node);
@@ -443,15 +493,15 @@ void output_compressed_string(Machine& machine, u32 address) {
 }
 
 void output_string_object(Machine& machine, u32 address) {
-    const auto type = machine.memory.read8(address);
+    const auto type = static_cast<StringObjectType>(machine.memory.read8(address));
     switch (type) {
-        case 0xe0:
+        case StringObjectType::c_string:
             output_c_string(machine, address + 1);
             return;
-        case 0xe1:
+        case StringObjectType::compressed:
             output_compressed_string(machine, address + 1);
             return;
-        case 0xe2:
+        case StringObjectType::unicode:
             output_uni_string(machine, address + 4);
             return;
         default:
@@ -460,26 +510,26 @@ void output_string_object(Machine& machine, u32 address) {
 }
 
 u32 gestalt(u32 selector, u32 arg) {
-    switch (selector) {
-        case 0:
+    switch (static_cast<GestaltSelector>(selector)) {
+        case GestaltSelector::glulx_version:
             return 0x00030103;
-        case 1:
+        case GestaltSelector::terp_version:
             return 0x00000001;
-        case 2:
-        case 3:
-        case 7:
-        case 9:
-        case 11:
-        case 12:
-        case 13:
+        case GestaltSelector::resize_mem:
+        case GestaltSelector::undo:
+        case GestaltSelector::malloc_:
+        case GestaltSelector::acceleration:
+        case GestaltSelector::float_:
+        case GestaltSelector::ext_undo:
+        case GestaltSelector::double_:
             return 0;
-        case 4:
+        case GestaltSelector::io_system:
             return (arg == 0 || arg == 1 || arg == 2) ? 1 : 0;
-        case 5:
-        case 6:
+        case GestaltSelector::unicode:
+        case GestaltSelector::mem_copy:
             return 1;
-        case 8:
-        case 10:
+        case GestaltSelector::malloc_heap:
+        case GestaltSelector::accel_func:
             return 0;
         default:
             return 0;
@@ -560,44 +610,44 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
     };
 
     switch (op) {
-        case 0x00:
+        case Opcode::nop:
             return;
-        case 0x10:
+        case Opcode::add:
             s(2, l(0) + l(1));
             return;
-        case 0x11:
+        case Opcode::sub:
             s(2, l(0) - l(1));
             return;
-        case 0x12:
+        case Opcode::mul:
             s(2, l(0) * l(1));
             return;
-        case 0x13:
+        case Opcode::div:
             s(2, static_cast<u32>(as_signed(l(0)) / as_signed(l(1))));
             return;
-        case 0x14:
+        case Opcode::mod:
             s(2, static_cast<u32>(as_signed(l(0)) % as_signed(l(1))));
             return;
-        case 0x15:
+        case Opcode::neg:
             s(1, -l(0));
             return;
-        case 0x18:
+        case Opcode::bitand_:
             s(2, l(0) & l(1));
             return;
-        case 0x19:
+        case Opcode::bitor_:
             s(2, l(0) | l(1));
             return;
-        case 0x1a:
+        case Opcode::bitxor_:
             s(2, l(0) ^ l(1));
             return;
-        case 0x1b:
+        case Opcode::bitnot_:
             s(1, ~l(0));
             return;
-        case 0x1c: {
+        case Opcode::shiftl: {
             const auto amount = l(1);
             s(2, amount >= 32 ? 0 : l(0) << amount);
             return;
         }
-        case 0x1d: {
+        case Opcode::sshiftr: {
             const auto value = l(0);
             const auto amount = l(1);
             if (amount >= 32) {
@@ -607,51 +657,51 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             }
             return;
         }
-        case 0x1e: {
+        case Opcode::ushiftr: {
             const auto amount = l(1);
             s(2, amount >= 32 ? 0 : l(0) >> amount);
             return;
         }
-        case 0x20:
+        case Opcode::jump:
             branch_to(machine, insn.next_pc, l(0));
             return;
-        case 0x22:
+        case Opcode::jz:
             b(l(0) == 0, l(1));
             return;
-        case 0x23:
+        case Opcode::jnz:
             b(l(0) != 0, l(1));
             return;
-        case 0x24:
+        case Opcode::jeq:
             b(l(0) == l(1), l(2));
             return;
-        case 0x25:
+        case Opcode::jne:
             b(l(0) != l(1), l(2));
             return;
-        case 0x26:
+        case Opcode::jlt:
             b(as_signed(l(0)) < as_signed(l(1)), l(2));
             return;
-        case 0x27:
+        case Opcode::jge:
             b(as_signed(l(0)) >= as_signed(l(1)), l(2));
             return;
-        case 0x28:
+        case Opcode::jgt:
             b(as_signed(l(0)) > as_signed(l(1)), l(2));
             return;
-        case 0x29:
+        case Opcode::jle:
             b(as_signed(l(0)) <= as_signed(l(1)), l(2));
             return;
-        case 0x2a:
+        case Opcode::jltu:
             b(l(0) < l(1), l(2));
             return;
-        case 0x2b:
+        case Opcode::jgeu:
             b(l(0) >= l(1), l(2));
             return;
-        case 0x2c:
+        case Opcode::jgtu:
             b(l(0) > l(1), l(2));
             return;
-        case 0x2d:
+        case Opcode::jleu:
             b(l(0) <= l(1), l(2));
             return;
-        case 0x30: {
+        case Opcode::call: {
             const auto fn = l(0);
             const auto argc = l(1);
             const auto dest = store_ref(machine, a[2]);
@@ -660,10 +710,10 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             enter_function(machine, fn, args.as_span());
             return;
         }
-        case 0x31:
+        case Opcode::return_:
             finish_return(machine, l(0));
             return;
-        case 0x32: {
+        case Opcode::catch_: {
             const auto offset = l(1);
             const auto dest = store_ref(machine, a[0]);
             push_call_stub(machine, dest, insn.next_pc);
@@ -672,14 +722,14 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             branch_to(machine, insn.next_pc, offset);
             return;
         }
-        case 0x33: {
+        case Opcode::throw_: {
             const auto value = l(0);
             const auto token = l(1);
             machine.stack.sp = token;
             pop_call_stub(machine, value);
             return;
         }
-        case 0x34: {
+        case Opcode::tailcall: {
             const auto fn = l(0);
             const auto argc = l(1);
             const auto args = pop_arguments(machine, argc);
@@ -687,31 +737,31 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             enter_function(machine, fn, args.as_span());
             return;
         }
-        case 0x40:
+        case Opcode::copy:
             s(1, l(0));
             return;
-        case 0x41:
+        case Opcode::copys:
             s(1, l(0, 2), 2);
             return;
-        case 0x42:
+        case Opcode::copyb:
             s(1, l(0, 1), 1);
             return;
-        case 0x44:
+        case Opcode::sexs:
             s(1, sign_extend(l(0) & 0xffff, 16));
             return;
-        case 0x45:
+        case Opcode::sexb:
             s(1, sign_extend(l(0) & 0xff, 8));
             return;
-        case 0x48:
+        case Opcode::aload:
             s(2, machine.memory.read32(l(0) + 4 * as_signed(l(1))));
             return;
-        case 0x49:
+        case Opcode::aloads:
             s(2, machine.memory.read16(l(0) + 2 * as_signed(l(1))));
             return;
-        case 0x4a:
+        case Opcode::aloadb:
             s(2, machine.memory.read8(l(0) + as_signed(l(1))));
             return;
-        case 0x4b: {
+        case Opcode::aloadbit: {
             const auto bit_index = as_signed(l(1));
             auto address = l(0) + bit_index / 8;
             auto bit = bit_index % 8;
@@ -722,17 +772,17 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             s(2, (machine.memory.read8(address) >> bit) & 1);
             return;
         }
-        case 0x4c:
+        case Opcode::astore:
             machine.memory.write32(l(0) + 4 * as_signed(l(1)), l(2));
             return;
-        case 0x4d:
+        case Opcode::astores:
             machine.memory.write16(l(0) + 2 * as_signed(l(1)),
                                    static_cast<u16>(l(2)));
             return;
-        case 0x4e:
+        case Opcode::astoreb:
             machine.memory.write8(l(0) + as_signed(l(1)), static_cast<u8>(l(2)));
             return;
-        case 0x4f: {
+        case Opcode::astorebit: {
             const auto value = l(2);
             const auto bit_index = as_signed(l(1));
             auto address = l(0) + bit_index / 8;
@@ -750,22 +800,22 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             machine.memory.write8(address, byte);
             return;
         }
-        case 0x50:
+        case Opcode::stkcount:
             s(0, (machine.stack.sp - value_stack_base(machine)) / 4);
             return;
-        case 0x51: {
+        case Opcode::stkpeek: {
             const auto index = l(0);
             s(1, machine.stack.read32(machine.stack.sp - 4 - 4 * index));
             return;
         }
-        case 0x52: {
+        case Opcode::stkswap: {
             const auto first = machine.stack.pop32();
             const auto second = machine.stack.pop32();
             machine.stack.push32(first);
             machine.stack.push32(second);
             return;
         }
-        case 0x53: {
+        case Opcode::stkroll: {
             const auto count = l(0);
             const auto places_signed = as_signed(l(1));
             if (count == 0 || places_signed == 0) {
@@ -785,7 +835,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             }
             return;
         }
-        case 0x54: {
+        case Opcode::stkcopy: {
             const auto count = l(0);
             const auto start = machine.stack.sp - count * 4;
             for (u32 index = 0; index < count; ++index) {
@@ -793,55 +843,55 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             }
             return;
         }
-        case 0x70:
+        case Opcode::streamchar:
             output_char(machine, l(0) & 0xff);
             return;
-        case 0x71:
+        case Opcode::streamnum:
             for (const auto ch : std::format("{}", as_signed(l(0)))) {
                 output_char(machine, static_cast<u8>(ch));
             }
             return;
-        case 0x72:
+        case Opcode::streamstr:
             output_string_object(machine, l(0));
             return;
-        case 0x73:
+        case Opcode::streamunichar:
             output_char(machine, l(0));
             return;
-        case 0x100:
+        case Opcode::gestalt:
             s(2, gestalt(l(0), l(1)));
             return;
-        case 0x101:
+        case Opcode::debugtrap:
             throw std::runtime_error("debugtrap");
-        case 0x102:
+        case Opcode::getmemsize:
             s(0, static_cast<u32>(machine.memory.bytes.size()));
             return;
-        case 0x103:
+        case Opcode::setmemsize:
             s(1, 1);
             return;
-        case 0x104:
+        case Opcode::jumpabs:
             machine.regs.pc = l(0);
             return;
-        case 0x110:
+        case Opcode::random:
             s(1, 0);
             return;
-        case 0x111:
+        case Opcode::setrandom:
             return;
-        case 0x120:
+        case Opcode::quit:
             machine.halted = true;
             machine.running = false;
             return;
-        case 0x121:
+        case Opcode::verify:
             s(0, 0);
             return;
-        case 0x125:
-        case 0x126:
-        case 0x128:
+        case Opcode::saveundo:
+        case Opcode::restoreundo:
+        case Opcode::hasundo:
             s(0, 1);
             return;
-        case 0x127:
-        case 0x129:
+        case Opcode::protect:
+        case Opcode::discardundo:
             return;
-        case 0x130: {
+        case Opcode::glk: {
             const auto selector = l(0);
             const auto argc = l(1);
             const auto dest = store_ref(machine, a[2]);
@@ -857,54 +907,54 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             store_value(machine, dest, result);
             return;
         }
-        case 0x140:
+        case Opcode::getstringtbl:
             s(0, machine.regs.string_table);
             return;
-        case 0x141:
+        case Opcode::setstringtbl:
             machine.regs.string_table = l(0);
             return;
-        case 0x148:
+        case Opcode::getiosys:
             store_value(machine, a[0], machine.regs.iosys_mode);
             store_value(machine, a[1], machine.regs.iosys_rock);
             return;
-        case 0x149:
+        case Opcode::setiosys:
             machine.regs.iosys_mode = l(0);
             machine.regs.iosys_rock = l(1);
             if (machine.regs.iosys_mode != 0 && machine.regs.iosys_mode != 2) {
                 machine.regs.iosys_mode = 0;
             }
             return;
-        case 0x151:
+        case Opcode::binarysearch:
             s(7, binary_search(machine, l(0), l(1), l(2), l(3), l(4), l(5), l(6)));
             return;
-        case 0x160: {
+        case Opcode::callf: {
             const auto dest = store_ref(machine, a[1]);
             push_call_stub(machine, dest, insn.next_pc);
             enter_function(machine, l(0), span<const u32>{});
             return;
         }
-        case 0x161: {
+        case Opcode::callfi: {
             const auto args = std::array<u32, 1>{l(1)};
             const auto dest = store_ref(machine, a[2]);
             push_call_stub(machine, dest, insn.next_pc);
             enter_function(machine, l(0), args);
             return;
         }
-        case 0x162: {
+        case Opcode::callfii: {
             const auto args = std::array<u32, 2>{l(1), l(2)};
             const auto dest = store_ref(machine, a[3]);
             push_call_stub(machine, dest, insn.next_pc);
             enter_function(machine, l(0), args);
             return;
         }
-        case 0x163: {
+        case Opcode::callfiii: {
             const auto args = std::array<u32, 3>{l(1), l(2), l(3)};
             const auto dest = store_ref(machine, a[4]);
             push_call_stub(machine, dest, insn.next_pc);
             enter_function(machine, l(0), args);
             return;
         }
-        case 0x170: {
+        case Opcode::mzero: {
             const auto count = l(0);
             const auto address = l(1);
             for (u32 offset = 0; offset < count; ++offset) {
@@ -912,7 +962,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             }
             return;
         }
-        case 0x171: {
+        case Opcode::mcopy: {
             const auto count = l(0);
             const auto source = l(1);
             const auto dest = l(2);
@@ -925,15 +975,16 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             }
             return;
         }
-        case 0x178:
+        case Opcode::malloc:
             s(1, 0);
             return;
-        case 0x179:
-        case 0x180:
-        case 0x181:
+        case Opcode::mfree:
+        case Opcode::accelfunc:
+        case Opcode::accelparam:
             return;
         default:
-            throw std::runtime_error(std::format("unimplemented opcode 0x{:x}", op));
+            throw std::runtime_error(std::format(
+                "unimplemented opcode 0x{:x}", static_cast<u32>(op)));
     }
 }
 
@@ -946,7 +997,7 @@ void start(Machine& machine) {
     const auto start_func = machine.regs.pc;
     machine.stack.sp = 0;
     machine.regs.frame_ptr = 0;
-    push_call_stub(machine, {.type = 0, .address = 0}, 0);
+    push_call_stub(machine, {.type = StoreDest::discard, .address = 0}, 0);
     enter_function(machine, start_func, span<const u32>{});
     machine.running = true;
     machine.halted = false;
