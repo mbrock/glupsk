@@ -12,6 +12,7 @@ root_inc = include_directories('.')
 core_lib = static_library(
   'glupsk_core',
   files(
+    'core/decode.cpp',
     'core/machine.cpp',
     'core/story.cpp',
   ),
@@ -29,6 +30,7 @@ test_story = executable(
   'test_story',
   files(
     'tests/test-main.cpp',
+    'tests/test_decode.cpp',
     'tests/test_machine.cpp',
     'tests/test_story.cpp',
   ),

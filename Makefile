@@ -10,10 +10,10 @@ I7_FLAKE := ./tools/inform7-nix
 
 BUILD_DIR := build
 MESON_BUILD_DIR := $(BUILD_DIR)/meson
-CORE_OBJS := $(BUILD_DIR)/core/machine.o $(BUILD_DIR)/core/story.o
+CORE_OBJS := $(BUILD_DIR)/core/decode.o $(BUILD_DIR)/core/machine.o $(BUILD_DIR)/core/story.o
 GLUPSK_INFO := $(BUILD_DIR)/glupsk-info
 TEST_STORY := $(BUILD_DIR)/test_story
-TEST_STORY_SRCS := tests/test-main.cpp tests/test_machine.cpp tests/test_story.cpp
+TEST_STORY_SRCS := tests/test-main.cpp tests/test_decode.cpp tests/test_machine.cpp tests/test_story.cpp
 TEST_STORY_DEPS := tests/test.hpp
 
 .PHONY: all aa clean clean-aa compile-commands info meson meson-setup meson-test test
