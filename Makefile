@@ -2,7 +2,7 @@ NIX ?= nix
 MESON ?= meson
 CXX ?= c++
 CPPFLAGS ?= -I.
-CXXFLAGS ?= -std=c++20 -Wall -Wextra -Wpedantic -O2 -g
+CXXFLAGS ?= -std=c++23 -Wall -Wextra -Wpedantic -O2 -g
 
 AA_SOURCE := refdata/aa/aa.ni
 AA_STORY := refdata/aa.ulx

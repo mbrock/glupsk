@@ -1,32 +1,21 @@
 #include "core/story.hpp"
 
-#include <iomanip>
-#include <iostream>
+#include <cstdio>
+#include <print>
 #include <stdexcept>
 #include <string>
 
 namespace {
 
-std::ostream& hex32(std::ostream& out, glupsk::u32 value) {
-    const auto flags = out.flags();
-    const auto fill = out.fill();
-    out << "0x" << std::hex << std::setfill('0') << std::setw(8) << value;
-    out.flags(flags);
-    out.fill(fill);
-    return out;
-}
-
 void print_field(const char* name, glupsk::u32 value) {
-    std::cout << std::left << std::setw(16) << name << std::right << value
-              << " (";
-    hex32(std::cout, value) << ")\n";
+    std::println("{:<16}{} (0x{:08x})", name, value, value);
 }
 
 }  // namespace
 
 int main(int argc, char** argv) {
     if (argc != 2) {
-        std::cerr << "usage: glupsk-info STORY.ulx\n";
+        std::println(stderr, "usage: glupsk-info STORY.ulx");
         return 64;
     }
 
@@ -34,12 +23,11 @@ int main(int argc, char** argv) {
         const auto story = glupsk::Story::load(argv[1]);
         const auto& header = story.header();
 
-        std::cout << "file: " << argv[1] << '\n';
-        std::cout << "size: " << story.bytes().size() << " bytes\n";
-        std::cout << "magic: Glul (";
-        hex32(std::cout, header.magic) << ")\n";
-        std::cout << "version: " << story.version_string() << " (";
-        hex32(std::cout, header.version) << ")\n";
+        std::println("file: {}", argv[1]);
+        std::println("size: {} bytes", story.bytes().size());
+        std::println("magic: Glul (0x{:08x})", header.magic);
+        std::println("version: {} (0x{:08x})", story.version_string(),
+                     header.version);
 
         print_field("ramstart:", header.ramstart);
         print_field("extstart:", header.extstart);
@@ -48,12 +36,11 @@ int main(int argc, char** argv) {
         print_field("start func:", header.start_func);
         print_field("decode table:", header.decoding_table);
 
-        std::cout << "checksum: " << (story.checksum_ok() ? "ok" : "bad")
-                  << " (stored ";
-        hex32(std::cout, header.checksum) << ", computed ";
-        hex32(std::cout, story.computed_checksum()) << ")\n";
+        std::println("checksum: {} (stored 0x{:08x}, computed 0x{:08x})",
+                     story.checksum_ok() ? "ok" : "bad", header.checksum,
+                     story.computed_checksum());
     } catch (const std::exception& ex) {
-        std::cerr << "glupsk-info: " << ex.what() << '\n';
+        std::println(stderr, "glupsk-info: {}", ex.what());
         return 1;
     }
 

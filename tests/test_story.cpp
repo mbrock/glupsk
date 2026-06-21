@@ -3,7 +3,8 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <iostream>
+#include <cstdio>
+#include <print>
 #include <stdexcept>
 #include <string>
 
@@ -30,7 +31,7 @@ void expect_throw(Fn fn, const std::string& label) {
     } catch (const std::runtime_error&) {
         return;
     }
-    std::cerr << "expected runtime_error: " << label << '\n';
+    std::println(stderr, "expected runtime_error: {}", label);
     std::abort();
 }
 
@@ -78,6 +79,6 @@ int main() {
     test_minimal_story();
     test_rejects_bad_inputs();
     test_aa_story();
-    std::cout << "test_story: ok\n";
+    std::println("test_story: ok");
     return 0;
 }

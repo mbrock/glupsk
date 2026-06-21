@@ -2,8 +2,8 @@
 
 #include "core/bytes.hpp"
 
+#include <format>
 #include <fstream>
-#include <sstream>
 #include <stdexcept>
 
 namespace glupsk {
@@ -94,10 +94,7 @@ Version Story::version() const {
 
 std::string Story::version_string() const {
     const Version v = version();
-    std::ostringstream out;
-    out << v.major << '.' << static_cast<unsigned>(v.minor) << '.'
-        << static_cast<unsigned>(v.patch);
-    return out.str();
+    return std::format("{}.{}.{}", v.major, v.minor, v.patch);
 }
 
 }  // namespace glupsk

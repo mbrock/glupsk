@@ -14,6 +14,8 @@ Use the root GNU `Makefile` for the simple local loop. `make` builds the default
 
 Meson is also available for editor tooling and a conventional compile database. `make compile-commands` creates `build/meson/compile_commands.json` and links it at the repo root for clangd. `make meson-test` verifies the Meson build.
 
+Use C++23. Prefer `std::format`, `std::print`, and `std::println` over iostream formatting for new code.
+
 ## Commit Style
 
 Keep the repository in clean checkpoints. Commits are cheap and should usually be made after reasonable self-contained steps, especially after adding dependencies, reference material, scaffolding, or other coherent chunks of work.
