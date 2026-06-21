@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 #include <variant>
+#include <vector>
 
 namespace glupsk {
 
@@ -67,37 +68,6 @@ enum class GlkGestaltSelector : u32 {
     unicode_norm = 16,
 };
 
-struct GlkEvent {
-    u32 type = 0;
-    u32 window = 0;
-    u32 val1 = 0;
-    u32 val2 = 0;
-};
-
-struct GlkReturned {
-    u32 value = 0;
-};
-
-struct GlkBlocked {};
-
-struct GlkFatal {
-    std::string message;
-};
-
-using GlkCallResult = std::variant<GlkReturned, GlkBlocked, GlkFatal>;
-
-inline GlkCallResult glk_returned(u32 value = 0) {
-    return GlkReturned{.value = value};
-}
-
-inline GlkCallResult glk_blocked() {
-    return GlkBlocked{};
-}
-
-inline GlkCallResult glk_fatal(std::string message) {
-    return GlkFatal{.message = std::move(message)};
-}
-
 enum class GlkTextEncoding : u8 {
     latin1,
     unicode,
@@ -126,6 +96,90 @@ struct GlkTextString {
 // addresses so it can copy, retain, or stream from VM memory deliberately.
 using GlkText = std::variant<GlkTextChar, GlkTextBuffer, GlkTextString>;
 
+struct GlkEvent {
+    u32 type = 0;
+    u32 window = 0;
+    u32 val1 = 0;
+    u32 val2 = 0;
+};
+
+template <typename Window>
+struct GlkLineInputRequest {
+    Window window = {};
+    u32 max_length = 0;
+    GlkTextEncoding encoding = GlkTextEncoding::latin1;
+    GlkTextBuffer initial_text = {};
+};
+
+template <typename Window>
+struct GlkCharInputRequest {
+    Window window = {};
+    GlkTextEncoding encoding = GlkTextEncoding::latin1;
+};
+
+struct GlkTimerRequest {
+    u32 milliseconds = 0;
+};
+
+template <typename Window>
+using GlkEventInterest =
+    std::variant<GlkLineInputRequest<Window>, GlkCharInputRequest<Window>,
+                 GlkTimerRequest>;
+
+template <typename Window>
+struct GlkEventRequest {
+    span<const GlkEventInterest<Window>> interests;
+};
+
+using GlkInputText = std::variant<std::string, std::vector<u32>>;
+
+template <typename Window>
+struct GlkLineInputEvent {
+    Window window = {};
+    GlkInputText text;
+};
+
+template <typename Window>
+struct GlkCharInputEvent {
+    Window window = {};
+    u32 value = 0;
+    GlkTextEncoding encoding = GlkTextEncoding::latin1;
+};
+
+struct GlkTimerEvent {};
+
+template <typename Window>
+using GlkHostEvent =
+    std::variant<GlkLineInputEvent<Window>, GlkCharInputEvent<Window>,
+                 GlkTimerEvent>;
+
+struct GlkReturned {
+    u32 value = 0;
+};
+
+struct GlkBlocked {};
+
+struct GlkFatal {
+    std::string message;
+};
+
+using GlkCallResult = std::variant<GlkReturned, GlkBlocked, GlkFatal>;
+
+template <typename Window>
+using GlkEventResult = std::variant<GlkHostEvent<Window>, GlkBlocked, GlkFatal>;
+
+inline GlkCallResult glk_returned(u32 value = 0) {
+    return GlkReturned{.value = value};
+}
+
+inline GlkCallResult glk_blocked() {
+    return GlkBlocked{};
+}
+
+inline GlkCallResult glk_fatal(std::string message) {
+    return GlkFatal{.message = std::move(message)};
+}
+
 struct GlkWindowStream {};
 
 struct GlkMemoryStream {
@@ -152,8 +206,9 @@ concept SemanticGlkHost = requires(Host host,
                                    typename Host::Rock rock,
                                    u32 value,
                                    u32 address,
-                                   u32 length,
-                                   GlkText text) {
+                                   GlkText text,
+                                   GlkEventRequest<typename Host::Window>
+                                       event_request) {
     // A semantic host can choose native C++ types for its objects. The Glulx
     // bridge is responsible for mapping those types to and from story u32s.
     typename Host::Window;
@@ -180,10 +235,11 @@ concept SemanticGlkHost = requires(Host host,
     // zero-terminated VM string to an explicit stream.
     { host.write(machine, stream, text) } -> std::same_as<GlkCallResult>;
 
-    // Input requests arm a later event; select either writes one or blocks.
-    { host.request_line_event(machine, window, address, length, value, false) }
-        -> std::same_as<GlkCallResult>;
-    { host.select(machine, address) } -> std::same_as<GlkCallResult>;
+    // The bridge accumulates pending Glk requests and asks the host for the
+    // next matching event. The bridge owns mapping host events back into Glulx
+    // event_t structs and VM input buffers.
+    { host.select(machine, event_request) }
+        -> std::same_as<GlkEventResult<typename Host::Window>>;
 };
 
 struct TranscriptStream {
