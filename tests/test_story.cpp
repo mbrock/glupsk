@@ -3,7 +3,6 @@
 
 #include <cassert>
 #include <cstdlib>
-#include <cstdint>
 #include <iostream>
 #include <stdexcept>
 #include <string>
@@ -15,8 +14,8 @@ glupsk::Bytes minimal_story() {
     glupsk::write_u32_be(bytes, 0, glupsk::kGlulxMagic);
     glupsk::write_u32_be(bytes, 4, 0x00030103);
     glupsk::write_u32_be(bytes, 8, 256);
-    glupsk::write_u32_be(bytes, 12, static_cast<std::uint32_t>(bytes.size()));
-    glupsk::write_u32_be(bytes, 16, static_cast<std::uint32_t>(bytes.size()));
+    glupsk::write_u32_be(bytes, 12, static_cast<glupsk::u32>(bytes.size()));
+    glupsk::write_u32_be(bytes, 16, static_cast<glupsk::u32>(bytes.size()));
     glupsk::write_u32_be(bytes, 20, 64 * 1024);
     glupsk::write_u32_be(bytes, 24, 0x40);
     glupsk::write_u32_be(bytes, 28, 0);

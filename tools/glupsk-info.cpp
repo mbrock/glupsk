@@ -7,7 +7,7 @@
 
 namespace {
 
-std::ostream& hex32(std::ostream& out, std::uint32_t value) {
+std::ostream& hex32(std::ostream& out, glupsk::u32 value) {
     const auto flags = out.flags();
     const auto fill = out.fill();
     out << "0x" << std::hex << std::setfill('0') << std::setw(8) << value;
@@ -16,7 +16,7 @@ std::ostream& hex32(std::ostream& out, std::uint32_t value) {
     return out;
 }
 
-void print_field(const char* name, std::uint32_t value) {
+void print_field(const char* name, glupsk::u32 value) {
     std::cout << std::left << std::setw(16) << name << std::right << value
               << " (";
     hex32(std::cout, value) << ")\n";

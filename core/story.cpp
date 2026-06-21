@@ -31,11 +31,11 @@ void require(bool condition, const std::string& message) {
 
 }  // namespace
 
-std::uint32_t compute_glulx_checksum(span<const u8> bytes) {
+u32 compute_glulx_checksum(span<const u8> bytes) {
     require(bytes.size() % 4 == 0,
             "Glulx story length must be a multiple of four bytes");
 
-    std::uint32_t sum = 0;
+    u32 sum = 0;
     for (std::size_t offset = 0; offset < bytes.size(); offset += 4) {
         if (offset == 32) {
             continue;
@@ -86,9 +86,9 @@ Story::Story(Bytes owned_bytes) : bytes_(std::move(owned_bytes)) {
 
 Version Story::version() const {
     Version version;
-    version.major = static_cast<std::uint16_t>((header_.version >> 16) & 0xffff);
-    version.minor = static_cast<std::uint8_t>((header_.version >> 8) & 0xff);
-    version.patch = static_cast<std::uint8_t>(header_.version & 0xff);
+    version.major = static_cast<u16>((header_.version >> 16) & 0xffff);
+    version.minor = static_cast<u8>((header_.version >> 8) & 0xff);
+    version.patch = static_cast<u8>(header_.version & 0xff);
     return version;
 }
 
