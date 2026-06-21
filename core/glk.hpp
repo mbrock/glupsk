@@ -14,6 +14,18 @@ namespace glupsk {
 
 struct Machine;
 
+struct GlkWindowHandle {
+    u32 id = 0;
+};
+
+struct GlkStreamHandle {
+    u32 id = 0;
+};
+
+struct GlkFileRefHandle {
+    u32 id = 0;
+};
+
 enum class GlkSelector : u32 {
     exit = 0x0001,
     gestalt = 0x0004,
@@ -98,22 +110,20 @@ using GlkText = std::variant<GlkTextChar, GlkTextBuffer, GlkTextString>;
 
 struct GlkEvent {
     u32 type = 0;
-    u32 window = 0;
+    GlkWindowHandle window = {};
     u32 val1 = 0;
     u32 val2 = 0;
 };
 
-template <typename Window>
 struct GlkLineInputRequest {
-    Window window = {};
+    GlkWindowHandle window = {};
     u32 max_length = 0;
     GlkTextEncoding encoding = GlkTextEncoding::latin1;
     GlkTextBuffer initial_text = {};
 };
 
-template <typename Window>
 struct GlkCharInputRequest {
-    Window window = {};
+    GlkWindowHandle window = {};
     GlkTextEncoding encoding = GlkTextEncoding::latin1;
 };
 
@@ -121,37 +131,30 @@ struct GlkTimerRequest {
     u32 milliseconds = 0;
 };
 
-template <typename Window>
 using GlkEventInterest =
-    std::variant<GlkLineInputRequest<Window>, GlkCharInputRequest<Window>,
-                 GlkTimerRequest>;
+    std::variant<GlkLineInputRequest, GlkCharInputRequest, GlkTimerRequest>;
 
-template <typename Window>
 struct GlkEventRequest {
-    span<const GlkEventInterest<Window>> interests;
+    span<const GlkEventInterest> interests;
 };
 
 using GlkInputText = std::variant<std::string, std::vector<u32>>;
 
-template <typename Window>
 struct GlkLineInputEvent {
-    Window window = {};
+    GlkWindowHandle window = {};
     GlkInputText text;
 };
 
-template <typename Window>
 struct GlkCharInputEvent {
-    Window window = {};
+    GlkWindowHandle window = {};
     u32 value = 0;
     GlkTextEncoding encoding = GlkTextEncoding::latin1;
 };
 
 struct GlkTimerEvent {};
 
-template <typename Window>
 using GlkHostEvent =
-    std::variant<GlkLineInputEvent<Window>, GlkCharInputEvent<Window>,
-                 GlkTimerEvent>;
+    std::variant<GlkLineInputEvent, GlkCharInputEvent, GlkTimerEvent>;
 
 struct GlkReturned {
     u32 value = 0;
@@ -164,9 +167,7 @@ struct GlkFatal {
 };
 
 using GlkCallResult = std::variant<GlkReturned, GlkBlocked, GlkFatal>;
-
-template <typename Window>
-using GlkEventResult = std::variant<GlkHostEvent<Window>, GlkBlocked, GlkFatal>;
+using GlkEventResult = std::variant<GlkHostEvent, GlkBlocked, GlkFatal>;
 
 inline GlkCallResult glk_returned(u32 value = 0) {
     return GlkReturned{.value = value};
@@ -201,20 +202,14 @@ using GlkStreamBacking =
 template <typename Host>
 concept SemanticGlkHost = requires(Host host,
                                    Machine& machine,
-                                   typename Host::Window window,
-                                   typename Host::Stream stream,
-                                   typename Host::Rock rock,
+                                   GlkWindowHandle window,
+                                   GlkStreamHandle stream,
+                                   u32 rock,
                                    u32 value,
-                                   u32 address,
                                    GlkText text,
-                                   GlkEventRequest<typename Host::Window>
-                                       event_request) {
-    // A semantic host can choose native C++ types for its objects. The Glulx
-    // bridge is responsible for mapping those types to and from story u32s.
-    typename Host::Window;
-    typename Host::Stream;
-    typename Host::FileRef;
-    typename Host::Rock;
+                                   GlkEventRequest event_request) {
+    // The semantic boundary uses typed, serializable Glulx handles. A concrete
+    // host may still resolve them through a bridge/registry to native objects.
 
     // Unknown gestalt selectors return 0.
     { host.gestalt(value, value) } -> std::same_as<u32>;
@@ -222,14 +217,14 @@ concept SemanticGlkHost = requires(Host host,
     // Create and query display surfaces. The rock is caller-owned metadata
     // that Glk stores and returns but never interprets.
     { host.window_open(window, value, value, value, rock) }
-        -> std::same_as<typename Host::Window>;
-    { host.window_get_root() } -> std::same_as<typename Host::Window>;
-    { host.window_get_rock(window) } -> std::same_as<typename Host::Rock>;
-    { host.window_get_stream(window) } -> std::same_as<typename Host::Stream>;
+        -> std::same_as<GlkWindowHandle>;
+    { host.window_get_root() } -> std::same_as<GlkWindowHandle>;
+    { host.window_get_rock(window) } -> std::same_as<u32>;
+    { host.window_get_stream(window) } -> std::same_as<GlkStreamHandle>;
 
     // Current-stream state is part of the Glk dispatch/session adapter, not a
     // backend policy decision. The semantic host writes to explicit streams.
-    { host.stream_get_rock(stream) } -> std::same_as<typename Host::Rock>;
+    { host.stream_get_rock(stream) } -> std::same_as<u32>;
 
     // Write an immediate character, a fixed-length VM buffer, or a
     // zero-terminated VM string to an explicit stream.
@@ -238,8 +233,30 @@ concept SemanticGlkHost = requires(Host host,
     // The bridge accumulates pending Glk requests and asks the host for the
     // next matching event. The bridge owns mapping host events back into Glulx
     // event_t structs and VM input buffers.
-    { host.select(machine, event_request) }
-        -> std::same_as<GlkEventResult<typename Host::Window>>;
+    { host.select(machine, event_request) } -> std::same_as<GlkEventResult>;
+};
+
+template <typename Registry>
+concept GlkHandleRegistry = requires(Registry registry,
+                                     GlkWindowHandle window,
+                                     GlkStreamHandle stream,
+                                     GlkFileRefHandle fileref,
+                                     typename Registry::Window& native_window,
+                                     typename Registry::Stream& native_stream,
+                                     typename Registry::FileRef& native_fileref) {
+    // Native object types belong behind a registry. A bridge or host can use
+    // this to resolve stable Glulx handles into platform/native objects.
+    typename Registry::Window;
+    typename Registry::Stream;
+    typename Registry::FileRef;
+
+    { registry.require_window(window) } -> std::same_as<typename Registry::Window&>;
+    { registry.require_stream(stream) } -> std::same_as<typename Registry::Stream&>;
+    { registry.require_fileref(fileref) } -> std::same_as<typename Registry::FileRef&>;
+
+    { registry.intern_window(native_window) } -> std::same_as<GlkWindowHandle>;
+    { registry.intern_stream(native_stream) } -> std::same_as<GlkStreamHandle>;
+    { registry.intern_fileref(native_fileref) } -> std::same_as<GlkFileRefHandle>;
 };
 
 struct TranscriptStream {
@@ -263,15 +280,9 @@ struct TranscriptWindow {
 };
 
 struct TranscriptGlk {
-    struct Window {
-        u32 id = 0;
-    };
-    struct Stream {
-        u32 id = 0;
-    };
-    struct FileRef {
-        u32 id = 0;
-    };
+    using Window = GlkWindowHandle;
+    using Stream = GlkStreamHandle;
+    using FileRef = GlkFileRefHandle;
     using Rock = u32;
 
     // Linear log of text written to window streams or to no current stream.
