@@ -25,6 +25,16 @@ std::size_t checked_write_offset(const Memory& memory,
     return offset;
 }
 
+std::size_t checked_stack_offset(const Stack& stack,
+                                 u32 address,
+                                 std::size_t width) {
+    const auto offset = static_cast<std::size_t>(address);
+    if (offset > stack.bytes.size() || stack.bytes.size() - offset < width) {
+        throw std::runtime_error("stack access is outside stack memory");
+    }
+    return offset;
+}
+
 }  // namespace
 
 u8 Memory::read8(u32 address) const {
@@ -51,6 +61,30 @@ void Memory::write32(u32 address, u32 value) {
     write_u32_be(bytes, checked_write_offset(*this, address, 4), value);
 }
 
+u8 Stack::read8(u32 address) const {
+    return bytes[checked_stack_offset(*this, address, 1)];
+}
+
+u16 Stack::read16(u32 address) const {
+    return read_u16_be(bytes, checked_stack_offset(*this, address, 2));
+}
+
+u32 Stack::read32(u32 address) const {
+    return read_u32_be(bytes, checked_stack_offset(*this, address, 4));
+}
+
+void Stack::write8(u32 address, u8 value) {
+    bytes[checked_stack_offset(*this, address, 1)] = value;
+}
+
+void Stack::write16(u32 address, u16 value) {
+    write_u16_be(bytes, checked_stack_offset(*this, address, 2), value);
+}
+
+void Stack::write32(u32 address, u32 value) {
+    write_u32_be(bytes, checked_stack_offset(*this, address, 4), value);
+}
+
 void Stack::push32(u32 value) {
     if (bytes.size() - sp < 4) {
         throw std::runtime_error("stack overflow");
@@ -65,6 +99,35 @@ u32 Stack::pop32() {
     }
     sp -= 4;
     return read_u32_be(bytes, sp);
+}
+
+u32 TranscriptGlk::call(u32 selector, span<const u32> args) {
+    switch (selector) {
+        case 0x0023:  // glk_window_open
+            return 1;
+        case 0x002f:  // glk_set_window
+        case 0x0086:  // glk_set_style
+            return 0;
+        case 0x0080:  // glk_put_char
+        case 0x0081:  // glk_put_char_stream
+            if (!args.empty()) {
+                put_char(args.back());
+            }
+            return 0;
+        default:
+            return 0;
+    }
+}
+
+void TranscriptGlk::put_char(u32 ch) {
+    if (ch == '\r') {
+        ch = '\n';
+    }
+    if (ch <= 0x7f) {
+        transcript.push_back(static_cast<char>(ch));
+        return;
+    }
+    transcript.push_back('?');
 }
 
 Machine Machine::from_story(const Story& story) {
