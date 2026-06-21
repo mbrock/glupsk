@@ -3,6 +3,8 @@
 #include "core/story.hpp"
 #include "core/types.hpp"
 
+#include <array>
+#include <deque>
 #include <string>
 
 namespace glupsk {
@@ -49,18 +51,36 @@ struct Registers {
     u32 iosys_rock = 0;
 };
 
+struct Machine;
+
 struct TranscriptGlk {
     std::string transcript;
+    std::deque<std::string> input_lines;
+    bool line_pending = false;
+    u32 line_window = 0;
+    u32 line_buffer = 0;
+    u32 line_maxlen = 0;
+    u32 line_initial_len = 0;
 
-    u32 call(u32 selector, span<const u32> args);
+    void add_input_line(std::string line);
+    bool select_would_block() const;
+    u32 call(Machine& machine, u32 selector, span<const u32> args);
     void put_char(u32 ch);
+};
+
+struct AccelerationEntry {
+    u32 address = 0;
+    u32 function = 0;
 };
 
 struct Machine {
     Memory memory;
     Stack stack;
     Registers regs;
+    std::array<u32, 9> accel_params = {};
+    std::array<AccelerationEntry, 64> accel_entries = {};
     bool running = false;
+    bool blocked = false;
     bool halted = false;
     TranscriptGlk* glk = nullptr;
 
