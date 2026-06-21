@@ -98,6 +98,34 @@ inline GlkCallResult glk_fatal(std::string message) {
     return GlkFatal{.message = std::move(message)};
 }
 
+enum class GlkTextEncoding : u8 {
+    latin1,
+    unicode,
+};
+
+struct GlkTextChar {
+    u32 value = 0;
+    GlkTextEncoding encoding = GlkTextEncoding::latin1;
+};
+
+struct GlkTextBuffer {
+    u32 address = 0;
+    u32 length = 0;
+    GlkTextEncoding encoding = GlkTextEncoding::latin1;
+};
+
+struct GlkTextString {
+    u32 address = 0;
+    GlkTextEncoding encoding = GlkTextEncoding::latin1;
+};
+
+// A borrowed text source in VM memory, or an immediate character.
+//
+// GlkTextBuffer uses an explicit length. GlkTextString is zero-terminated in
+// VM memory. Neither owns host pointers; the host receives Machine& plus Glulx
+// addresses so it can copy, retain, or stream from VM memory deliberately.
+using GlkText = std::variant<GlkTextChar, GlkTextBuffer, GlkTextString>;
+
 struct GlkWindowStream {};
 
 struct GlkMemoryStream {
@@ -124,7 +152,8 @@ concept SemanticGlkHost = requires(Host host,
                                    typename Host::Rock rock,
                                    u32 value,
                                    u32 address,
-                                   u32 length) {
+                                   u32 length,
+                                   GlkText text) {
     // A semantic host can choose native C++ types for its objects. The Glulx
     // bridge is responsible for mapping those types to and from story u32s.
     typename Host::Window;
@@ -143,19 +172,13 @@ concept SemanticGlkHost = requires(Host host,
     { host.window_get_rock(window) } -> std::same_as<typename Host::Rock>;
     { host.window_get_stream(window) } -> std::same_as<typename Host::Stream>;
 
-    // Current streams receive unqualified text output.
-    { host.stream_set_current(stream) } -> std::same_as<void>;
-    { host.stream_get_current() } -> std::same_as<typename Host::Stream>;
+    // Current-stream state is part of the Glk dispatch/session adapter, not a
+    // backend policy decision. The semantic host writes to explicit streams.
     { host.stream_get_rock(stream) } -> std::same_as<typename Host::Rock>;
 
-    // Text and memory buffers are still VM-addressed at this boundary: the host
-    // receives a Machine plus Glulx address/length values, not native pointers.
-    // That lets retained Glk buffers survive memory movement and keeps copying
-    // decisions in the host.
-    { host.put_char(machine, value) } -> std::same_as<GlkCallResult>;
-    { host.put_buffer(machine, address, length, false) }
-        -> std::same_as<GlkCallResult>;
-    { host.put_string(machine, address, false) } -> std::same_as<GlkCallResult>;
+    // Write an immediate character, a fixed-length VM buffer, or a
+    // zero-terminated VM string to an explicit stream.
+    { host.write(machine, stream, text) } -> std::same_as<GlkCallResult>;
 
     // Input requests arm a later event; select either writes one or blocks.
     { host.request_line_event(machine, window, address, length, value, false) }
@@ -207,6 +230,9 @@ struct TranscriptGlk {
     u32 root_window = 0;
     u32 next_window_id = 1;
     u32 next_stream_id = 1;
+
+    // Temporary dispatch/session state. A future bridge should own this and
+    // call a semantic host write(machine, stream, text) operation instead.
     u32 current_stream = 0;
 
     bool line_pending = false;
