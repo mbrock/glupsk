@@ -1,9 +1,6 @@
 #include "core/story.hpp"
 
-#include <cstdio>
 #include <print>
-#include <stdexcept>
-#include <string>
 
 namespace {
 
