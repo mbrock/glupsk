@@ -22,6 +22,13 @@ struct Memory {
 
 struct Stack {
     Bytes bytes;
+    u32 sp = 0;
+
+    bool empty() const { return sp == 0; }
+    u32 capacity() const { return static_cast<u32>(bytes.size()); }
+
+    void push32(u32 value);
+    u32 pop32();
 };
 
 struct Registers {

@@ -62,6 +62,9 @@ static suite machine_tests{"Machine", [] {
         const auto machine = glupsk::Machine::from_story(story);
 
         expect(machine.stack.bytes.size() == 4096);
+        expect(machine.stack.sp == 0);
+        expect(machine.stack.empty());
+        expect(machine.stack.capacity() == 4096);
         expect(machine.regs.pc == 0x40);
         expect(machine.regs.string_table == 0x80);
     };
@@ -123,5 +126,33 @@ static suite machine_tests{"Machine", [] {
         expect(throws<std::runtime_error>(
             [&] { machine.memory.write8(255, 0); }))
             << "ROM writes should fail";
+    };
+
+    "pushes and pops stack words"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+
+        machine.stack.push32(0x12345678);
+        machine.stack.push32(0xaabbccdd);
+
+        expect(machine.stack.sp == 8);
+        expect(machine.stack.bytes[0] == 0x12);
+        expect(machine.stack.bytes[1] == 0x34);
+        expect(machine.stack.bytes[2] == 0x56);
+        expect(machine.stack.bytes[3] == 0x78);
+        expect(machine.stack.pop32() == 0xaabbccdd);
+        expect(machine.stack.pop32() == 0x12345678);
+        expect(machine.stack.empty());
+    };
+
+    "rejects stack underflow and overflow"_test = [] {
+        auto stack = glupsk::Stack{.bytes = glupsk::Bytes(4)};
+
+        expect(throws<std::runtime_error>([&] { (void) stack.pop32(); }))
+            << "empty stack pop should fail";
+        stack.push32(0x11223344);
+        expect(throws<std::runtime_error>([&] { stack.push32(0x55667788); }))
+            << "push past stack capacity should fail";
     };
 }};

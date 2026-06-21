@@ -51,6 +51,22 @@ void Memory::write32(u32 address, u32 value) {
     write_u32_be(bytes, checked_write_offset(*this, address, 4), value);
 }
 
+void Stack::push32(u32 value) {
+    if (bytes.size() - sp < 4) {
+        throw std::runtime_error("stack overflow");
+    }
+    write_u32_be(bytes, sp, value);
+    sp += 4;
+}
+
+u32 Stack::pop32() {
+    if (sp < 4) {
+        throw std::runtime_error("stack underflow");
+    }
+    sp -= 4;
+    return read_u32_be(bytes, sp);
+}
+
 Machine Machine::from_story(const Story& story) {
     const auto& header = story.header();
     auto story_bytes = story.bytes();
