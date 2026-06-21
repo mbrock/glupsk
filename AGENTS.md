@@ -6,7 +6,7 @@ Glupsk is a small, modern C++ Glulx interpreter project. Its current design targ
 
 Read `glupsk-spec.txt` first for the project goals, architecture sketch, constraints, and non-goals. `glulx-spec.md` is the local copy of the Glulx reference specification.
 
-Reference implementations live under `refimpl/` as git submodules.
+Reference implementations live under `refimpl/` as git submodules. Reference games, test data, and archived external fixtures live under `refdata/`. Tooling or compiler-packaging helpers live under `tools/`.
 
 ## Commit Style
 

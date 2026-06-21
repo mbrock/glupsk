@@ -7,3 +7,9 @@
 [submodule "refimpl/git"]
 	path = refimpl/git
 	url = https://github.com/DavidKinder/Git
+[submodule "refdata/aa"]
+	path = refdata/aa
+	url = https://github.com/lessrest/aa
+[submodule "tools/inform7-nix"]
+	path = tools/inform7-nix
+	url = https://github.com/mbrock/inform7-nix
