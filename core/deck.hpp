@@ -2,182 +2,288 @@
 
 #include "core/types.hpp"
 
+#include <cassert>
 #include <algorithm>
-#include <concepts>
 #include <cstddef>
+#include <iterator>
 #include <optional>
-#include <type_traits>
 #include <ranges>
+#include <type_traits>
 
 namespace glupsk {
 
 template <typename R, typename T>
-concept slice_of =
-  std::ranges::contiguous_range<R> && std::ranges::borrowed_range<R> &&
-  requires(R& rack) {
-    { std::ranges::data(rack) } -> std::convertible_to<T*>;
-  };
+concept mutable_slice_of =
+    std::ranges::random_access_range<R> &&
+    std::same_as<std::ranges::range_value_t<R>, std::remove_cvref_t<T>> &&
+    std::same_as<std::ranges::range_reference_t<R>, T &>;
 
-// The minimal vault a deck rides on: a sized, indexed store of T. std::span
-// models it, and so does a proxy that (de)serializes through some backing —
-// e.g. a slice of VM memory, where each slot reads/writes big-endian bytes via
-// read32/write32 and re-resolves the address each access (so it survives the
-// memory vector reallocating). slice_of refines this with contiguity, which is
-// what unlocks contiguous_prefix().
 template <typename R, typename T>
-concept deck_storage = requires(R& rack, const R& const_rack, std::size_t i, T v) {
-    { std::size(const_rack) } -> std::convertible_to<std::size_t>;
-    rack[i] = v;
-    { static_cast<T>(const_rack[i]) } -> std::same_as<T>;
+concept deck_storage = mutable_slice_of<R, T>;
+
+template <typename R>
+auto roll(std::ranges::range_difference_t<R> i, R& r) {
+    using D = std::ranges::range_difference_t<R>;
+    const auto m = static_cast<D>(std::ranges::size(r));
+    assert(m > 0);
+
+    auto ix = i % m;
+    if (ix < 0)
+        ix += m;
+
+    return ix;
+}
+
+template <std::ranges::random_access_range R> class Mark {
+public:
+  using iterator_concept = std::random_access_iterator_tag;
+  using iterator_category = std::random_access_iterator_tag;
+
+  using difference_type = std::ranges::range_difference_t<R>;
+  using value_type = std::ranges::range_value_t<R>;
+  using reference = std::ranges::range_reference_t<R>;
+
+  Mark() = default;
+
+  Mark(R &home, difference_type base)
+      : _home(std::addressof(home)), _base(base) {}
+
+  reference operator*() const {
+    return std::ranges::begin(*_home)[roll(_base, *_home)];
+  }
+
+  reference operator[](difference_type n) const { return *(*this + n); }
+
+  Mark &operator++() {
+    ++_base;
+    return *this;
+  }
+  Mark operator++(int) {
+    auto old = *this;
+    ++*this;
+    return old;
+  }
+
+  Mark &operator--() {
+    --_base;
+    return *this;
+  }
+  Mark operator--(int) {
+    auto old = *this;
+    --*this;
+    return old;
+  }
+
+  Mark &operator+=(difference_type n) {
+    _base += n;
+    return *this;
+  }
+
+  Mark &operator-=(difference_type n) {
+    _base -= n;
+    return *this;
+  }
+
+  friend Mark operator+(Mark it, difference_type n) {
+    it += n;
+    return it;
+  }
+
+  friend Mark operator+(difference_type n, Mark it) {
+    it += n;
+    return it;
+  }
+
+  friend Mark operator-(Mark it, difference_type n) {
+    it -= n;
+    return it;
+  }
+
+  friend difference_type operator-(const Mark &a, const Mark &b) {
+    return a._base - b._base;
+  }
+
+  friend bool operator==(const Mark &a, const Mark &b) {
+    return a._home == b._home && a._base == b._base;
+  }
+
+  friend auto operator<=>(const Mark &a, const Mark &b) {
+    return a._base <=> b._base;
+  }
+
+private:
+  R *_home = nullptr;
+  difference_type _base = 0;
 };
 
+static_assert(std::random_access_iterator<Mark<std::vector<int>>>);
+
+template <std::ranges::random_access_range R>
+auto indexing_subrange(R &range, std::ranges::range_difference_t<R> base,
+                       std::ranges::range_size_t<R> size) {
+  using D = std::ranges::range_difference_t<R>;
+
+  return std::ranges::subrange(Mark<R>{range, base},
+                               Mark<R>{range, base + static_cast<D>(size)});
+}
+
 template <typename T, typename R = std::span<T>>
-    requires deck_storage<R, T> && std::is_trivially_copyable_v<T>
+  requires deck_storage<R, T> && std::is_trivially_copyable_v<T>
 class Deck {
-  // hmm, i wonder if we could change this pos_t
-  // to some like std::ranges::range_difference_t<R>
-  //
-  // and change lo_ and hi_ to std::ranges::iterator_t<R>
-  //
-  // and change the slice_of requirement to not require contiguous_range<R>
-  //   but mere e.g. random_access_range<R>
-  //
-  // i forget why tho haha like "it would be cool" "maybe"
-  using pos_t = std::ptrdiff_t;
+  using pos_t = std::ranges::range_difference_t<R>;
 
+public:
+  class Flip {
   public:
-    class Flip {
-      public:
-        explicit Flip(Deck& deck) : deck_(&deck) {}
-        bool push_back(T value) { return deck_->push_front(value); }
-        bool push_front(T value) { return deck_->push_back(value); }
-        std::optional<T> pop_back() { return deck_->pop_front(); }
-        std::optional<T> pop_front() { return deck_->pop_back(); }
-        std::size_t size() const { return deck_->size(); }
-        bool empty() const { return deck_->empty(); }
-        Deck& flip() const { return *deck_; }
-
-      private:
-        Deck* deck_;
-    };
-
-    Deck() = default;
-    explicit Deck(R storage) : storage_(storage) {}
-
-    std::size_t capacity() const { return std::size(storage_); }
-    std::size_t size() const { return static_cast<std::size_t>(hi_ - lo_); }
-    std::size_t unused() const { return capacity() - size(); }
-    bool empty() const { return hi_ == lo_; }
-    bool full() const { return size() == capacity(); }
-
-    // Back end: produce, and LIFO pop.
-    bool push_back(T value) {
-        if (full()) {
-            return false;
-        }
-        storage_[index(hi_)] = value;
-        ++hi_;
-        return true;
-    }
-
-    std::optional<T> pop_back() {
-        if (empty()) {
-            return std::nullopt;
-        }
-        --hi_;
-        return static_cast<T>(storage_[index(hi_)]);
-    }
-
-    // Front end: FIFO consume, and prepend.
-    std::optional<T> pop_front() {
-        if (empty()) {
-            return std::nullopt;
-        }
-        const T value = storage_[index(lo_)];
-        ++lo_;
-        return value;
-    }
-
-    bool push_front(T value) {
-        if (full()) {
-            return false;
-        }
-        --lo_;
-        storage_[index(lo_)] = value;
-        return true;
-    }
-
-    // Returns how many values could be pushed.
-    std::size_t push_back(span<const T> values) {
-        auto pushed = std::size_t{0};
-        for (const auto& value : values) {
-            if (!push_back(value)) {
-                break;
-            }
-            ++pushed;
-        }
-        return pushed;
-    }
-
-    // Only contiguous vaults can hand out a span over their live region; a
-    // proxy vault (VM memory) deliberately lacks this.
-    std::span<T> contiguous_prefix() const
-        requires slice_of<R, T>
-    {
-        if (empty()) return std::span<T>();
-        const auto begin = index(lo_);
-        const auto run = std::min(size(), capacity() - begin);
-        return std::span(storage_).subspan(begin, run);
-    }
-
-    void consume(std::size_t count) {
-        lo_ += static_cast<pos_t>(std::min(count, size()));
-    }
-
-    void clear() { lo_ = hi_ = 0; }
-
-    Flip flip() { return Flip{*this}; }
+    explicit Flip(Deck &deck) : deck_(&deck) {}
+    bool push_back(T value) { return deck_->push_front(value); }
+    bool push_front(T value) { return deck_->push_back(value); }
+    std::optional<T> pop_back() { return deck_->pop_front(); }
+    std::optional<T> pop_front() { return deck_->pop_back(); }
+    std::size_t size() const { return deck_->size(); }
+    bool empty() const { return deck_->empty(); }
+    Deck &flip() const { return *deck_; }
 
   private:
-    std::size_t index(pos_t position) const {
-        const auto modulus = static_cast<pos_t>(capacity());
-        auto wrapped = position % modulus;
-        if (wrapped < 0) {
-            wrapped += modulus;
-        }
-        return static_cast<std::size_t>(wrapped);
-    }
+    Deck *deck_;
+  };
 
-    R storage_;
-    pos_t lo_ = 0;
-    pos_t hi_ = 0;
+  Deck() = default;
+  explicit Deck(R storage) : storage_(storage) {}
+
+  T &at_logical(pos_t p) {
+      assert(sane());
+    return std::ranges::begin(storage_)[roll(p, storage_)];
+  }
+
+  std::size_t capacity() const { return std::size(storage_); }
+
+  std::size_t size() const {
+      assert(hi_ >= lo_);
+      return static_cast<std::size_t>(hi_ - lo_);
+  }
+
+  std::size_t unused() const { return capacity() - size(); }
+  bool empty() const { return hi_ == lo_; }
+  bool full() const { return size() == capacity(); }
+
+  bool push_back(T value) {
+    if (full())
+      return false;
+    at_logical(hi_) = value;
+    ++hi_;
+    return true;
+  }
+
+  std::optional<T> pop_back() {
+    if (empty())
+      return std::nullopt;
+    --hi_;
+    return at_logical(hi_);
+  }
+
+  std::optional<T> pop_front() {
+    if (empty())
+      return std::nullopt;
+    T value = at_logical(lo_);
+    ++lo_;
+    return value;
+  }
+
+  bool push_front(T value) {
+    if (full())
+      return false;
+    --lo_;
+    at_logical(lo_) = value;
+    return true;
+  }
+
+  // Returns how many values could be pushed.
+  std::size_t push_back(span<const T> values) {
+    auto pushed = std::size_t{0};
+    for (const auto &value : values) {
+      if (!push_back(value)) {
+        break;
+      }
+      ++pushed;
+    }
+    return pushed;
+  }
+
+  auto view() { return indexing_subrange(storage_, lo_, size()); }
+
+  std::pair<std::span<T>, std::span<T>> contiguous_parts() const
+      requires std::ranges::contiguous_range<R>
+  {
+      auto s = std::span<T>(storage_);
+
+      if (empty()) {
+          return {};
+      }
+
+      assert(hi_ >= lo_);
+      assert(size() <= capacity());
+
+      const auto cap = capacity();
+      const auto begin = static_cast<std::size_t>(roll(lo_, storage_));
+      const auto n = size();
+
+      const auto first_n = std::min(n, cap - begin);
+
+      return {
+          s.subspan(begin, first_n),
+          s.subspan(0, n - first_n)
+      };
+  }
+
+  std::span<T> contiguous_prefix() const
+    requires std::ranges::contiguous_range<R>
+  {
+    return contiguous_parts().first;
+  }
+
+  void consume(std::size_t count) {
+      lo_ += static_cast<pos_t>(std::min(count, size()));
+  }
+
+  void clear() { lo_ = 0; hi_ = 0; }
+
+  Flip flip() { return Flip{*this}; }
+
+  bool sane() const {
+      return lo_ <= hi_ && size() <= capacity();
+  }
+
+private:
+  R storage_;
+  pos_t lo_{0};
+  pos_t hi_{0};
 };
 
 template <typename T, typename Storage = std::span<T>>
 class Ring : private Deck<T, Storage> {
-    using Base = Deck<T, Storage>;
+  using Base = Deck<T, Storage>;
 
-  public:
-    using Base::Base;
-    using Base::capacity;
-    using Base::clear;
-    using Base::consume;
-    using Base::empty;
-    using Base::full;
-    using Base::contiguous_prefix;
-    using Base::size;
-    using Base::unused;
+public:
+  using Base::Base;
+  using Base::capacity;
+  using Base::clear;
+  using Base::consume;
+  using Base::contiguous_prefix;
+  using Base::empty;
+  using Base::full;
+  using Base::size;
+  using Base::unused;
 
-    bool push(T value) { return Base::push_back(value); }
-    std::size_t push(span<const T> values) { return Base::push_back(values); }
+  bool push(T value) { return Base::push_back(value); }
+  std::size_t push(span<const T> values) { return Base::push_back(values); }
 };
 
 // infer deck value type from backing array value type
 template <typename T, std::size_t Extent>
-Deck(std::array<T, Extent>& s) -> Deck<T, std::span<T, Extent>>;
+Deck(std::array<T, Extent> &s) -> Deck<T, std::span<T, Extent>>;
 
 template <typename T, std::size_t Extent>
-Ring(std::array<T, Extent>& s) -> Ring<T, std::span<T, Extent>>;
+Ring(std::array<T, Extent> &s) -> Ring<T, std::span<T, Extent>>;
 
-
-}  // namespace glupsk
+} // namespace glupsk
