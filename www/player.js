@@ -22,6 +22,7 @@ class DomRenderer {
     this.status = status;
     this.worker = worker;
     this.commandInput.addEventListener("input", () => this.updateCommandWidth());
+    new ResizeObserver(() => this.scheduleResizeReport()).observe(this.root);
     this.updateCommandWidth();
   }
 
@@ -70,6 +71,7 @@ class DomRenderer {
     for (const operation of operations) {
       this.applyOne(operation);
     }
+    this.scheduleResizeReport();
     if (this.scrollTarget) {
       this.scrollTarget.scrollIntoView({ block: "end" });
       this.scrollTarget = undefined;
@@ -190,29 +192,67 @@ class DomRenderer {
   setText(operation) {
     const record = this.windows.get(operation.window);
     if (!record) return;
-    if (record.glkType === GLK_WINDOW_TEXT_GRID && renderStatusLine(record, operation.text)) {
-      return;
-    }
-    record.element.classList.remove("status-grid");
     record.content.textContent = operation.text;
+  }
+
+  scheduleResizeReport() {
+    if (this.resizeScheduled) return;
+    this.resizeScheduled = true;
+    requestAnimationFrame(() => this.reportWindowSizes());
+  }
+
+  reportWindowSizes() {
+    this.resizeScheduled = false;
+    const sizes = [];
+    const rootRect = this.root.getBoundingClientRect();
+    for (const [window, record] of this.windows) {
+      sizes.push({ window, ...measureWindow(record, rootRect) });
+    }
+    if (sizes.length === 0) return;
+    this.worker.postMessage({ type: "resize", sizes });
   }
 }
 
-function renderStatusLine(record, text) {
-  const lines = text.replace(/\s+$/u, "").split("\n").filter((line) =>
-    line.trim().length > 0
+function measureWindow(record, rootRect) {
+  const metrics = textMetrics(record.content);
+  const style = getComputedStyle(record.content);
+  const horizontalPadding = parseFloat(style.paddingLeft) +
+    parseFloat(style.paddingRight);
+  const verticalPadding = parseFloat(style.paddingTop) +
+    parseFloat(style.paddingBottom);
+  const rect = record.element.getBoundingClientRect();
+  const visibleWidth = Math.min(rect.right, rootRect.right) -
+    Math.max(rect.left, rootRect.left);
+  const visibleHeight = Math.min(rect.bottom, rootRect.bottom) -
+    Math.max(rect.top, rootRect.top);
+  const width = Math.max(
+    1,
+    Math.floor((visibleWidth - horizontalPadding) / metrics.charWidth),
   );
-  if (lines.length !== 1) return false;
-  const match = lines[0].match(/^\s*(.*?)\s{2,}(\S.*?)\s*$/u);
-  if (!match) return false;
+  const height = Math.max(
+    1,
+    Math.floor((visibleHeight - verticalPadding) / metrics.lineHeight),
+  );
+  return { width, height };
+}
 
-  const left = document.createElement("span");
-  left.textContent = match[1];
-  const right = document.createElement("span");
-  right.textContent = match[2];
-  record.element.classList.add("status-grid");
-  record.content.replaceChildren(left, right);
-  return true;
+function textMetrics(element) {
+  const probe = document.createElement("span");
+  probe.textContent = "0000000000";
+  probe.style.position = "absolute";
+  probe.style.visibility = "hidden";
+  probe.style.whiteSpace = "pre";
+  element.append(probe);
+  const rect = probe.getBoundingClientRect();
+  const style = getComputedStyle(element);
+  const lineHeight = Number.parseFloat(style.lineHeight) ||
+    rect.height ||
+    Number.parseFloat(style.fontSize) * 1.2;
+  probe.remove();
+  return {
+    charWidth: Math.max(1, rect.width / 10),
+    lineHeight: Math.max(1, lineHeight),
+  };
 }
 
 function renderTextRun(run) {

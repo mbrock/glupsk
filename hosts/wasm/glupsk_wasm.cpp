@@ -32,6 +32,7 @@ extern "C" void glupsk_host_window_clear(std::uint32_t window);
 extern "C" void glupsk_host_window_move_cursor(std::uint32_t window,
                                                 std::uint32_t x,
                                                 std::uint32_t y);
+extern "C" std::uint32_t glupsk_host_poll_arrange();
 extern "C" void glupsk_host_write_latin1(std::uint32_t window,
                                           std::uint32_t stream,
                                           std::uint32_t style,
@@ -135,6 +136,9 @@ struct DenoTerminalHost {
     }
 
     glupsk::GlkEventResult select(glupsk::GlkEventRequest request) {
+        if (glupsk_host_poll_arrange() != 0) {
+            return glupsk::GlkArrangeEvent{};
+        }
         for (const auto& interest : request.interests) {
             if (const auto* line =
                     std::get_if<glupsk::GlkLineInputRequest>(&interest)) {

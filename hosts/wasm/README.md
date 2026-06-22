@@ -48,6 +48,7 @@ uint32_t glupsk_host_window_width(uint32_t window);
 uint32_t glupsk_host_window_height(uint32_t window);
 void glupsk_host_window_clear(uint32_t window);
 void glupsk_host_window_move_cursor(uint32_t window, uint32_t x, uint32_t y);
+uint32_t glupsk_host_poll_arrange(void);
 
 void glupsk_host_write_latin1(
     uint32_t window,

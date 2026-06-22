@@ -353,6 +353,7 @@ const instance = await WebAssembly.instantiate(
       glupsk_host_window_clear: (window: number) => host.clearWindow(window),
       glupsk_host_window_move_cursor: (window: number, x: number, y: number) =>
         host.moveCursor(window, x, y),
+      glupsk_host_poll_arrange: () => 0,
       glupsk_host_write_latin1: (
         window: number,
         stream: number,

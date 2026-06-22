@@ -237,6 +237,23 @@ static suite machine_tests{"Machine", [] {
         expect(machine.stack.pop32() == 0);
     };
 
+    "writes Glk arrange events"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto glk = glupsk::TranscriptGlk{};
+
+        constexpr auto event = glupsk::u32{256};
+        glk.add_arrange_event();
+        const auto result =
+            glk.call(machine, 0xc0, std::array<glupsk::u32, 1>{event});
+        expect(std::holds_alternative<glupsk::GlkReturned>(result));
+        expect(machine.memory.read32(event) == 5);
+        expect(machine.memory.read32(event + 4) == 0);
+        expect(machine.memory.read32(event + 8) == 0);
+        expect(machine.memory.read32(event + 12) == 0);
+    };
+
     "runs stdio Glk through the common runtime"_test = [] {
         const auto story =
             glupsk::Story::from_bytes(synthetic_story_with_extra_memory());

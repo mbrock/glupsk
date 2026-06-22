@@ -71,13 +71,6 @@ body {
   border-bottom: 1px solid color-mix(in srgb, var(--status-ink) 22%, var(--status-bg));
 }
 
-.window.status-grid .window-content {
-  display: flex;
-  justify-content: space-between;
-  gap: 1rem;
-  white-space: normal;
-}
-
 .window.grid.above {
   position: sticky;
   inset-block-start: 0;

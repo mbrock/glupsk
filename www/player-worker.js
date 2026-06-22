@@ -66,8 +66,10 @@ class WasiPreview1 {
 class WorkerGlkHost {
   exports;
   windows = new Map();
+  windowSizes = new Map();
   queuedLines = new Map();
   pendingLineWindow;
+  arrangePending = false;
   operations = [];
 
   setExports(exports) {
@@ -112,12 +114,37 @@ class WorkerGlkHost {
     });
   }
 
-  windowWidth(_window) {
-    return 80;
+  windowWidth(window) {
+    return this.windowSizes.get(window)?.width ?? 80;
   }
 
-  windowHeight(_window) {
-    return 24;
+  windowHeight(window) {
+    return this.windowSizes.get(window)?.height ?? 24;
+  }
+
+  pollArrange() {
+    if (!this.arrangePending) return 0;
+    this.arrangePending = false;
+    return 1;
+  }
+
+  updateWindowSizes(sizes) {
+    let changed = false;
+    for (const size of sizes) {
+      const previous = this.windowSizes.get(size.window);
+      if (
+        !previous ||
+        previous.width !== size.width ||
+        previous.height !== size.height
+      ) {
+        this.windowSizes.set(size.window, {
+          width: size.width,
+          height: size.height,
+        });
+        changed = true;
+      }
+    }
+    if (changed) this.arrangePending = true;
   }
 
   clearWindow(window) {
@@ -310,6 +337,12 @@ class PlayerVm {
     this.exports.vm_resume(this.vm);
     this.run();
   }
+
+  resizeWindows(sizes) {
+    this.host.updateWindowSizes(sizes);
+    this.exports.vm_resume(this.vm);
+    this.run();
+  }
 }
 
 let player;
@@ -324,6 +357,10 @@ self.addEventListener("message", async (event) => {
     }
     if (message.type === "line") {
       player?.submitLine(message.window, message.text);
+      return;
+    }
+    if (message.type === "resize") {
+      player?.resizeWindows(message.sizes);
     }
   } catch (error) {
     postMessage({ type: "error", message: String(error?.stack ?? error) });
@@ -350,6 +387,7 @@ async function startPlayer() {
       glupsk_host_window_clear: (window) => host.clearWindow(window),
       glupsk_host_window_move_cursor: (window, x, y) =>
         host.moveCursor(window, x, y),
+      glupsk_host_poll_arrange: () => host.pollArrange(),
       glupsk_host_write_latin1: (window, stream, style, ptr, length) =>
         host.writeLatin1(window, stream, style, ptr, length),
       glupsk_host_write_unicode: (window, stream, style, ptr, length) =>

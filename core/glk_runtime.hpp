@@ -437,6 +437,13 @@ class GlkSession : public GlkRuntime {
             glk_write_event_field(machine, event_address, 3, 0);
             return glk_returned();
         }
+        if (std::holds_alternative<GlkArrangeEvent>(event)) {
+            glk_write_event_field(machine, event_address, 0, 5);
+            glk_write_event_field(machine, event_address, 1, 0);
+            glk_write_event_field(machine, event_address, 2, 0);
+            glk_write_event_field(machine, event_address, 3, 0);
+            return glk_returned();
+        }
         glk_write_event_field(machine, event_address, 0, 1);
         glk_write_event_field(machine, event_address, 1, 0);
         glk_write_event_field(machine, event_address, 2, 0);

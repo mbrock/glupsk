@@ -27,9 +27,14 @@ struct TranscriptGlkHost {
     std::deque<GlkInputText> input_lines;
     std::vector<Write> writes;
     std::string text;
+    bool arrange_pending = false;
 
     void add_input_line(std::string line) {
         input_lines.push_back(std::move(line));
+    }
+
+    void add_arrange_event() {
+        arrange_pending = true;
     }
 
     u32 gestalt(GlkGestaltQuery query) {
@@ -61,6 +66,10 @@ struct TranscriptGlkHost {
     }
 
     GlkEventResult select(GlkEventRequest request) {
+        if (arrange_pending) {
+            arrange_pending = false;
+            return GlkArrangeEvent{};
+        }
         for (const auto& interest : request.interests) {
             if (const auto* line =
                     std::get_if<GlkLineInputRequest>(&interest)) {
@@ -115,6 +124,10 @@ class TranscriptGlk : public GlkSession<TranscriptGlkHost> {
 
     void add_input_line(std::string line) {
         host().add_input_line(std::move(line));
+    }
+
+    void add_arrange_event() {
+        host().add_arrange_event();
     }
 
     std::string& transcript;

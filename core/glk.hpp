@@ -187,8 +187,13 @@ struct GlkCharInputEvent {
 
 struct GlkTimerEvent {};
 
+struct GlkArrangeEvent {};
+
 using GlkHostEvent =
-    std::variant<GlkLineInputEvent, GlkCharInputEvent, GlkTimerEvent>;
+    std::variant<GlkLineInputEvent,
+                 GlkCharInputEvent,
+                 GlkTimerEvent,
+                 GlkArrangeEvent>;
 
 struct GlkReturned {
     u32 value = 0;
