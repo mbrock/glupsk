@@ -44,19 +44,11 @@ class DomRenderer {
   }
 
   applyWithTransition(operations) {
-    if (!this.shouldTransition(operations) || !document.startViewTransition) {
+    if (!document.startViewTransition) {
       this.apply(operations);
       return;
     }
     document.startViewTransition(() => this.apply(operations));
-  }
-
-  shouldTransition(operations) {
-    return operations.some((operation) =>
-      operation.type === "openWindow" ||
-      operation.type === "clear" ||
-      operation.type === "setText"
-    );
   }
 
   apply(operations) {
