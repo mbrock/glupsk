@@ -3,6 +3,7 @@
 #include "core/glk.hpp"
 #include "core/glk_events.hpp"
 #include "core/glk_registry.hpp"
+#include "core/glk_streams.hpp"
 #include "core/glk_text.hpp"
 #include "core/machine.hpp"
 
@@ -364,7 +365,7 @@ class GlkSession : public GlkRuntime {
     }
 
     GlkStreamHandle open_memory_stream(GlkMemoryStream stream, u32 rock) {
-        validate_memory_stream_mode(stream.mode);
+        glk_validate_memory_stream_mode(stream.mode);
         return allocate_stream(StreamRecord{
             .backing = stream,
             .rock = rock,
@@ -372,18 +373,11 @@ class GlkSession : public GlkRuntime {
     }
 
     GlkStreamHandle open_memory_stream(GlkUnicodeMemoryStream stream, u32 rock) {
-        validate_memory_stream_mode(stream.mode);
+        glk_validate_memory_stream_mode(stream.mode);
         return allocate_stream(StreamRecord{
             .backing = stream,
             .rock = rock,
         });
-    }
-
-    static void validate_memory_stream_mode(u32 mode) {
-        if (mode != 0 && mode != 1 && mode != 2 && mode != 3) {
-            throw std::runtime_error(
-                std::format("unsupported memory stream mode {}", mode));
-        }
     }
 
     void close_stream(Machine& machine,
@@ -493,79 +487,15 @@ class GlkSession : public GlkRuntime {
             return result;
         }
         if (auto* memory = std::get_if<GlkMemoryStream>(&stream.backing)) {
-            write_to_memory_stream(machine, stream, *memory, text);
+            glk_write_to_memory_stream(machine, stream, *memory, text);
             return glk_returned();
         }
         if (auto* memory = std::get_if<GlkUnicodeMemoryStream>(&stream.backing)) {
-            write_to_unicode_memory_stream(machine, stream, *memory, text);
+            glk_write_to_unicode_memory_stream(machine, stream, *memory, text);
             return glk_returned();
         }
         throw std::runtime_error(
             std::format("invalid Glk stream handle {}", handle.id));
-    }
-
-    static void write_to_memory_stream(Machine& machine,
-                                       StreamRecord& record,
-                                       const GlkMemoryStream& stream,
-                                       const GlkTextData& text) {
-        if (stream.mode == 2) {
-            throw std::runtime_error("cannot write to read-only memory stream");
-        }
-        if (const auto* bytes = std::get_if<std::string>(&text)) {
-            for (const auto ch : *bytes) {
-                write_codepoint_to_memory_stream(machine, record, stream,
-                                                 static_cast<u8>(ch));
-            }
-            return;
-        }
-        for (const auto ch : std::get<std::vector<u32>>(text)) {
-            write_codepoint_to_memory_stream(machine, record, stream, ch);
-        }
-    }
-
-    static void write_codepoint_to_memory_stream(Machine& machine,
-                                                StreamRecord& record,
-                                                const GlkMemoryStream& stream,
-                                                u32 ch) {
-        if (record.pos < stream.len && stream.address != 0) {
-            // Memory streams store bytes; out-of-range Unicode is truncated just
-            // as Glk's byte-oriented memory streams specify.
-            machine.memory.write8(stream.address + record.pos, static_cast<u8>(ch));
-        }
-        ++record.pos;
-        ++record.write_count;
-    }
-
-    static void write_to_unicode_memory_stream(Machine& machine,
-                                               StreamRecord& record,
-                                               const GlkUnicodeMemoryStream& stream,
-                                               const GlkTextData& text) {
-        if (stream.mode == 2) {
-            throw std::runtime_error(
-                "cannot write to read-only unicode memory stream");
-        }
-        if (const auto* bytes = std::get_if<std::string>(&text)) {
-            for (const auto ch : *bytes) {
-                write_codepoint_to_unicode_memory_stream(
-                    machine, record, stream, static_cast<u8>(ch));
-            }
-            return;
-        }
-        for (const auto ch : std::get<std::vector<u32>>(text)) {
-            write_codepoint_to_unicode_memory_stream(machine, record, stream, ch);
-        }
-    }
-
-    static void write_codepoint_to_unicode_memory_stream(
-        Machine& machine,
-        StreamRecord& record,
-        const GlkUnicodeMemoryStream& stream,
-        u32 ch) {
-        if (record.pos < stream.len && stream.address != 0) {
-            machine.memory.write32(stream.address + record.pos * 4, ch);
-        }
-        ++record.pos;
-        ++record.write_count;
     }
 
     void request_line_event(Machine& machine,
