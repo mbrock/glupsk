@@ -19,7 +19,7 @@ from common Glulx and Glk semantics.
 the interpreter. Keep opcode dispatch there, but extract the helper subsystems
 that have their own semantics and tests.
 
-** TODO Extract operand and store-destination helpers
+** DONE Extract operand and store-destination helpers
 :PROPERTIES:
 :Suggested_File: core/vm_operands.hpp core/vm_operands.cpp
 :END:
@@ -29,6 +29,10 @@ metadata, and load-width helpers into a reusable module.
 
 This should also give tracing code a non-mutating way to inspect operands
 without reimplementing part of the interpreter.
+
+Implemented in ~core/vm_operands.hpp~ and ~core/vm_operands.cpp~. The module
+now owns operand loading, store destinations, temporary call arguments, and
+opcode-specific store/load metadata.
 
 ** TODO Extract stack frame and call helpers
 :PROPERTIES:
