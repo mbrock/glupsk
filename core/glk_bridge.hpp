@@ -100,7 +100,10 @@ class GlkBridge {
     const Registry& registry() const { return registry_; }
 
     u32 gestalt(u32 selector, u32 value) {
-        return host_.gestalt(selector, value);
+        return host_.gestalt(GlkGestaltQuery{
+            .selector = static_cast<GlkGestaltSelector>(selector),
+            .value = value,
+        });
     }
 
     GlkWindowHandle window_open(GlkWindowHandle split,

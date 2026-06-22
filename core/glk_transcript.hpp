@@ -41,8 +41,8 @@ struct TranscriptGlkHost {
         input_lines.push_back(std::move(line));
     }
 
-    u32 gestalt(u32 selector, u32) {
-        switch (static_cast<GlkGestaltSelector>(selector)) {
+    u32 gestalt(GlkGestaltQuery query) {
+        switch (query.selector) {
             case GlkGestaltSelector::version:
                 return 0x00000706;
             case GlkGestaltSelector::char_output:

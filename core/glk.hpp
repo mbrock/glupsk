@@ -80,6 +80,11 @@ enum class GlkGestaltSelector : u32 {
     unicode_norm = 16,
 };
 
+struct GlkGestaltQuery {
+    GlkGestaltSelector selector = GlkGestaltSelector::version;
+    u32 value = 0;
+};
+
 enum class GlkTextEncoding : u8 {
     latin1,
     unicode,
@@ -242,7 +247,8 @@ concept SemanticGlkHost =
         // registry resolves those handles to host/native objects when needed.
 
         // Unknown gestalt selectors return 0.
-        { host.gestalt(value, value) } -> std::same_as<u32>;
+        { host.gestalt(GlkGestaltQuery{.selector = GlkGestaltSelector::version,
+                                       .value = value}) } -> std::same_as<u32>;
 
         // Create and query display surfaces. The rock is caller-owned metadata
         // that Glk stores and returns but never interprets.
