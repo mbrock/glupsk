@@ -1,4 +1,6 @@
 #include "core/bytes.hpp"
+#include "core/glk_bridge.hpp"
+#include "core/glk_stdio.hpp"
 #include "core/machine.hpp"
 #include "core/story.hpp"
 
@@ -6,6 +8,7 @@
 
 #include <array>
 #include <stdexcept>
+#include <sstream>
 
 namespace {
 
@@ -228,6 +231,51 @@ static suite machine_tests{"Machine", [] {
 
         expect(machine.stack.pop32() == 1);
         expect(machine.stack.pop32() == 0);
+    };
+
+    "bridges typed handles for stdio Glk hosts"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto input = std::istringstream{"look\n"};
+        auto output = std::ostringstream{};
+        auto bridge = glupsk::GlkBridge<glupsk::StdioGlkHost>{
+            glupsk::StdioGlkHost{.input = &input, .output = &output},
+        };
+
+        const auto root = bridge.window_open({}, 0, 0, 0, 77);
+        expect(root.id != 0);
+        expect(bridge.window_get_rock(root) == 77);
+
+        const auto stream = bridge.window_get_stream(root);
+        expect(stream.id != 0);
+        bridge.set_current_stream(stream);
+
+        const auto text = machine.memory.ramstart;
+        machine.memory.write8(text, 'O');
+        machine.memory.write8(text + 1, 'K');
+        auto result = bridge.write(
+            machine, glupsk::GlkTextBuffer{
+                         .address = text,
+                         .length = 2,
+                         .encoding = glupsk::GlkTextEncoding::latin1,
+                     });
+        expect(std::holds_alternative<glupsk::GlkReturned>(result));
+        expect(output.str() == "OK");
+
+        const auto line_buffer = machine.memory.ramstart + 16;
+        const auto event = machine.memory.ramstart + 32;
+        bridge.request_line_event(root, line_buffer, 8, 0,
+                                  glupsk::GlkTextEncoding::latin1);
+        result = bridge.select(machine, event);
+        expect(std::holds_alternative<glupsk::GlkReturned>(result));
+        expect(machine.memory.read32(event) == 3);
+        expect(machine.memory.read32(event + 4) == root.id);
+        expect(machine.memory.read32(event + 8) == 4);
+        expect(machine.memory.read8(line_buffer) == 'l');
+        expect(machine.memory.read8(line_buffer + 1) == 'o');
+        expect(machine.memory.read8(line_buffer + 2) == 'o');
+        expect(machine.memory.read8(line_buffer + 3) == 'k');
     };
 
     "handles Glk Unicode buffer case selectors"_test = [] {
