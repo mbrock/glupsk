@@ -9,6 +9,31 @@ const HOST_INPUT_BLOCKED = 0xffffffff;
 const GLK_WINDOW_TEXT_BUFFER = 3;
 const GLK_WINDOW_TEXT_GRID = 4;
 const GLK_STYLE_INPUT = 8;
+const GLK_STYLE_NAMES = [
+  "normal",
+  "emphasized",
+  "preformatted",
+  "header",
+  "subheader",
+  "alert",
+  "note",
+  "block-quote",
+  "input",
+  "user1",
+  "user2",
+];
+const GLK_STYLEHINT_NAMES = [
+  "indentation",
+  "para-indentation",
+  "justification",
+  "size",
+  "weight",
+  "oblique",
+  "proportional",
+  "text-color",
+  "back-color",
+  "reverse-color",
+];
 
 class WasiPreview1 {
   memory;
@@ -68,6 +93,7 @@ class WorkerGlkHost {
   windows = new Map();
   windowSizes = new Map();
   queuedLines = new Map();
+  styleHints = new Map();
   pendingLineWindow;
   arrangePending = false;
   operations = [];
@@ -102,6 +128,7 @@ class WorkerGlkHost {
       cursorY: 0,
       cursorDirty: false,
     });
+    const styleHints = this.styleHintsForWindowType(type);
     this.operations.push({
       type: "openWindow",
       window,
@@ -111,7 +138,36 @@ class WorkerGlkHost {
       size,
       glkType: type,
       rock,
+      styleHints,
     });
+  }
+
+  stylehintSet(windowType, style, hint, value) {
+    const windowTypeHints = this.styleHints.get(windowType) ?? new Map();
+    const styleHints = windowTypeHints.get(style) ?? new Map();
+    styleHints.set(hint, value);
+    windowTypeHints.set(style, styleHints);
+    this.styleHints.set(windowType, windowTypeHints);
+  }
+
+  styleHintsForWindowType(windowType) {
+    const windowTypeHints = this.styleHints.get(windowType);
+    if (!windowTypeHints) return [];
+    const hints = [];
+    for (const [style, styleHints] of windowTypeHints) {
+      for (const [hint, value] of styleHints) {
+        hints.push({
+          style,
+          styleName: glkStyleName(style),
+          hint,
+          hintName: glkStyleHintName(hint),
+          value,
+          signedValue: value | 0,
+          hexValue: `0x${value.toString(16).padStart(8, "0")}`,
+        });
+      }
+    }
+    return hints;
   }
 
   windowWidth(window) {
@@ -387,6 +443,8 @@ async function startPlayer() {
       glupsk_host_window_clear: (window) => host.clearWindow(window),
       glupsk_host_window_move_cursor: (window, x, y) =>
         host.moveCursor(window, x, y),
+      glupsk_host_stylehint_set: (windowType, style, hint, value) =>
+        host.stylehintSet(windowType, style, hint, value),
       glupsk_host_poll_arrange: () => host.pollArrange(),
       glupsk_host_write_latin1: (window, stream, style, ptr, length) =>
         host.writeLatin1(window, stream, style, ptr, length),
@@ -434,6 +492,14 @@ async function startPlayer() {
 
   postMessage({ type: "status", text: "Running" });
   return new PlayerVm(host, exports, vm);
+}
+
+function glkStyleName(style) {
+  return GLK_STYLE_NAMES[style] ?? `unknown-${style}`;
+}
+
+function glkStyleHintName(hint) {
+  return GLK_STYLEHINT_NAMES[hint] ?? `unknown-${hint}`;
 }
 
 async function instantiateWasmStreaming(responsePromise, imports) {

@@ -39,6 +39,7 @@ concept GlkHost =
         { host.window_clear(window) } -> std::same_as<void>;
         { host.window_move_cursor(window, value, value) } -> std::same_as<void>;
         { host.write(stream, text, GlkStyle::normal) } -> std::same_as<GlkCallResult>;
+        { host.stylehint_set(value, GlkStyle::normal, value, value) } -> std::same_as<void>;
         { host.select(event_request) } -> std::same_as<GlkEventResult>;
         { host.echo_line_input() } -> std::same_as<bool>;
     };
@@ -139,6 +140,10 @@ class GlkSession : public GlkRuntime {
                                              : static_cast<GlkStyle>(raw.get(0));
                 return glk_returned();
             case GlkSelector::stylehint_set:
+                if (raw.size() >= 4) {
+                    host_.stylehint_set(raw.get(0), static_cast<GlkStyle>(raw.get(1)),
+                                        raw.get(2), raw.get(3));
+                }
                 return glk_returned();
             case GlkSelector::put_char:
                 return raw.empty() ? glk_returned()

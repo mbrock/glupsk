@@ -32,6 +32,10 @@ extern "C" void glupsk_host_window_clear(std::uint32_t window);
 extern "C" void glupsk_host_window_move_cursor(std::uint32_t window,
                                                 std::uint32_t x,
                                                 std::uint32_t y);
+extern "C" void glupsk_host_stylehint_set(std::uint32_t window_type,
+                                           std::uint32_t style,
+                                           std::uint32_t hint,
+                                           std::uint32_t value);
 extern "C" std::uint32_t glupsk_host_poll_arrange();
 extern "C" void glupsk_host_write_latin1(std::uint32_t window,
                                           std::uint32_t stream,
@@ -110,6 +114,15 @@ struct DenoTerminalHost {
 
     void window_move_cursor(Window& window, glupsk::u32 x, glupsk::u32 y) {
         glupsk_host_window_move_cursor(window.id, x, y);
+    }
+
+    void stylehint_set(glupsk::u32 window_type,
+                       glupsk::GlkStyle style,
+                       glupsk::u32 hint,
+                       glupsk::u32 value) {
+        glupsk_host_stylehint_set(window_type,
+                                  static_cast<std::uint32_t>(style), hint,
+                                  value);
     }
 
     glupsk::GlkCallResult write(Stream& stream,

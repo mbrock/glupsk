@@ -56,6 +56,8 @@ struct TranscriptGlkHost {
 
     void window_move_cursor(Window&, u32, u32) {}
 
+    void stylehint_set(u32, GlkStyle, u32, u32) {}
+
     GlkCallResult write(Stream& stream,
                         const GlkTextData& data,
                         GlkStyle style) {

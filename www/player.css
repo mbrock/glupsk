@@ -66,10 +66,32 @@ body {
   hyphens: manual;
   text-align: justify;
   text-align-last: start;
+  font: inherit;
+  color: inherit;
 }
 
 .buffer-paragraph:last-child {
   margin-block-end: 0;
+}
+
+.glk-paragraph-style-header,
+.glk-paragraph-style-subheader {
+  text-align: start;
+}
+
+.glk-paragraph-style-header {
+  font-weight: 700;
+  font-size: 1.22em;
+}
+
+.glk-paragraph-style-subheader {
+  font-weight: 700;
+  font-size: 1.08em;
+}
+
+.glk-paragraph-style-block-quote {
+  margin-inline: 1.25rem;
+  color: var(--muted);
 }
 
 .window.grid .window-content {
@@ -90,41 +112,51 @@ body {
   z-index: 1;
 }
 
-.glk-style-1 {
+.glk-style-1,
+.glk-style-emphasized {
   font-style: italic;
 }
 
-.glk-style-2 {
+.glk-style-2,
+.glk-style-preformatted {
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
 }
 
-.glk-style-3 {
+.glk-style-3,
+.glk-style-header {
   font-weight: 700;
   font-size: 1.12em;
 }
 
 .glk-style-4,
-.glk-style-9 {
+.glk-style-9,
+.glk-style-subheader,
+.glk-style-user1 {
   font-weight: 700;
 }
 
-.glk-style-5 {
+.glk-style-5,
+.glk-style-alert {
   font-weight: 700;
   color: color-mix(in srgb, var(--ink) 70%, #b3261e);
 }
 
 .glk-style-6,
-.glk-style-10 {
+.glk-style-10,
+.glk-style-note,
+.glk-style-user2 {
   font-style: italic;
   color: var(--muted);
 }
 
-.glk-style-7 {
+.glk-style-7,
+.glk-style-block-quote {
   display: inline-block;
   margin-inline: 1.25rem;
 }
 
-.glk-style-8 {
+.glk-style-8,
+.glk-style-input {
   font-weight: 700;
   color: var(--accent);
 }

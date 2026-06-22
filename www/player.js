@@ -9,6 +9,31 @@ const WINMETHOD_BELOW = 0x03;
 const WINMETHOD_DIRECTION_MASK = 0x0f;
 const WINMETHOD_FIXED = 0x10;
 const WINMETHOD_DIVISION_MASK = 0xf0;
+const GLK_STYLE_NAMES = [
+  "normal",
+  "emphasized",
+  "preformatted",
+  "header",
+  "subheader",
+  "alert",
+  "note",
+  "block-quote",
+  "input",
+  "user1",
+  "user2",
+];
+const GLK_STYLEHINT_NAMES = [
+  "indentation",
+  "para-indentation",
+  "justification",
+  "size",
+  "weight",
+  "oblique",
+  "proportional",
+  "text-color",
+  "back-color",
+  "reverse-color",
+];
 
 class DomRenderer {
   windows = new Map();
@@ -101,8 +126,9 @@ class DomRenderer {
     this.commandForm.hidden = false;
     this.updateCommandWidth();
     if (record.glkType === GLK_WINDOW_TEXT_BUFFER) {
-      const paragraph = record.currentParagraph ?? record.lastParagraph ??
+      let paragraph = record.currentParagraph ?? record.lastParagraph ??
         this.createBufferParagraph(record);
+      paragraph = this.syncParagraphSemantics(record, paragraph);
       record.currentParagraph = paragraph;
       paragraph.append(this.commandForm);
     } else {
@@ -149,6 +175,9 @@ class DomRenderer {
     element.dataset.stream = String(operation.stream);
     element.dataset.split = String(operation.split);
     element.dataset.method = String(operation.method);
+    element.dataset.glkWindowType = windowTypeName(operation.glkType);
+    element.dataset.glkWindowTypeId = String(operation.glkType);
+    annotateStyleHints(element, operation.styleHints ?? []);
     element.style.setProperty("--glk-size", String(operation.size));
     if (isFixedSplit(operation.method)) {
       element.classList.add("fixed");
@@ -228,6 +257,10 @@ class DomRenderer {
           record.currentParagraph = this.createBufferParagraph(record);
         }
         record.currentParagraph.append(renderTextRun({ ...run, text: part }));
+        record.currentParagraph = this.syncParagraphSemantics(
+          record,
+          record.currentParagraph,
+        );
         changedParagraphs.add(record.currentParagraph);
       }
     }
@@ -242,6 +275,30 @@ class DomRenderer {
     record.content.append(paragraph);
     record.lastParagraph = paragraph;
     return paragraph;
+  }
+
+  syncParagraphSemantics(record, paragraph) {
+    const summary = summarizeParagraphStyles(paragraph);
+    const styleName = summary.style === undefined ? undefined
+      : glkStyleName(summary.style);
+    const tag = semanticTagForParagraphStyle(styleName);
+    const next = paragraph.tagName.toLowerCase() === tag ? paragraph
+      : replaceElementTag(paragraph, tag);
+    next.dataset.glkParagraphStyle = styleName ?? "mixed";
+    next.dataset.glkParagraphStyleId = summary.style === undefined ? "mixed"
+      : String(summary.style);
+    next.dataset.glkStyles = summary.styles.map(glkStyleName).join(" ");
+    next.dataset.glkStyleIds = summary.styles.join(" ");
+    next.classList.toggle("glk-paragraph-style-mixed", styleName === undefined);
+    for (const name of GLK_STYLE_NAMES) {
+      next.classList.toggle(
+        `glk-paragraph-style-${name}`,
+        styleName === name,
+      );
+    }
+    if (record.currentParagraph === paragraph) record.currentParagraph = next;
+    if (record.lastParagraph === paragraph) record.lastParagraph = next;
+    return next;
   }
 
   setText(operation) {
@@ -313,13 +370,111 @@ function textMetrics(element) {
 }
 
 function renderTextRun(run) {
-  if (run.style === 0) {
-    return document.createTextNode(run.text);
-  }
   const element = document.createElement("span");
-  element.className = `glk-style-${run.style}`;
+  const styleName = glkStyleName(run.style);
+  element.className = [
+    "glk-run",
+    `glk-style-${run.style}`,
+    `glk-style-${styleName}`,
+  ].join(" ");
+  element.dataset.glkStyle = styleName;
+  element.dataset.glkStyleId = String(run.style);
   element.textContent = run.text;
   return element;
+}
+
+function summarizeParagraphStyles(paragraph) {
+  let style;
+  let hasText = false;
+  let mixed = false;
+  const styles = new Set();
+  const walker = document.createTreeWalker(paragraph, NodeFilter.SHOW_TEXT, {
+    acceptNode(node) {
+      if (!node.nodeValue || node.nodeValue.trim() === "") {
+        return NodeFilter.FILTER_REJECT;
+      }
+      if (node.parentElement?.closest(".command")) {
+        return NodeFilter.FILTER_REJECT;
+      }
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  let node;
+  while ((node = walker.nextNode())) {
+    const run = node.parentElement?.closest("[data-glk-style-id]");
+    const nodeStyle = run ? Number(run.dataset.glkStyleId) : 0;
+    styles.add(nodeStyle);
+    if (!hasText) {
+      style = nodeStyle;
+      hasText = true;
+    } else if (style !== nodeStyle) {
+      mixed = true;
+      break;
+    }
+  }
+  return {
+    style: hasText && !mixed ? style : undefined,
+    styles: [...styles].sort((left, right) => left - right),
+  };
+}
+
+function semanticTagForParagraphStyle(styleName) {
+  switch (styleName) {
+    case "header":
+      return "h1";
+    case "subheader":
+      return "h2";
+    case "block-quote":
+      return "blockquote";
+    default:
+      return "p";
+  }
+}
+
+function replaceElementTag(element, tag) {
+  const replacement = document.createElement(tag);
+  replacement.className = element.className;
+  for (const { name, value } of element.attributes) {
+    if (name !== "class") replacement.setAttribute(name, value);
+  }
+  replacement.replaceChildren(...element.childNodes);
+  element.replaceWith(replacement);
+  return replacement;
+}
+
+function glkStyleName(style) {
+  return GLK_STYLE_NAMES[style] ?? `unknown-${style}`;
+}
+
+function annotateStyleHints(element, styleHints) {
+  if (styleHints.length === 0) return;
+  element.dataset.glkStyleHints = JSON.stringify(styleHints);
+  for (const hint of styleHints) {
+    const styleName = hint.styleName ?? glkStyleName(hint.style);
+    const hintName = hint.hintName ?? glkStyleHintName(hint.hint);
+    element.dataset[
+      dataKey(`glk-stylehint-${styleName}-${hintName}`)
+    ] = String(hint.signedValue ?? hint.value);
+  }
+}
+
+function glkStyleHintName(hint) {
+  return GLK_STYLEHINT_NAMES[hint] ?? `unknown-${hint}`;
+}
+
+function windowTypeName(type) {
+  switch (type) {
+    case GLK_WINDOW_TEXT_BUFFER:
+      return "text-buffer";
+    case GLK_WINDOW_TEXT_GRID:
+      return "text-grid";
+    default:
+      return `unknown-${type}`;
+  }
+}
+
+function dataKey(name) {
+  return name.replace(/-([a-z0-9])/g, (_, ch) => ch.toUpperCase());
 }
 
 function splitDirection(method) {
