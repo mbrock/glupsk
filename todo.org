@@ -119,7 +119,7 @@ operand metadata.
 ~opcode_name~ now lives behind the same metadata module, so decode, trace, and
 diagnostics do not depend on decode-specific implementation details for naming.
 
-* TODO Split common Glk runtime into smaller modules
+* DONE Split common Glk runtime into smaller modules
 :PROPERTIES:
 :Area: glk
 :Value: high
@@ -148,7 +148,7 @@ longer embedded in ~GlkSession~.
 Implemented in ~GlkRegistry<Host>~. ~GlkSession~ now delegates window/stream
 lookup, allocation, and iteration to the registry.
 
-** TODO Separate Glk stream behavior
+** DONE Separate Glk stream behavior
 :PROPERTIES:
 :Suggested_File: core/glk_streams.hpp
 :END:
@@ -168,13 +168,18 @@ longer live inside ~GlkSession~.
 ~glk_write_to_stream_record~ now owns host-stream writes, memory-stream writes,
 and write-count accounting.
 
-*** TODO Separate current stream and window-stream orchestration
+*** DONE Decide current stream and window-stream orchestration boundary
 
 ~write~, ~write_to~, ~close_stream~, ~set_current_stream~, and ~set_window~
 still live in ~GlkSession~ because they coordinate handles and current stream
 state.
 
-** TODO Separate Glk event/select state
+Decision: keep this orchestration in ~GlkSession~. The reusable stream record
+write behavior lives in ~core/glk_streams.hpp~; the remaining methods are the
+session-specific glue between current stream state, window streams, and the
+registry.
+
+** DONE Separate Glk event/select state
 :PROPERTIES:
 :Suggested_File: core/glk_events.hpp
 :END:
@@ -191,10 +196,14 @@ Implemented in ~core/glk_events.hpp~ and ~core/glk_events.cpp~. This covers
 Glk reference writes, event structure field writes, pending line request data,
 and line-input text writeback into VM memory.
 
-*** TODO Separate select orchestration from GlkSession
+*** DONE Decide select orchestration boundary
 
 ~select~, ~write_event~, ~write_line_event~, and echo handling still live in
 ~GlkSession~ because they coordinate host calls with stream writes.
+
+Decision: keep this orchestration in ~GlkSession~. Common event writeback and
+line-buffer mechanics live in ~core/glk_events.*~; the remaining code is where
+host events, pending requests, and echo writes meet.
 
 ** DONE Separate Glk text materialization
 :PROPERTIES:
@@ -210,7 +219,7 @@ text.
 Implemented in ~core/glk_text.hpp~ and ~core/glk_text.cpp~. This includes text
 materialization, text length, and Unicode case-buffer helpers.
 
-** TODO Separate raw Glk selector dispatch
+** DONE Separate raw Glk selector dispatch
 :PROPERTIES:
 :Suggested_File: core/glk_dispatch.hpp
 :END:
@@ -225,9 +234,13 @@ Implemented ~GlkArgs~ in ~core/glk_dispatch.hpp~. The selector switch now uses
 the adapter for raw argument reads instead of indexing the VM argument span
 directly.
 
-*** TODO Move remaining selector dispatch structure out of GlkSession
+*** DONE Decide selector dispatch ownership
 
 The main selector switch still lives in ~GlkSession::call~.
+
+Decision: keep the switch in ~GlkSession::call~. Raw argument adaptation is now
+isolated behind ~GlkArgs~; moving the switch itself would mostly create a second
+template coordinator that still needs intimate access to session operations.
 
 * DONE Move trace duplication into shared helpers
 :PROPERTIES:
@@ -282,7 +295,7 @@ the host blocks outside an ~@glk~ call. This is documented in
 ~core/vm_strings.cpp~ at the stream opcode output boundary. A future resumable
 opcode state can replace that behavior when output blocking becomes necessary.
 
-* WAIT Consider splitting the test harness
+* DONE Consider splitting the test harness
 :PROPERTIES:
 :Area: tests
 :Value: low
@@ -297,6 +310,10 @@ Possible split:
 - filtering and command-line handling
 - reporting
 - assertions and exception helpers
+
+Decision: leave the harness intact for now. It is not part of the runtime
+architecture, and splitting it would add churn without reducing the core Glulx
+or Glk complexity this tracker was created to address.
 
 * Notes
 

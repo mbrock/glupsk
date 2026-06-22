@@ -329,6 +329,8 @@ class GlkSession : public GlkRuntime {
         });
     }
 
+    // Current-stream operations stay here because they bind handles, window
+    // streams, and stream result writeback to this session's registry.
     void close_stream(Machine& machine,
                       GlkStreamHandle handle,
                       u32 result_address) {
@@ -379,6 +381,8 @@ class GlkSession : public GlkRuntime {
         return glk_write_to_stream_record(host_, machine, stream, text);
     }
 
+    // Select orchestration is the point where host events become VM-visible
+    // Glk event structs and, for line input, optional echo writes.
     void request_line_event(Machine& machine,
                             GlkWindowHandle window,
                             u32 buffer_address,
