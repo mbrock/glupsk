@@ -20,6 +20,7 @@ core_lib = static_library(
     'core/vm_frames.cpp',
     'core/vm_operands.cpp',
     'core/vm_search.cpp',
+    'core/vm_strings.cpp',
   ),
   include_directories: root_inc,
 )
