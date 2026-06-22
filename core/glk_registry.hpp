@@ -1,9 +1,15 @@
 #pragma once
 
 #include "core/glk.hpp"
+#include "core/glk_events.hpp"
+#include "core/machine.hpp"
 #include "core/types.hpp"
 
+#include <format>
+#include <memory>
+#include <stdexcept>
 #include <variant>
+#include <vector>
 
 namespace glupsk {
 
@@ -48,6 +54,96 @@ struct GlkStreamRecord {
     bool allocated() const {
         return !std::holds_alternative<std::monostate>(backing);
     }
+};
+
+template <typename Host>
+class GlkRegistry {
+  public:
+    using WindowRecord = GlkWindowRecord<Host>;
+    using StreamRecord = GlkStreamRecord<Host>;
+
+    WindowRecord& require_window(u32 id) {
+        if (id == 0 || id > windows_.size() || !windows_[id - 1]) {
+            throw std::runtime_error(
+                std::format("invalid Glk window handle {}", id));
+        }
+        return *windows_[id - 1];
+    }
+
+    StreamRecord& require_stream(u32 id) {
+        if (id == 0 || id > streams_.size() || !streams_[id - 1] ||
+            !streams_[id - 1]->allocated()) {
+            throw std::runtime_error(
+                std::format("invalid Glk stream handle {}", id));
+        }
+        return *streams_[id - 1];
+    }
+
+    GlkStreamHandle allocate_stream(StreamRecord stream) {
+        streams_.push_back(std::make_unique<StreamRecord>(std::move(stream)));
+        return {.id = static_cast<u32>(streams_.size())};
+    }
+
+    GlkWindowHandle allocate_window(WindowRecord window) {
+        windows_.push_back(std::make_unique<WindowRecord>(std::move(window)));
+        return {.id = static_cast<u32>(windows_.size())};
+    }
+
+    u32 iterate_windows(Machine& machine, u32 previous_id, u32 rock_address) {
+        auto return_next = previous_id == 0;
+        auto found_previous = previous_id == 0;
+        for (auto index = std::size_t{0}; index < windows_.size(); ++index) {
+            const auto& window = windows_[index];
+            if (!window) {
+                continue;
+            }
+            const auto id = static_cast<u32>(index + 1);
+            if (return_next) {
+                glk_write_ref(machine, rock_address, window->rock);
+                return id;
+            }
+            if (id == previous_id) {
+                found_previous = true;
+                return_next = true;
+            }
+        }
+        if (!found_previous) {
+            throw std::runtime_error(std::format(
+                "window_iterate received invalid window {}", previous_id));
+        }
+        glk_write_ref(machine, rock_address, 0);
+        return 0;
+    }
+
+    u32 iterate_streams(Machine& machine, u32 previous_id, u32 rock_address) {
+        auto return_next = previous_id == 0;
+        auto found_previous = previous_id == 0;
+        for (auto index = std::size_t{0}; index < streams_.size(); ++index) {
+            const auto& stream = streams_[index];
+            if (!stream || !stream->allocated()) {
+                continue;
+            }
+            const auto id = static_cast<u32>(index + 1);
+            if (return_next) {
+                glk_write_ref(machine, rock_address, stream->rock);
+                return id;
+            }
+            if (id == previous_id) {
+                found_previous = true;
+                return_next = true;
+            }
+        }
+        if (!found_previous) {
+            throw std::runtime_error(std::format(
+                "stream_iterate received invalid stream {}", previous_id));
+        }
+        glk_write_ref(machine, rock_address, 0);
+        return 0;
+    }
+
+  private:
+    std::vector<std::unique_ptr<WindowRecord>> windows_;
+    std::vector<std::unique_ptr<StreamRecord>> streams_;
 };
 
 }  // namespace glupsk

@@ -143,10 +143,10 @@ Implemented in ~core/glk_registry.hpp~. The runtime still owns lookup,
 allocation, and iteration, but the host-parameterized record types are no
 longer embedded in ~GlkSession~.
 
-*** TODO Extract allocation, lookup, and iteration helpers
+*** DONE Extract allocation, lookup, and iteration helpers
 
-~require_window~, ~require_stream~, handle allocation, and handle iteration
-still live in ~GlkSession~.
+Implemented in ~GlkRegistry<Host>~. ~GlkSession~ now delegates window/stream
+lookup, allocation, and iteration to the registry.
 
 ** TODO Separate Glk stream behavior
 :PROPERTIES:
@@ -214,7 +214,7 @@ Keep selector decoding and argument/result adaptation separate from semantic
 runtime operations. This preserves a clean boundary between the VM-facing C-ish
 Glk ABI and the host-facing interface.
 
-* TODO Move trace duplication into shared helpers
+* DONE Move trace duplication into shared helpers
 :PROPERTIES:
 :Area: tools
 :Value: medium

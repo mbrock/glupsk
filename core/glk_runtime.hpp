@@ -71,12 +71,12 @@ class GlkSession : public GlkRuntime {
                               .value = args.size() >= 2 ? args[1] : 0,
                           }));
             case GlkSelector::window_iterate:
-                return glk_returned(iterate_windows(
+                return glk_returned(registry_.iterate_windows(
                     machine, args.empty() ? 0 : args[0],
                     args.size() >= 2 ? args[1] : 0));
             case GlkSelector::window_get_rock:
                 return glk_returned(args.empty() ? 0
-                                                 : require_window(args[0]).rock);
+                                                 : registry_.require_window(args[0]).rock);
             case GlkSelector::window_get_root:
                 return glk_returned(root_window_.id);
             case GlkSelector::window_open:
@@ -93,35 +93,35 @@ class GlkSession : public GlkRuntime {
                                         .id);
             case GlkSelector::window_get_size:
                 if (args.size() >= 3) {
-                    const auto size = host_.window_size(require_window(args[0]).window);
+                    const auto size = host_.window_size(registry_.require_window(args[0]).window);
                     glk_write_ref(machine, args[1], size.width);
                     glk_write_ref(machine, args[2], size.height);
                 }
                 return glk_returned();
             case GlkSelector::window_clear:
                 if (!args.empty()) {
-                    host_.window_clear(require_window(args[0]).window);
+                    host_.window_clear(registry_.require_window(args[0]).window);
                 }
                 return glk_returned();
             case GlkSelector::window_move_cursor:
                 if (args.size() >= 3) {
-                    host_.window_move_cursor(require_window(args[0]).window,
+                    host_.window_move_cursor(registry_.require_window(args[0]).window,
                                              args[1], args[2]);
                 }
                 return glk_returned();
             case GlkSelector::window_get_stream:
                 return glk_returned(args.empty() ? 0
-                                                 : require_window(args[0]).stream.id);
+                                                 : registry_.require_window(args[0]).stream.id);
             case GlkSelector::set_window:
                 set_window(args.empty() ? GlkWindowHandle{} :
                                           GlkWindowHandle{.id = args[0]});
                 return glk_returned();
             case GlkSelector::stream_iterate:
-                return glk_returned(iterate_streams(
+                return glk_returned(registry_.iterate_streams(
                     machine, args.empty() ? 0 : args[0],
                     args.size() >= 2 ? args[1] : 0));
             case GlkSelector::stream_get_rock:
-                return glk_returned(args.empty() ? 0 : require_stream(args[0]).rock);
+                return glk_returned(args.empty() ? 0 : registry_.require_stream(args[0]).rock);
             case GlkSelector::stream_open_memory:
                 return glk_returned(open_memory_stream(
                     GlkMemoryStream{.address = args.size() >= 1 ? args[0] : 0,
@@ -316,43 +316,16 @@ class GlkSession : public GlkRuntime {
     using StreamRecord = GlkStreamRecord<Host>;
     using HostStream = GlkHostStream<Host>;
 
-    WindowRecord& require_window(u32 id) {
-        if (id == 0 || id > windows_.size() || !windows_[id - 1]) {
-            throw std::runtime_error(
-                std::format("invalid Glk window handle {}", id));
-        }
-        return *windows_[id - 1];
-    }
-
-    StreamRecord& require_stream(u32 id) {
-        if (id == 0 || id > streams_.size() || !streams_[id - 1] ||
-            !streams_[id - 1]->allocated()) {
-            throw std::runtime_error(
-                std::format("invalid Glk stream handle {}", id));
-        }
-        return *streams_[id - 1];
-    }
-
-    GlkStreamHandle allocate_stream(StreamRecord stream) {
-        streams_.push_back(std::make_unique<StreamRecord>(std::move(stream)));
-        return {.id = static_cast<u32>(streams_.size())};
-    }
-
-    GlkWindowHandle allocate_window(WindowRecord window) {
-        windows_.push_back(std::make_unique<WindowRecord>(std::move(window)));
-        return {.id = static_cast<u32>(windows_.size())};
-    }
-
     GlkWindowHandle open_window(GlkWindowSpec spec) {
         if (spec.split.id != 0) {
-            (void) require_window(spec.split.id);
+            (void) registry_.require_window(spec.split.id);
         }
         auto opened = host_.open_window(spec);
-        const auto stream = allocate_stream(StreamRecord{
+        const auto stream = registry_.allocate_stream(StreamRecord{
             .backing = HostStream{.stream = std::move(opened.stream)},
             .rock = 0,
         });
-        const auto window = allocate_window(WindowRecord{
+        const auto window = registry_.allocate_window(WindowRecord{
             .window = std::move(opened.window),
             .rock = spec.rock,
             .type = spec.type,
@@ -366,7 +339,7 @@ class GlkSession : public GlkRuntime {
 
     GlkStreamHandle open_memory_stream(GlkMemoryStream stream, u32 rock) {
         glk_validate_memory_stream_mode(stream.mode);
-        return allocate_stream(StreamRecord{
+        return registry_.allocate_stream(StreamRecord{
             .backing = stream,
             .rock = rock,
         });
@@ -374,7 +347,7 @@ class GlkSession : public GlkRuntime {
 
     GlkStreamHandle open_memory_stream(GlkUnicodeMemoryStream stream, u32 rock) {
         glk_validate_memory_stream_mode(stream.mode);
-        return allocate_stream(StreamRecord{
+        return registry_.allocate_stream(StreamRecord{
             .backing = stream,
             .rock = rock,
         });
@@ -383,7 +356,7 @@ class GlkSession : public GlkRuntime {
     void close_stream(Machine& machine,
                       GlkStreamHandle handle,
                       u32 result_address) {
-        auto& stream = require_stream(handle.id);
+        auto& stream = registry_.require_stream(handle.id);
         if (std::holds_alternative<HostStream>(stream.backing)) {
             throw std::runtime_error("stream_close cannot close a window stream");
         }
@@ -397,66 +370,14 @@ class GlkSession : public GlkRuntime {
 
     void set_current_stream(GlkStreamHandle stream) {
         if (stream.id != 0) {
-            (void) require_stream(stream.id);
+            (void) registry_.require_stream(stream.id);
         }
         current_stream_ = stream;
     }
 
     void set_window(GlkWindowHandle window) {
         current_stream_ =
-            window.id == 0 ? GlkStreamHandle{} : require_window(window.id).stream;
-    }
-
-    u32 iterate_windows(Machine& machine, u32 previous_id, u32 rock_address) {
-        auto return_next = previous_id == 0;
-        auto found_previous = previous_id == 0;
-        for (auto index = std::size_t{0}; index < windows_.size(); ++index) {
-            const auto& window = windows_[index];
-            if (!window) {
-                continue;
-            }
-            const auto id = static_cast<u32>(index + 1);
-            if (return_next) {
-                glk_write_ref(machine, rock_address, window->rock);
-                return id;
-            }
-            if (id == previous_id) {
-                found_previous = true;
-                return_next = true;
-            }
-        }
-        if (!found_previous) {
-            throw std::runtime_error(std::format(
-                "window_iterate received invalid window {}", previous_id));
-        }
-        glk_write_ref(machine, rock_address, 0);
-        return 0;
-    }
-
-    u32 iterate_streams(Machine& machine, u32 previous_id, u32 rock_address) {
-        auto return_next = previous_id == 0;
-        auto found_previous = previous_id == 0;
-        for (auto index = std::size_t{0}; index < streams_.size(); ++index) {
-            const auto& stream = streams_[index];
-            if (!stream || !stream->allocated()) {
-                continue;
-            }
-            const auto id = static_cast<u32>(index + 1);
-            if (return_next) {
-                glk_write_ref(machine, rock_address, stream->rock);
-                return id;
-            }
-            if (id == previous_id) {
-                found_previous = true;
-                return_next = true;
-            }
-        }
-        if (!found_previous) {
-            throw std::runtime_error(std::format(
-                "stream_iterate received invalid stream {}", previous_id));
-        }
-        glk_write_ref(machine, rock_address, 0);
-        return 0;
+            window.id == 0 ? GlkStreamHandle{} : registry_.require_window(window.id).stream;
     }
 
     GlkCallResult write(Machine& machine, GlkText text) {
@@ -478,7 +399,7 @@ class GlkSession : public GlkRuntime {
         if (handle.id == 0) {
             return glk_returned();
         }
-        auto& stream = require_stream(handle.id);
+        auto& stream = registry_.require_stream(handle.id);
         if (auto* host_stream = std::get_if<HostStream>(&stream.backing)) {
             auto result = host_.write(host_stream->stream, text);
             if (std::holds_alternative<GlkReturned>(result)) {
@@ -504,7 +425,7 @@ class GlkSession : public GlkRuntime {
                             u32 max_length,
                             u32 initial_length,
                             GlkTextEncoding encoding) {
-        (void) require_window(window.id);
+        (void) registry_.require_window(window.id);
         pending_line_ = GlkPendingLine{
             .window = window,
             .buffer_address = buffer_address,
@@ -585,7 +506,7 @@ class GlkSession : public GlkRuntime {
     GlkCallResult echo_line(Machine& machine,
                             GlkWindowHandle window,
                             const GlkInputText& text) {
-        const auto stream = require_window(window.id).stream;
+        const auto stream = registry_.require_window(window.id).stream;
         if (auto result = write_to(machine, stream, text);
             !std::holds_alternative<GlkReturned>(result)) {
             return result;
@@ -598,10 +519,9 @@ class GlkSession : public GlkRuntime {
     }
 
     Host host_;
+    GlkRegistry<Host> registry_;
     GlkWindowHandle root_window_ = {};
     GlkStreamHandle current_stream_ = {};
-    std::vector<std::unique_ptr<WindowRecord>> windows_;
-    std::vector<std::unique_ptr<StreamRecord>> streams_;
     std::vector<GlkEventInterest> event_interests_;
     std::optional<GlkPendingLine> pending_line_;
 };
