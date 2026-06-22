@@ -1,0 +1,215 @@
+#+title: Glupsk Refactoring Tracker
+#+startup: overview
+#+todo: TODO NEXT WAIT DONE
+
+* Purpose
+
+This file tracks architecture and refactoring work that is valuable but not
+necessary to do in the middle of feature work. The bias is toward clearer
+boundaries, fewer duplicated VM rules, and keeping backend-specific IO separate
+from common Glulx and Glk semantics.
+
+* NEXT Split VM execution helpers out of core/execute.cpp
+:PROPERTIES:
+:Area: vm
+:Value: high
+:END:
+
+~core/execute.cpp~ is currently the largest file and mixes several layers of
+the interpreter. Keep opcode dispatch there, but extract the helper subsystems
+that have their own semantics and tests.
+
+** TODO Extract operand and store-destination helpers
+:PROPERTIES:
+:Suggested_File: core/vm_operands.hpp core/vm_operands.cpp
+:END:
+
+Move ~StoreRef~, ~Arguments~, operand load/store helpers, store operand
+metadata, and load-width helpers into a reusable module.
+
+This should also give tracing code a non-mutating way to inspect operands
+without reimplementing part of the interpreter.
+
+** TODO Extract stack frame and call helpers
+:PROPERTIES:
+:Suggested_File: core/vm_frames.hpp core/vm_frames.cpp
+:END:
+
+Move call stubs, function entry, local layout, frame access, return, and branch
+helpers into a frame/call module.
+
+The goal is to make the Glulx call ABI readable independently of the giant
+opcode switch.
+
+** TODO Extract Glulx string output machinery
+:PROPERTIES:
+:Suggested_File: core/vm_strings.hpp core/vm_strings.cpp
+:END:
+
+Move string object decoding, compressed string/Huffman traversal, and related
+output helpers out of the dispatcher file.
+
+This is a distinct subsystem with tricky rules, so it should be easy to read
+and test in isolation.
+
+** TODO Extract search opcode helpers
+:PROPERTIES:
+:Suggested_File: core/vm_search.hpp core/vm_search.cpp
+:END:
+
+Move linear, binary, and linked search helper logic into a focused module.
+
+** TODO Extract Inform acceleration support
+:PROPERTIES:
+:Suggested_File: core/vm_accel.hpp core/vm_accel.cpp
+:END:
+
+Move acceleration parameters and accelerated function implementations into
+their own file. This is Inform-specific support and should not visually
+dominate the generic execution loop.
+
+* TODO Create shared opcode metadata
+:PROPERTIES:
+:Area: decode execute trace
+:Value: high
+:Suggested_File: core/opcode_meta.hpp core/opcode_meta.cpp
+:END:
+
+Opcode facts are currently spread across decode, execute, and tracing logic.
+Create one shared source of truth for:
+
+- opcode names
+- operand counts
+- store operand positions
+- special load widths
+- trace annotations where they are mechanical
+
+Keep this modest at first. The goal is not to rewrite the interpreter into a
+table-driven VM, just to stop duplicated opcode knowledge from drifting.
+
+* TODO Split common Glk runtime into smaller modules
+:PROPERTIES:
+:Area: glk
+:Value: high
+:END:
+
+~core/glk_runtime.hpp~ is much more coherent than the old transcript runtime,
+but it is already dense. Keep ~GlkSession<Host>~ as the central coordinator and
+separate the common runtime concepts underneath it.
+
+** TODO Separate Glk registry and handle records
+:PROPERTIES:
+:Suggested_File: core/glk_registry.hpp
+:END:
+
+Extract handle allocation, lookup, iteration, and record storage for windows,
+streams, and file refs.
+
+** TODO Separate Glk stream behavior
+:PROPERTIES:
+:Suggested_File: core/glk_streams.hpp
+:END:
+
+Extract current stream state, window streams, memory streams, unicode memory
+streams, stream closing, and stream result accounting.
+
+Memory streams are common Glk behavior, not host-specific platform IO.
+
+** TODO Separate Glk event/select state
+:PROPERTIES:
+:Suggested_File: core/glk_events.hpp
+:END:
+
+Extract pending line/char event requests, event result writeback, cancellation,
+and select-blocking state.
+
+The host should receive semantic wait requests; bridge bookkeeping should stay
+in common runtime code.
+
+** TODO Separate Glk text materialization
+:PROPERTIES:
+:Suggested_File: core/glk_text.hpp
+:END:
+
+Extract VM-addressed text references and helpers that materialize or iterate
+over text for host writes.
+
+Hosts should not need to understand raw VM memory encodings just to display
+text.
+
+** TODO Separate raw Glk selector dispatch
+:PROPERTIES:
+:Suggested_File: core/glk_dispatch.hpp
+:END:
+
+Keep selector decoding and argument/result adaptation separate from semantic
+runtime operations. This preserves a clean boundary between the VM-facing C-ish
+Glk ABI and the host-facing interface.
+
+* TODO Move trace duplication into shared helpers
+:PROPERTIES:
+:Area: tools
+:Value: medium
+:END:
+
+~tools/glupsk-trace.cpp~ currently duplicates several pieces of interpreter
+knowledge. After the VM execution split, make the trace tool mostly formatting
+and presentation code.
+
+** TODO Reuse operand inspection helpers from VM operand module
+
+Trace operand rendering should use the same addressing rules as execution,
+without mutating machine state.
+
+** TODO Share Glk selector and gestalt names
+:PROPERTIES:
+:Suggested_File: core/glk_names.hpp core/glk_names.cpp
+:END:
+
+Move Glk selector and gestalt name tables out of the trace tool so errors,
+logs, and future tools can use the same names.
+
+** TODO Share small integer/sign helpers
+
+Avoid tiny duplicated helpers such as sign extension where a common helper
+would make execution and tracing visibly agree.
+
+* TODO Make stream opcode output blocking semantics explicit
+:PROPERTIES:
+:Area: effects glk
+:Value: medium
+:END:
+
+~@glk~ calls can now return a blocked result and resume cleanly. Non-~@glk~
+stream opcodes such as ~streamchar~, ~streamstr~, and ~streamunichar~ still look
+synchronous.
+
+Decide whether all output should participate in the same effect-handler style
+blocking/resume model. If yes, design a resumable representation for blocked
+stream output opcodes.
+
+* WAIT Consider splitting the test harness
+:PROPERTIES:
+:Area: tests
+:Value: low
+:END:
+
+~tests/test.hpp~ is large, but it is self-contained and not currently the main
+architecture pressure. Revisit only if it starts slowing test work.
+
+Possible split:
+
+- registration and suite discovery
+- filtering and command-line handling
+- reporting
+- assertions and exception helpers
+
+* Notes
+
+- ~core/machine.*~, ~core/story.*~, and ~core/decode.*~ are currently fairly
+  cohesive compared with the execution and Glk runtime files.
+- Prefer extracting real conceptual modules over making many tiny files.
+- Keep the VM state easy to serialize, but do not force host/runtime helper
+  structures to be pointerless when they are not VM state.
+- Keep platform-specific IO in hosts; keep common Glulx and Glk semantics in
+  reusable runtime code.
