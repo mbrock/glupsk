@@ -2,27 +2,25 @@
 
 ## Project
 
-Glupsk is a small, modern C++ Glulx interpreter project. Its current design target is a minimal explicit-state runtime that can eventually run a basic compiled Inform 7 Glulx game, with clarity, correctness, serialization, and WebAssembly portability taking priority over optimization.
+Glupsk is a small, modern C++ Glulx interpreter project. It works but hasn't been really exhaustively tested for correctness and doesn't implement every possible feature yet.
 
-Read `glupsk-spec.txt` first for the project goals, architecture sketch, constraints, and non-goals. `glulx-spec.md` is the local copy of the Glulx reference specification.
+The `aa.glulx` game (by my brother) was the initial milestone, but it would be cool to make sure Glupsk can run a variety of known and unknown Inform 7 games including ones that use features like graphics, etc.
+
+## References
+
+Read `glupsk-spec.txt` first for the project goals, architecture sketch, constraints, and non-goals. `glulx-spec.md` is the local copy of the Glulx reference specification. `Glk-Spec.md` likewise for the GLK API which is kind of like the platform backend abstract layer for the Glulx VM (windows, streams, styling, sound, events, etc).
 
 Reference implementations live under `refimpl/` as git submodules. Reference games, test data, and archived external fixtures live under `refdata/`. Tooling or compiler-packaging helpers live under `tools/`.
 
+The `tools/inform7-nix` flake is a submodule containing a repo that I made some time ago which bootstraps the Inform 7 compiler etc and provides some tools for command line builds of games to VM files etc.
+
 ## Build
 
-Meson is the authoritative C++ build. Use the root GNU `Makefile` for the simple local loop, but keep it as a wrapper around Meson rather than a separate compiler invocation path. `make` runs Meson setup and compile, `make test` runs Meson tests, `make trace` builds the trace tool, `make info` inspects the committed AA Glulx story with the Meson-built info tool, and `make aa` rebuilds `refdata/aa.ulx` through the Inform 7 Nix tooling.
+The Makefile mostly calls Meson but we don't use Meson for the WASM build because it basically can only deal with Emscripten and messes with linking normal standalone/WASI Clang WASM builds.
 
-`make`, `make meson`, and `make compile-commands` ensure `build/meson/compile_commands.json` exists and link it at the repo root for clangd.
+Use C++23. Use `std::format`, `std::print`, and `std::println` for tracing tools and stuff but don't use `std::format` in the core VM stuff because it bloats the WASM binary significantly.
 
-Use C++23. Prefer `std::format`, `std::print`, and `std::println` over iostream formatting for new code.
-
-In VM execution code, avoid heap-allocating temporary containers. Prefer fixed-size local arrays, spans over existing storage, or in-place algorithms when an opcode can be implemented without dynamic allocation.
-
-Do not stub missing VM or Glk functionality by returning a plausible zero-ish value unless the spec makes that result unambiguous, such as an unsupported `gestalt` feature or the end of an iterator. If story code attempts an unsupported opcode, selector, or invalid nonzero Glk handle, fail loudly with an exception/error so the missing behavior is visible in tests and traces.
-
-If VM behavior becomes significantly confusing, consider adding an oracle trace comparison against a patched reference interpreter such as Glulxe. A compact per-instruction state fingerprint stream, with `pc`, opcode, stack pointer, and stack hash, would usually be better than manually reading giant traces; dump full stack/memory only at the first divergence.
-
-Tests use the lightweight harness in `tests/test.hpp`: register static `suite`s and write cases with `"name"_test = [] { ... };` plus `expect(...)`.
+In VM execution code, avoid heap-allocating temporary containers.
 
 ## Commit Style
 

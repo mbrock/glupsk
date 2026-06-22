@@ -37,7 +37,7 @@ html {
   min-block-size: 100%;
   background: var(--page-bg);
   color: var(--ink);
-  line-height: 1.3;
+  line-height: 1.4;
   text-rendering: optimizeLegibility;
   -webkit-text-size-adjust: 100%;
 }
@@ -80,12 +80,10 @@ b {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-auto-rows: min-content;
-  /*justify-items: center;*/
   min-height: 0;
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--paper);
-  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .window {
@@ -102,11 +100,11 @@ b {
 .window.buffer .window-content {
   max-inline-size: 66ch;
   padding: clamp(1.5rem, 4vw, 3.25rem) clamp(1rem, 8vw, 7rem) 2.75rem;
-  font: 1.12rem/1.4 var(--buffer-font);
+  font-family: var(--buffer-font);
 }
 
 .buffer-paragraph {
-  margin: 0 0 1.3rem;
+  margin: 0 0 1.1rem;
   hyphens: manual;
   text-align: justify;
   text-align-last: start;
@@ -129,8 +127,8 @@ b {
 
 .glk-paragraph-style-header {
   letter-spacing: -0.06em;
-  margin-block: 4.35rem 1.95rem;
-  font-size: 2.5rem;
+  margin-block: 4.35rem 1.25rem;
+  font-size: 2.2rem;
 }
 
 .glk-paragraph-style-subheader {
