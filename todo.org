@@ -193,7 +193,7 @@ and presentation code.
 Trace operand rendering should use the same addressing rules as execution,
 without mutating machine state.
 
-** TODO Share Glk selector and gestalt names
+** DONE Share Glk selector and gestalt names
 :PROPERTIES:
 :Suggested_File: core/glk_names.hpp core/glk_names.cpp
 :END:
@@ -201,10 +201,14 @@ without mutating machine state.
 Move Glk selector and gestalt name tables out of the trace tool so errors,
 logs, and future tools can use the same names.
 
-** TODO Share small integer/sign helpers
+Implemented in ~core/glk_names.hpp~ and ~core/glk_names.cpp~.
+
+** DONE Share small integer/sign helpers
 
 Avoid tiny duplicated helpers such as sign extension where a common helper
 would make execution and tracing visibly agree.
+
+Trace now reuses ~glupsk::sign_extend~ from ~core/vm_operands.hpp~.
 
 * TODO Make stream opcode output blocking semantics explicit
 :PROPERTIES:
