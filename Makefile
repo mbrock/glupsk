@@ -9,14 +9,16 @@ I7_FLAKE := ./tools/inform7-nix
 
 BUILD_DIR := build
 MESON_BUILD_DIR := $(BUILD_DIR)/meson
+WASM_BUILD_DIR := $(BUILD_DIR)/wasm
 MESON_BUILD_FILE := $(MESON_BUILD_DIR)/build.ninja
+WASM_BUILD_FILE := $(WASM_BUILD_DIR)/build.ninja
 MESON_COMPILE_COMMANDS := $(MESON_BUILD_DIR)/compile_commands.json
 
 GLUPSK_INFO := $(MESON_BUILD_DIR)/glupsk-info
 GLUPSK_PLAY := $(MESON_BUILD_DIR)/glupsk-play
 GLUPSK_TRACE := $(MESON_BUILD_DIR)/glupsk-trace
 
-.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands info meson meson-setup meson-test play test tiny-i7 trace
+.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands info meson meson-setup meson-test play test tiny-i7 trace wasm wasm-setup
 
 all: meson
 
@@ -40,8 +42,20 @@ $(MESON_BUILD_FILE): meson.build
 meson-setup: $(MESON_BUILD_FILE)
 	ln -sf "$(MESON_COMPILE_COMMANDS)" compile_commands.json
 
+$(WASM_BUILD_FILE): meson.build tools/meson/wasm32-unknown-unknown.ini
+	@if [ -f "$(WASM_BUILD_FILE)" ]; then \
+		$(MESON) setup --reconfigure --cross-file tools/meson/wasm32-unknown-unknown.ini "$(WASM_BUILD_DIR)"; \
+	else \
+		$(MESON) setup --cross-file tools/meson/wasm32-unknown-unknown.ini "$(WASM_BUILD_DIR)"; \
+	fi
+
+wasm-setup: $(WASM_BUILD_FILE)
+
 meson: meson-setup
 	$(MESON) compile -C "$(MESON_BUILD_DIR)"
+
+wasm: wasm-setup
+	$(MESON) compile -C "$(WASM_BUILD_DIR)"
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"

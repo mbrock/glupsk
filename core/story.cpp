@@ -3,7 +3,9 @@
 #include "core/bytes.hpp"
 
 #include <format>
+#if GLUPSK_ENABLE_FILESYSTEM
 #include <fstream>
+#endif
 #include <stdexcept>
 
 namespace glupsk {
@@ -45,6 +47,7 @@ u32 compute_glulx_checksum(span<const u8> bytes) {
     return sum;
 }
 
+#if GLUPSK_ENABLE_FILESYSTEM
 Story Story::load(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::binary);
     if (!file) {
@@ -56,6 +59,7 @@ Story Story::load(const std::filesystem::path& path) {
         std::istreambuf_iterator<char>());
     return Story::from_bytes(std::move(bytes));
 }
+#endif
 
 Story Story::from_bytes(Bytes bytes) {
     return Story(std::move(bytes));

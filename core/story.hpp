@@ -3,8 +3,15 @@
 #include "core/types.hpp"
 
 #include <cstddef>
-#include <filesystem>
 #include <string>
+
+#ifndef GLUPSK_ENABLE_FILESYSTEM
+#define GLUPSK_ENABLE_FILESYSTEM 1
+#endif
+
+#if GLUPSK_ENABLE_FILESYSTEM
+#include <filesystem>
+#endif
 
 namespace glupsk {
 
@@ -33,7 +40,9 @@ struct Version {
 
 class Story {
   public:
+#if GLUPSK_ENABLE_FILESYSTEM
     static Story load(const std::filesystem::path& path);
+#endif
     static Story from_bytes(Bytes bytes);
 
     span<const u8> bytes() const { return bytes_; }
