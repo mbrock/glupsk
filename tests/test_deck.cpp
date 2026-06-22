@@ -13,7 +13,7 @@ template <typename Ring>
 std::vector<glupsk::u32> drain(Ring& ring) {
     auto out = std::vector<glupsk::u32>{};
     while (!ring.empty()) {
-        const auto run = ring.readable();
+        const auto run = ring.contiguous_prefix();
         out.insert(out.end(), run.begin(), run.end());
         ring.consume(run.size());
     }
@@ -24,23 +24,22 @@ std::vector<glupsk::u32> drain(Ring& ring) {
 
 static suite ring_tests{"Ring", [] {
     using glupsk::Ring;
-    using glupsk::BorrowedStorage;
     using glupsk::u32;
 
     "starts empty"_test = [] {
         std::array<u32, 4> rack;
-        auto ring = Ring<u32>(rack);
+        auto ring = Ring{rack};
         expect(ring.capacity() == 4);
         expect(ring.size() == 0);
         expect(ring.empty());
         expect(!ring.full());
         expect(ring.unused() == 4);
-        expect(ring.readable().empty());
+        expect(ring.contiguous_prefix().empty());
     };
 
     "pushes single values until full"_test = [] {
         std::array<u32, 3> rack;
-        auto ring = Ring<u32>{rack};
+        auto ring = Ring{rack};
         expect(ring.push(10));
         expect(ring.push(20));
         expect(ring.push(30));
@@ -52,7 +51,7 @@ static suite ring_tests{"Ring", [] {
 
     "pushes a span and reports the accepted count"_test = [] {
         std::array<u32, 3> rack;
-        auto ring = Ring<u32>{rack};
+        auto ring = Ring{rack};
         const auto values = std::array<u32, 5>{1, 2, 3, 4, 5};
         const auto accepted = ring.push(glupsk::span<const u32>{values});
         expect(accepted == 3) << "only three should fit";
@@ -61,7 +60,7 @@ static suite ring_tests{"Ring", [] {
 
     "wraps around after partial consume"_test = [] {
         std::array<u32, 4> rack;
-        auto ring = Ring<u32>{rack};
+        auto ring = Ring{rack};
         for (auto value : {1u, 2u, 3u, 4u}) {
             ring.push(value);
         }
@@ -70,7 +69,7 @@ static suite ring_tests{"Ring", [] {
         expect(ring.push(6));  // wraps into index 1
         expect(ring.full());
         // readable() returns only the contiguous tail first.
-        const auto first = ring.readable();
+        const auto first = ring.contiguous_prefix();
         expect(first.size() == 2) << "front run stops at physical end";
         expect(first[0] == 3 && first[1] == 4);
         expect(drain(ring) == std::vector<glupsk::u32>{3, 4, 5, 6});
@@ -78,7 +77,7 @@ static suite ring_tests{"Ring", [] {
 
     "occupancy plus free equals capacity (balance sheet)"_test = [] {
         std::array<u32, 4> rack;
-        auto ring = Ring<u32>{rack};
+        auto ring = Ring{rack};
         const auto balanced = [&] {
             return ring.size() + ring.unused() == ring.capacity();
         };
@@ -96,7 +95,7 @@ static suite ring_tests{"Ring", [] {
 
     "clear resets to empty"_test = [] {
         std::array<u32, 4> rack;
-        auto ring = Ring<u32>{rack};
+        auto ring = Ring{rack};
         ring.push(1);
         ring.push(2);
         ring.clear();
@@ -110,16 +109,14 @@ static suite ring_tests{"Ring", [] {
         expect(ring.capacity() == 0);
         expect(ring.full());
         expect(!ring.push(1));
-        expect(ring.readable().empty());
+        expect(ring.contiguous_prefix().empty());
         ring.consume(5);  // must be a safe no-op
         expect(ring.empty());
     };
 
     "rides on caller-owned borrowed storage"_test = [] {
         auto backing = std::array<u32, 4>{};
-        using Storage = glupsk::BorrowedStorage<u32>;
-        auto ring =
-            Ring<u32, Storage>{Storage{backing.data(), backing.size()}};
+        auto ring = Ring{backing};
         expect(ring.capacity() == 4);
         expect(ring.push(7));
         expect(ring.push(8));
@@ -130,7 +127,7 @@ static suite ring_tests{"Ring", [] {
 }};
 
 static suite deck_tests{"Deck", [] {
-    using Deck = glupsk::Deck<glupsk::u32>;
+    using glupsk::Deck;
 
     "produces and consumes FIFO via back/front"_test = [] {
         std::array<glupsk::u32, 4> rack;

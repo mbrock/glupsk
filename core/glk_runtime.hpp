@@ -337,7 +337,7 @@ class GlkSession : public GlkRuntime {
         auto codepoints = std::vector<u32>{};
         codepoints.reserve(record.buffer.size());
         while (!record.buffer.empty()) {
-            const auto run = record.buffer.readable();
+            const auto run = record.buffer.contiguous_prefix();
             codepoints.insert(codepoints.end(), run.begin(), run.end());
             record.buffer.consume(run.size());
         }
@@ -361,8 +361,7 @@ class GlkSession : public GlkRuntime {
         // Wire the borrowing ring once the record is pinned behind its
         // unique_ptr: buffer_storage's heap is stable and never reallocates.
         auto& record = registry_.require_stream(stream.id);
-        record.buffer = Ring<u32>{BorrowedStorage<u32>{
-            record.buffer_storage.data(), record.buffer_storage.size()}};
+        record.buffer = Ring<u32>{std::span(record.buffer_storage)};
         const auto window = registry_.allocate_window(WindowRecord{
             .window = std::move(opened.window),
             .rock = spec.rock,
