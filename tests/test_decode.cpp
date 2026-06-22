@@ -1,5 +1,6 @@
 #include "core/decode.hpp"
 #include "core/machine.hpp"
+#include "core/opcode_meta.hpp"
 
 #include "tests/test.hpp"
 

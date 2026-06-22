@@ -89,7 +89,7 @@ dominate the generic execution loop.
 
 Implemented in ~core/vm_accel.hpp~ and ~core/vm_accel.cpp~.
 
-* TODO Create shared opcode metadata
+* DONE Create shared opcode metadata
 :PROPERTIES:
 :Area: decode execute trace
 :Value: high
@@ -114,11 +114,10 @@ Implemented in ~core/opcode_meta.hpp~ and ~core/opcode_meta.cpp~. Decode now
 uses the shared operand-count table, and execution uses the shared store/load
 operand metadata.
 
-** TODO Move opcode names into shared metadata
+** DONE Move opcode names into shared metadata
 
-~opcode_name~ still lives in ~core/decode.cpp~. Move it behind the same metadata
-module so decode, trace, and diagnostics do not depend on decode-specific
-implementation details for naming.
+~opcode_name~ now lives behind the same metadata module, so decode, trace, and
+diagnostics do not depend on decode-specific implementation details for naming.
 
 * TODO Split common Glk runtime into smaller modules
 :PROPERTIES:
