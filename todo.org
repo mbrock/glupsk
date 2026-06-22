@@ -214,6 +214,15 @@ Keep selector decoding and argument/result adaptation separate from semantic
 runtime operations. This preserves a clean boundary between the VM-facing C-ish
 Glk ABI and the host-facing interface.
 
+*** DONE Extract raw argument adapter
+
+Implemented ~GlkArgs~ in ~core/glk_dispatch.hpp~ and started using it for
+gestalt, window, stream, and fileref selectors.
+
+*** TODO Move remaining selector dispatch structure out of GlkSession
+
+The main selector switch still lives in ~GlkSession::call~.
+
 * DONE Move trace duplication into shared helpers
 :PROPERTIES:
 :Area: tools

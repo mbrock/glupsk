@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/glk.hpp"
+#include "core/glk_dispatch.hpp"
 #include "core/glk_events.hpp"
 #include "core/glk_registry.hpp"
 #include "core/glk_streams.hpp"
@@ -56,108 +57,83 @@ class GlkSession : public GlkRuntime {
     GlkCallResult call(Machine& machine,
                        u32 selector,
                        span<const u32> args) override {
+        const auto raw = GlkArgs{args};
         switch (static_cast<GlkSelector>(selector)) {
             case GlkSelector::exit:
                 machine.halted = true;
                 machine.running = false;
                 return glk_returned();
             case GlkSelector::gestalt:
-                return glk_returned(
-                    args.empty()
-                        ? 0
-                        : host_.gestalt(GlkGestaltQuery{
-                              .selector =
-                                  static_cast<GlkGestaltSelector>(args[0]),
-                              .value = args.size() >= 2 ? args[1] : 0,
-                          }));
+                return glk_returned(raw.empty() ? 0
+                                                : host_.gestalt(raw.gestalt_query()));
             case GlkSelector::window_iterate:
                 return glk_returned(registry_.iterate_windows(
-                    machine, args.empty() ? 0 : args[0],
-                    args.size() >= 2 ? args[1] : 0));
+                    machine, raw.get(0), raw.get(1)));
             case GlkSelector::window_get_rock:
-                return glk_returned(args.empty() ? 0
-                                                 : registry_.require_window(args[0]).rock);
+                return glk_returned(raw.empty() ? 0
+                                                : registry_.require_window(raw.get(0)).rock);
             case GlkSelector::window_get_root:
                 return glk_returned(root_window_.id);
             case GlkSelector::window_open:
-                return glk_returned(open_window(
-                                        GlkWindowSpec{
-                                            .split = {
-                                                .id = args.empty() ? 0 : args[0],
-                                            },
-                                            .method = args.size() >= 2 ? args[1] : 0,
-                                            .size = args.size() >= 3 ? args[2] : 0,
-                                            .type = args.size() >= 4 ? args[3] : 0,
-                                            .rock = args.size() >= 5 ? args[4] : 0,
-                                        })
-                                        .id);
+                return glk_returned(open_window(raw.window_spec()).id);
             case GlkSelector::window_get_size:
-                if (args.size() >= 3) {
-                    const auto size = host_.window_size(registry_.require_window(args[0]).window);
-                    glk_write_ref(machine, args[1], size.width);
-                    glk_write_ref(machine, args[2], size.height);
+                if (raw.size() >= 3) {
+                    const auto size =
+                        host_.window_size(registry_.require_window(raw.get(0)).window);
+                    glk_write_ref(machine, raw.get(1), size.width);
+                    glk_write_ref(machine, raw.get(2), size.height);
                 }
                 return glk_returned();
             case GlkSelector::window_clear:
-                if (!args.empty()) {
-                    host_.window_clear(registry_.require_window(args[0]).window);
+                if (!raw.empty()) {
+                    host_.window_clear(registry_.require_window(raw.get(0)).window);
                 }
                 return glk_returned();
             case GlkSelector::window_move_cursor:
-                if (args.size() >= 3) {
-                    host_.window_move_cursor(registry_.require_window(args[0]).window,
-                                             args[1], args[2]);
+                if (raw.size() >= 3) {
+                    host_.window_move_cursor(
+                        registry_.require_window(raw.get(0)).window, raw.get(1),
+                        raw.get(2));
                 }
                 return glk_returned();
             case GlkSelector::window_get_stream:
-                return glk_returned(args.empty() ? 0
-                                                 : registry_.require_window(args[0]).stream.id);
+                return glk_returned(raw.empty()
+                                        ? 0
+                                        : registry_.require_window(raw.get(0)).stream.id);
             case GlkSelector::set_window:
-                set_window(args.empty() ? GlkWindowHandle{} :
-                                          GlkWindowHandle{.id = args[0]});
+                set_window(raw.empty() ? GlkWindowHandle{} : raw.window(0));
                 return glk_returned();
             case GlkSelector::stream_iterate:
                 return glk_returned(registry_.iterate_streams(
-                    machine, args.empty() ? 0 : args[0],
-                    args.size() >= 2 ? args[1] : 0));
+                    machine, raw.get(0), raw.get(1)));
             case GlkSelector::stream_get_rock:
-                return glk_returned(args.empty() ? 0 : registry_.require_stream(args[0]).rock);
+                return glk_returned(raw.empty() ? 0
+                                                : registry_.require_stream(raw.get(0)).rock);
             case GlkSelector::stream_open_memory:
-                return glk_returned(open_memory_stream(
-                    GlkMemoryStream{.address = args.size() >= 1 ? args[0] : 0,
-                                    .len = args.size() >= 2 ? args[1] : 0,
-                                    .mode = args.size() >= 3 ? args[2] : 0},
-                    args.size() >= 4 ? args[3] : 0)
-                                        .id);
+                return glk_returned(
+                    open_memory_stream(raw.memory_stream(), raw.get(3)).id);
             case GlkSelector::stream_open_memory_uni:
-                return glk_returned(open_memory_stream(
-                    GlkUnicodeMemoryStream{
-                        .address = args.size() >= 1 ? args[0] : 0,
-                        .len = args.size() >= 2 ? args[1] : 0,
-                        .mode = args.size() >= 3 ? args[2] : 0},
-                    args.size() >= 4 ? args[3] : 0)
-                                        .id);
+                return glk_returned(
+                    open_memory_stream(raw.unicode_memory_stream(), raw.get(3)).id);
             case GlkSelector::stream_close:
-                if (!args.empty()) {
-                    close_stream(machine, GlkStreamHandle{.id = args[0]},
-                                 args.size() >= 2 ? args[1] : 0);
+                if (!raw.empty()) {
+                    close_stream(machine, raw.stream(0), raw.get(1));
                 }
                 return glk_returned();
             case GlkSelector::stream_set_current:
-                set_current_stream(args.empty() ? GlkStreamHandle{} :
-                                                  GlkStreamHandle{.id = args[0]});
+                set_current_stream(raw.empty() ? GlkStreamHandle{} : raw.stream(0));
                 return glk_returned();
             case GlkSelector::stream_get_current:
                 return glk_returned(current_stream_.id);
             case GlkSelector::fileref_iterate:
-                if (args.size() >= 2) {
-                    glk_write_ref(machine, args[1], 0);
+                if (raw.size() >= 2) {
+                    glk_write_ref(machine, raw.get(1), 0);
                 }
                 return glk_returned();
             case GlkSelector::fileref_get_rock:
-                if (!args.empty() && args[0] != 0) {
+                if (!raw.empty() && raw.get(0) != 0) {
                     throw std::runtime_error(std::format(
-                        "fileref_get_rock received invalid fileref {}", args[0]));
+                        "fileref_get_rock received invalid fileref {}", raw.get(0)));
                 }
                 return glk_returned();
             case GlkSelector::set_style:
