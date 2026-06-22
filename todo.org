@@ -45,6 +45,18 @@ helpers into a frame/call module.
 The goal is to make the Glulx call ABI readable independently of the giant
 opcode switch.
 
+*** DONE Extract call stub and return/branch primitives
+
+Implemented in ~core/vm_frames.hpp~ and ~core/vm_frames.cpp~. This covers call
+stub push/pop, value-stack base calculation, function return, and branch
+offset handling.
+
+*** TODO Move function entry and local frame initialization
+
+~enter_function~ still lives in ~core/execute.cpp~ because it currently calls
+the acceleration machinery, which is also still embedded there. Move this after
+or alongside the acceleration split.
+
 ** TODO Extract Glulx string output machinery
 :PROPERTIES:
 :Suggested_File: core/vm_strings.hpp core/vm_strings.cpp
