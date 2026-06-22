@@ -1,6 +1,6 @@
 #include "core/vm_operands.hpp"
 
-#include <stdexcept>
+#include "core/error.hpp"
 
 namespace glupsk {
 u32 locals_pos(const Machine& machine) {
@@ -25,7 +25,7 @@ u32 read_local(const Machine& machine, u32 address, u8 width) {
         case 4:
             return machine.stack.read32(stack_address);
         default:
-            throw std::runtime_error("invalid local read width");
+            fail("invalid local read width");
     }
 }
 
@@ -42,7 +42,7 @@ void write_local(Machine& machine, u32 address, u32 value, u8 width) {
             machine.stack.write32(stack_address, value);
             return;
         default:
-            throw std::runtime_error("invalid local write width");
+            fail("invalid local write width");
     }
 }
 
@@ -101,7 +101,7 @@ u32 load_operand(Machine& machine, Operand operand, u8 width) {
         default:
             break;
     }
-    throw std::runtime_error("invalid operand load");
+    fail("invalid operand load");
 }
 
 u32 peek_operand(const Machine& machine, Operand operand, u32 stack_index, u8 width) {
@@ -130,7 +130,7 @@ u32 peek_operand(const Machine& machine, Operand operand, u32 stack_index, u8 wi
         case stack: {
             const auto needed = 4 * (stack_index + 1);
             if (machine.stack.sp < needed) {
-                throw std::runtime_error("stack operand is outside stack");
+                fail("stack operand is outside stack");
             }
             return machine.stack.read32(machine.stack.sp - needed);
         }
@@ -153,7 +153,7 @@ u32 peek_operand(const Machine& machine, Operand operand, u32 stack_index, u8 wi
         default:
             break;
     }
-    throw std::runtime_error("invalid operand peek");
+    fail("invalid operand peek");
 }
 
 StoreRef store_ref(const Machine& machine, Operand operand) {
@@ -177,7 +177,7 @@ StoreRef store_ref(const Machine& machine, Operand operand) {
             return {.type = StoreDest::memory,
                     .address = ram_address(machine, operand.data)};
         default:
-            throw std::runtime_error("invalid store operand");
+            fail("invalid store operand");
     }
 }
 
@@ -207,7 +207,7 @@ void store_value(Machine& machine, StoreRef ref, u32 value, u8 width) {
         default:
             break;
     }
-    throw std::runtime_error("invalid store");
+    fail("invalid store");
 }
 
 void store_value(Machine& machine, Operand operand, u32 value, u8 width) {
@@ -216,7 +216,7 @@ void store_value(Machine& machine, Operand operand, u32 value, u8 width) {
 
 Arguments pop_arguments(Machine& machine, u32 argc) {
     if (argc > 32) {
-        throw std::runtime_error("too many temporary arguments");
+        fail("too many temporary arguments");
     }
 
     Arguments args;

@@ -1,6 +1,6 @@
 #include "core/vm_search.hpp"
 
-#include <stdexcept>
+#include "core/error.hpp"
 
 namespace glupsk {
 namespace {
@@ -23,7 +23,7 @@ u8 key_byte(const Machine& machine,
         return machine.memory.read8(key + index);
     }
     if (key_size != 1 && key_size != 2 && key_size != 4) {
-        throw std::runtime_error("direct search key size must be 1, 2, or 4");
+        fail("direct search key size must be 1, 2, or 4");
     }
     return static_cast<u8>((key >> ((key_size - index - 1) * 8)) & 0xff);
 }
@@ -65,7 +65,7 @@ u32 linear_search(Machine& machine,
                   u32 key_offset,
                   u32 options) {
     if ((options & ~0x07u) != 0) {
-        throw std::runtime_error("linearsearch received unsupported options");
+        fail("linearsearch received unsupported options");
     }
     const auto key_indirect = (options & 0x01) != 0;
     const auto zero_key_terminates = (options & 0x02) != 0;
@@ -95,7 +95,7 @@ u32 binary_search(Machine& machine,
                   u32 key_offset,
                   u32 options) {
     if ((options & ~0x05u) != 0) {
-        throw std::runtime_error("binarysearch received unsupported options");
+        fail("binarysearch received unsupported options");
     }
     const auto key_indirect = (options & 0x01) != 0;
     const auto return_index = (options & 0x04) != 0;
@@ -127,7 +127,7 @@ u32 linked_search(Machine& machine,
                   u32 next_offset,
                   u32 options) {
     if ((options & ~0x03u) != 0) {
-        throw std::runtime_error("linkedsearch received unsupported options");
+        fail("linkedsearch received unsupported options");
     }
     const auto key_indirect = (options & 0x01) != 0;
     const auto zero_key_terminates = (options & 0x02) != 0;

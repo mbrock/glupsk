@@ -1,4 +1,5 @@
 #include "core/execute.hpp"
+#include "core/error.hpp"
 #include "core/glk.hpp"
 #include "core/machine.hpp"
 #include "core/story.hpp"
@@ -7,10 +8,11 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdlib>
+#ifndef GLUPSK_NO_EXCEPTIONS
 #include <exception>
+#endif
 #include <limits>
 #include <memory>
-#include <stdexcept>
 #include <string>
 #include <utility>
 
@@ -65,9 +67,9 @@ class WasmGlkRuntime final : public glupsk::GlkRuntime {
             return;
         }
         if (kind == HOST_BLOCKED) {
-            throw std::runtime_error("Glk host blocked while writing a character");
+            glupsk::fail("Glk host blocked while writing a character");
         }
-        throw std::runtime_error("Glk host reported a fatal character output error");
+        glupsk::fail("Glk host reported a fatal character output error");
     }
 };
 
@@ -121,6 +123,9 @@ WasmStatus with_vm(std::uint32_t handle, Fn fn) {
     if (!vm || !vm->machine) {
         return VM_BAD_HANDLE;
     }
+#ifdef GLUPSK_NO_EXCEPTIONS
+    return fn(*vm);
+#else
     try {
         return fn(*vm);
     } catch (const std::exception& ex) {
@@ -128,6 +133,7 @@ WasmStatus with_vm(std::uint32_t handle, Fn fn) {
     } catch (...) {
         return fail(vm, "unknown VM error");
     }
+#endif
 }
 
 }  // namespace
@@ -145,6 +151,9 @@ extern "C" void vm_free(void* ptr, std::uint32_t) {
 }
 
 extern "C" std::uint32_t vm_create() {
+#ifdef GLUPSK_NO_EXCEPTIONS
+    return as_handle(new WasmVm{});
+#else
     try {
         return as_handle(new WasmVm{});
     } catch (const std::exception& ex) {
@@ -154,6 +163,7 @@ extern "C" std::uint32_t vm_create() {
         global_last_error = "unknown VM creation error";
         return 0;
     }
+#endif
 }
 
 extern "C" void vm_destroy(std::uint32_t handle) {
@@ -167,6 +177,15 @@ extern "C" std::uint32_t vm_load_story(std::uint32_t handle,
     if (!vm || !bytes) {
         return VM_BAD_HANDLE;
     }
+#ifdef GLUPSK_NO_EXCEPTIONS
+    auto owned = glupsk::Bytes(bytes, bytes + size);
+    auto story = glupsk::Story::from_bytes(std::move(owned));
+    vm->machine = std::make_unique<glupsk::Machine>(
+        glupsk::Machine::from_story(story));
+    vm->machine->glk = &vm->glk;
+    vm->last_error.clear();
+    return VM_OK;
+#else
     try {
         auto owned = glupsk::Bytes(bytes, bytes + size);
         auto story = glupsk::Story::from_bytes(std::move(owned));
@@ -180,6 +199,7 @@ extern "C" std::uint32_t vm_load_story(std::uint32_t handle,
     } catch (...) {
         return fail(vm, "unknown story load error");
     }
+#endif
 }
 
 extern "C" std::uint32_t vm_step(std::uint32_t handle) {

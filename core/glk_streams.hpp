@@ -1,16 +1,15 @@
 #pragma once
 
+#include "core/error.hpp"
 #include "core/glk_registry.hpp"
 #include "core/machine.hpp"
 #include "core/glk_text.hpp"
-
-#include <stdexcept>
 
 namespace glupsk {
 
 inline void glk_validate_memory_stream_mode(u32 mode) {
     if (mode != 0 && mode != 1 && mode != 2 && mode != 3) {
-        throw std::runtime_error(
+        fail(
             std::format("unsupported memory stream mode {}", mode));
     }
 }
@@ -21,7 +20,7 @@ void glk_write_to_memory_stream(Machine& machine,
                                 const GlkMemoryStream& stream,
                                 const GlkTextData& text) {
     if (stream.mode == 2) {
-        throw std::runtime_error("cannot write to read-only memory stream");
+        fail("cannot write to read-only memory stream");
     }
     const auto write_codepoint = [&](u32 ch) {
         if (record.pos < stream.len && stream.address != 0) {
@@ -49,7 +48,7 @@ void glk_write_to_unicode_memory_stream(Machine& machine,
                                         const GlkUnicodeMemoryStream& stream,
                                         const GlkTextData& text) {
     if (stream.mode == 2) {
-        throw std::runtime_error("cannot write to read-only unicode memory stream");
+        fail("cannot write to read-only unicode memory stream");
     }
     const auto write_codepoint = [&](u32 ch) {
         if (record.pos < stream.len && stream.address != 0) {
@@ -90,7 +89,7 @@ GlkCallResult glk_write_to_stream_record(Host& host,
         glk_write_to_unicode_memory_stream(machine, record, *memory, text);
         return glk_returned();
     }
-    throw std::runtime_error("invalid Glk stream record");
+    fail("invalid Glk stream record");
 }
 
 }  // namespace glupsk

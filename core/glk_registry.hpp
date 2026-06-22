@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/error.hpp"
 #include "core/glk.hpp"
 #include "core/glk_events.hpp"
 #include "core/machine.hpp"
@@ -7,7 +8,6 @@
 
 #include <format>
 #include <memory>
-#include <stdexcept>
 #include <variant>
 #include <vector>
 
@@ -64,7 +64,7 @@ class GlkRegistry {
 
     WindowRecord& require_window(u32 id) {
         if (id == 0 || id > windows_.size() || !windows_[id - 1]) {
-            throw std::runtime_error(
+            fail(
                 std::format("invalid Glk window handle {}", id));
         }
         return *windows_[id - 1];
@@ -73,7 +73,7 @@ class GlkRegistry {
     StreamRecord& require_stream(u32 id) {
         if (id == 0 || id > streams_.size() || !streams_[id - 1] ||
             !streams_[id - 1]->allocated()) {
-            throw std::runtime_error(
+            fail(
                 std::format("invalid Glk stream handle {}", id));
         }
         return *streams_[id - 1];
@@ -108,7 +108,7 @@ class GlkRegistry {
             }
         }
         if (!found_previous) {
-            throw std::runtime_error(std::format(
+            fail(std::format(
                 "window_iterate received invalid window {}", previous_id));
         }
         glk_write_ref(machine, rock_address, 0);
@@ -134,7 +134,7 @@ class GlkRegistry {
             }
         }
         if (!found_previous) {
-            throw std::runtime_error(std::format(
+            fail(std::format(
                 "stream_iterate received invalid stream {}", previous_id));
         }
         glk_write_ref(machine, rock_address, 0);

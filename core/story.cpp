@@ -1,12 +1,12 @@
 #include "core/story.hpp"
 
 #include "core/bytes.hpp"
+#include "core/error.hpp"
 
 #include <format>
 #if GLUPSK_ENABLE_FILESYSTEM
 #include <fstream>
 #endif
-#include <stdexcept>
 
 namespace glupsk {
 namespace {
@@ -27,7 +27,7 @@ GlulxHeader parse_header(span<const u8> bytes) {
 
 void require(bool condition, const std::string& message) {
     if (!condition) {
-        throw std::runtime_error(message);
+        fail(message);
     }
 }
 
@@ -51,7 +51,7 @@ u32 compute_glulx_checksum(span<const u8> bytes) {
 Story Story::load(const std::filesystem::path& path) {
     std::ifstream file(path, std::ios::binary);
     if (!file) {
-        throw std::runtime_error("could not open story file: " + path.string());
+        fail("could not open story file: " + path.string());
     }
 
     Bytes bytes(

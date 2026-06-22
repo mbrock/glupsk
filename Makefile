@@ -34,7 +34,10 @@ CORE_SOURCES := \
 	core/vm_search.cpp \
 	core/vm_strings.cpp
 
-WASM_SOURCES := hosts/wasm/glupsk_wasm.cpp $(CORE_SOURCES)
+WASM_SOURCES := \
+	hosts/wasm/glupsk_wasm.cpp \
+	hosts/wasm/no_exceptions.cpp \
+	$(CORE_SOURCES)
 WASM_EXPORTS := \
 	-Wl,--export-memory \
 	-Wl,--export=vm_alloc \
@@ -83,9 +86,12 @@ meson: meson-setup
 $(GLUPSK_WASM): $(WASM_SOURCES) hosts/wasm/allowed-undefined.txt
 	mkdir -p "$(WASM_BUILD_DIR)"
 	$(WASM_CXX) --target=wasm32-wasi -std=c++23 -O2 -g0 -I. \
-		-DGLUPSK_ENABLE_FILESYSTEM=0 -nostartfiles \
+		-DGLUPSK_ENABLE_FILESYSTEM=0 -DGLUPSK_NO_EXCEPTIONS \
+		-fno-exceptions -nostartfiles \
 		$(WASM_SOURCES) \
-		-Wl,--no-entry -Wl,--allow-undefined $(WASM_EXPORTS) \
+		-Wl,--no-entry \
+		-Wl,--allow-undefined-file=hosts/wasm/allowed-undefined.txt \
+		$(WASM_EXPORTS) \
 		-lc++abi -lc++ -lc \
 		-o "$@"
 

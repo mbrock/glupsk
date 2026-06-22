@@ -1,8 +1,7 @@
 #include "core/vm_accel.hpp"
 
+#include "core/error.hpp"
 #include "core/vm_search.hpp"
-
-#include <stdexcept>
 
 namespace glupsk {
 namespace {
@@ -212,7 +211,7 @@ void set_accelerated_function(Machine& machine, u32 function, u32 address) {
             return;
         }
     }
-    throw std::runtime_error("acceleration table is full");
+    fail("acceleration table is full");
 }
 
 void set_acceleration_param(Machine& machine, u32 index, u32 value) {

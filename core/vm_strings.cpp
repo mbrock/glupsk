@@ -1,6 +1,6 @@
 #include "core/vm_strings.hpp"
 
-#include <stdexcept>
+#include "core/error.hpp"
 
 namespace glupsk {
 namespace {
@@ -36,7 +36,7 @@ void output_char(Machine& machine, u32 ch) {
         return;
     }
     if (machine.regs.iosys_mode != 2) {
-        throw std::runtime_error("unsupported I/O system");
+        fail("unsupported I/O system");
     }
     // Stream opcodes currently write synchronously; blocked output will need a
     // resumable opcode state instead of throwing through this path.
@@ -95,17 +95,17 @@ void output_huffman_leaf(Machine& machine, u32 node) {
         }
         case StringNodeType::indirect_args:
         case StringNodeType::double_indirect_args:
-            throw std::runtime_error("string function references are not implemented");
+            fail("string function references are not implemented");
         case StringNodeType::branch:
         case StringNodeType::terminator:
         default:
-            throw std::runtime_error("unknown string leaf node");
+            fail("unknown string leaf node");
     }
 }
 
 void output_compressed_string(Machine& machine, u32 address) {
     if (machine.regs.string_table == 0) {
-        throw std::runtime_error("compressed string without string table");
+        fail("compressed string without string table");
     }
     const auto root = machine.memory.read32(machine.regs.string_table + 8);
     auto byte_address = address;
@@ -148,7 +148,7 @@ void output_string_object(Machine& machine, u32 address) {
             output_uni_string(machine, address + 4);
             return;
         default:
-            throw std::runtime_error("streamstr target is not a string");
+            fail("streamstr target is not a string");
     }
 }
 

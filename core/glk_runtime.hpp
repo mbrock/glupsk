@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/error.hpp"
 #include "core/glk.hpp"
 #include "core/glk_dispatch.hpp"
 #include "core/glk_events.hpp"
@@ -13,7 +14,6 @@
 #include <format>
 #include <memory>
 #include <optional>
-#include <stdexcept>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -132,7 +132,7 @@ class GlkSession : public GlkRuntime {
                 return glk_returned();
             case GlkSelector::fileref_get_rock:
                 if (!raw.empty() && raw.get(0) != 0) {
-                    throw std::runtime_error(std::format(
+                    fail(std::format(
                         "fileref_get_rock received invalid fileref {}", raw.get(0)));
                 }
                 return glk_returned();
@@ -258,7 +258,7 @@ class GlkSession : public GlkRuntime {
             case GlkSelector::char_to_upper:
                 return glk_returned(raw.empty() ? 0 : glk_char_to_upper(raw.get(0)));
             default:
-                throw std::runtime_error(
+                fail(
                     std::format("unsupported Glk selector 0x{:04x}", selector));
         }
     }
@@ -269,9 +269,9 @@ class GlkSession : public GlkRuntime {
             return returned->value;
         }
         if (const auto* fatal = std::get_if<GlkFatal>(&result)) {
-            throw std::runtime_error(fatal->message);
+            fail(fatal->message);
         }
-        throw std::runtime_error("Glk call blocked");
+        fail("Glk call blocked");
     }
 
     void put_char(Machine& machine, u32 ch) override {
@@ -280,10 +280,10 @@ class GlkSession : public GlkRuntime {
                                                .encoding = GlkTextEncoding::unicode,
                                            });
         if (const auto* fatal = std::get_if<GlkFatal>(&result)) {
-            throw std::runtime_error(fatal->message);
+            fail(fatal->message);
         }
         if (std::holds_alternative<GlkBlocked>(result)) {
-            throw std::runtime_error("Glk output blocked outside @glk");
+            fail("Glk output blocked outside @glk");
         }
     }
 
@@ -336,7 +336,7 @@ class GlkSession : public GlkRuntime {
                       u32 result_address) {
         auto& stream = registry_.require_stream(handle.id);
         if (std::holds_alternative<HostStream>(stream.backing)) {
-            throw std::runtime_error("stream_close cannot close a window stream");
+            fail("stream_close cannot close a window stream");
         }
         glk_write_event_field(machine, result_address, 0, stream.read_count);
         glk_write_event_field(machine, result_address, 1, stream.write_count);

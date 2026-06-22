@@ -1,6 +1,6 @@
 #include "core/opcode_meta.hpp"
 
-#include <stdexcept>
+#include "core/error.hpp"
 
 namespace glupsk {
 
@@ -109,7 +109,7 @@ u8 operand_count_for(Opcode opcode) {
         case binarysearch:
             return 8;
         default:
-            throw std::runtime_error("unknown opcode");
+            fail("unknown opcode");
     }
 }
 

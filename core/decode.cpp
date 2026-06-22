@@ -1,8 +1,7 @@
 #include "core/decode.hpp"
 
+#include "core/error.hpp"
 #include "core/opcode_meta.hpp"
-
-#include <stdexcept>
 
 namespace glupsk {
 namespace {
@@ -38,7 +37,7 @@ u32 read_operand_data(const Memory& memory, u32& pc, OperandMode mode) {
             return value;
         }
         default:
-            throw std::runtime_error("unused operand addressing mode");
+            fail("unused operand addressing mode");
     }
 }
 

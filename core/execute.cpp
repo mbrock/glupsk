@@ -1,6 +1,7 @@
 #include "core/execute.hpp"
 
 #include "core/decode.hpp"
+#include "core/error.hpp"
 #include "core/opcode_meta.hpp"
 #include "core/vm_accel.hpp"
 #include "core/vm_frames.hpp"
@@ -12,7 +13,6 @@
 #include <charconv>
 #include <cstdint>
 #include <format>
-#include <stdexcept>
 #include <variant>
 
 namespace glupsk {
@@ -385,7 +385,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             const auto [end, ec] =
                 std::to_chars(buffer.data(), buffer.data() + buffer.size(), value);
             if (ec != std::errc{}) {
-                throw std::runtime_error("streamnum conversion failed");
+                fail("streamnum conversion failed");
             }
             for (auto cursor = buffer.data(); cursor != end; ++cursor) {
                 const auto ch = *cursor;
@@ -403,7 +403,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             s(2, gestalt(l(0), l(1)));
             return;
         case Opcode::debugtrap:
-            throw std::runtime_error("debugtrap");
+            fail("debugtrap");
         case Opcode::getmemsize:
             s(0, static_cast<u32>(machine.memory.bytes.size()));
             return;
@@ -463,7 +463,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
                     return;
                 }
                 if (const auto* fatal = std::get_if<GlkFatal>(&call_result)) {
-                    throw std::runtime_error(fatal->message);
+                    fail(fatal->message);
                 }
                 result = std::get<GlkReturned>(call_result).value;
             }
@@ -555,9 +555,9 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             return;
         }
         case Opcode::malloc:
-            throw std::runtime_error("malloc is not implemented");
+            fail("malloc is not implemented");
         case Opcode::mfree:
-            throw std::runtime_error("mfree is not implemented");
+            fail("mfree is not implemented");
         case Opcode::accelfunc:
             set_accelerated_function(machine, l(0), l(1));
             return;
@@ -565,7 +565,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             set_acceleration_param(machine, l(0), l(1));
             return;
         default:
-            throw std::runtime_error(std::format(
+            fail(std::format(
                 "unimplemented opcode 0x{:x}", static_cast<u32>(op)));
     }
 }

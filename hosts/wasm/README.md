@@ -46,7 +46,8 @@ Both imports return `0` for returned, `1` for blocked, and `2` for fatal. For
 `glupsk_host_glk_call`, returned calls write the Glk return value through
 `value`.
 
-The current module also imports a small set of WASI libc functions from
-`wasi_snapshot_preview1` and two C++ exception helper symbols. That is an
-implementation detail of the first C++ runtime build, not a commitment to a
-large WASI or Emscripten host layer.
+The wasm build uses `-fno-exceptions`. Core failure paths that throw in native
+builds trap in wasm instead. Tiny internal `__cxa_*` trap shims catch any
+remaining libc++ throw path, so exported functions do not require the host to
+provide a C++ exception runtime. The module still imports a small set of WASI
+libc functions from `wasi_snapshot_preview1`.

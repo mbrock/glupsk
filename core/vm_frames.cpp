@@ -1,9 +1,9 @@
 #include "core/vm_frames.hpp"
 
+#include "core/error.hpp"
 #include "core/vm_accel.hpp"
 
 #include <format>
-#include <stdexcept>
 
 namespace glupsk {
 namespace {
@@ -63,7 +63,7 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
 
     const auto type = machine.memory.read8(address++);
     if (type != 0xc0 && type != 0xc1) {
-        throw std::runtime_error(std::format("call to non-function at 0x{:x}",
+        fail(std::format("call to non-function at 0x{:x}",
                                             address - 1));
     }
 
@@ -83,7 +83,7 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
             break;
         }
         if (local_type != 1 && local_type != 2 && local_type != 4) {
-            throw std::runtime_error("illegal local type");
+            fail("illegal local type");
         }
         local_len = align_to(local_len, local_type);
         local_len += static_cast<u32>(local_type * local_count);
@@ -97,7 +97,7 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
 
     if (static_cast<std::size_t>(frame_ptr) + frame_len_value >
         machine.stack.bytes.size()) {
-        throw std::runtime_error("stack overflow in function call");
+        fail("stack overflow in function call");
     }
 
     machine.stack.write32(frame_ptr, frame_len_value);

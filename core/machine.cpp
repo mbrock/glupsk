@@ -1,8 +1,7 @@
 #include "core/machine.hpp"
 
 #include "core/bytes.hpp"
-
-#include <stdexcept>
+#include "core/error.hpp"
 
 namespace glupsk {
 namespace {
@@ -10,7 +9,7 @@ namespace {
 std::size_t checked_offset(const Memory& memory, u32 address, std::size_t width) {
     const auto offset = static_cast<std::size_t>(address);
     if (offset > memory.bytes.size() || memory.bytes.size() - offset < width) {
-        throw std::runtime_error("memory access is outside ENDMEM");
+        fail("memory access is outside ENDMEM");
     }
     return offset;
 }
@@ -20,7 +19,7 @@ std::size_t checked_write_offset(const Memory& memory,
                                  std::size_t width) {
     const auto offset = checked_offset(memory, address, width);
     if (address < memory.ramstart) {
-        throw std::runtime_error("memory write targets ROM");
+        fail("memory write targets ROM");
     }
     return offset;
 }
@@ -30,7 +29,7 @@ std::size_t checked_stack_offset(const Stack& stack,
                                  std::size_t width) {
     const auto offset = static_cast<std::size_t>(address);
     if (offset > stack.bytes.size() || stack.bytes.size() - offset < width) {
-        throw std::runtime_error("stack access is outside stack memory");
+        fail("stack access is outside stack memory");
     }
     return offset;
 }
@@ -87,7 +86,7 @@ void Stack::write32(u32 address, u32 value) {
 
 void Stack::push32(u32 value) {
     if (bytes.size() - sp < 4) {
-        throw std::runtime_error("stack overflow");
+        fail("stack overflow");
     }
     write_u32_be(bytes, sp, value);
     sp += 4;
@@ -95,7 +94,7 @@ void Stack::push32(u32 value) {
 
 u32 Stack::pop32() {
     if (sp < 4) {
-        throw std::runtime_error("stack underflow");
+        fail("stack underflow");
     }
     sp -= 4;
     return read_u32_be(bytes, sp);
