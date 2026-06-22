@@ -18,8 +18,21 @@ concept slice_of =
     { std::ranges::data(rack) } -> std::convertible_to<T*>;
   };
 
+// The minimal vault a deck rides on: a sized, indexed store of T. std::span
+// models it, and so does a proxy that (de)serializes through some backing —
+// e.g. a slice of VM memory, where each slot reads/writes big-endian bytes via
+// read32/write32 and re-resolves the address each access (so it survives the
+// memory vector reallocating). slice_of refines this with contiguity, which is
+// what unlocks contiguous_prefix().
+template <typename R, typename T>
+concept deck_storage = requires(R& rack, const R& const_rack, std::size_t i, T v) {
+    { std::size(const_rack) } -> std::convertible_to<std::size_t>;
+    rack[i] = v;
+    { static_cast<T>(const_rack[i]) } -> std::same_as<T>;
+};
+
 template <typename T, typename R = std::span<T>>
-    requires slice_of<R, T> && std::is_trivially_copyable_v<T>
+    requires deck_storage<R, T> && std::is_trivially_copyable_v<T>
 class Deck {
   // hmm, i wonder if we could change this pos_t
   // to some like std::ranges::range_difference_t<R>
@@ -72,7 +85,7 @@ class Deck {
             return std::nullopt;
         }
         --hi_;
-        return storage_[index(hi_)];
+        return static_cast<T>(storage_[index(hi_)]);
     }
 
     // Front end: FIFO consume, and prepend.
@@ -80,7 +93,7 @@ class Deck {
         if (empty()) {
             return std::nullopt;
         }
-        const auto value = storage_[index(lo_)];
+        const T value = storage_[index(lo_)];
         ++lo_;
         return value;
     }
@@ -106,7 +119,10 @@ class Deck {
         return pushed;
     }
 
+    // Only contiguous vaults can hand out a span over their live region; a
+    // proxy vault (VM memory) deliberately lacks this.
     std::span<T> contiguous_prefix() const
+        requires slice_of<R, T>
     {
         if (empty()) return std::span<T>();
         const auto begin = index(lo_);
