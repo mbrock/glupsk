@@ -68,6 +68,7 @@ class DomGlkHost {
   windows = new Map();
   queuedLines = new Map();
   pendingLineWindow;
+  scrollTarget;
 
   constructor(root, commandInput, status) {
     this.root = root;
@@ -114,6 +115,12 @@ class DomGlkHost {
       content: element.querySelector(".window-content"),
       cursor: 0,
       text: "",
+      pendingText: "",
+      dirty: true,
+      clearPending: false,
+      cursorX: 0,
+      cursorY: 0,
+      cursorDirty: false,
     });
   }
 
@@ -130,15 +137,18 @@ class DomGlkHost {
     if (!record) return;
     record.text = "";
     record.cursor = 0;
-    record.content.textContent = "";
+    record.pendingText = "";
+    record.clearPending = true;
+    record.dirty = true;
   }
 
   moveCursor(window, x, y) {
     const record = this.windows.get(window);
     if (!record) return;
     record.cursor = y * this.windowWidth(window) + x;
-    record.element.dataset.cursorX = String(x);
-    record.element.dataset.cursorY = String(y);
+    record.cursorX = x;
+    record.cursorY = y;
+    record.cursorDirty = true;
   }
 
   writeLatin1(window, _stream, ptr, length) {
@@ -194,8 +204,9 @@ class DomGlkHost {
       this.writeGridText(record, text);
       return;
     }
-    record.content.append(document.createTextNode(text));
-    record.element.scrollIntoView({ block: "end" });
+    record.pendingText += text;
+    record.dirty = true;
+    this.scrollTarget = record.element;
   }
 
   writeGridText(record, text) {
@@ -203,7 +214,33 @@ class DomGlkHost {
     record.text = padded.slice(0, record.cursor) + text +
       padded.slice(record.cursor + text.length);
     record.cursor += text.length;
-    record.content.textContent = record.text;
+    record.dirty = true;
+  }
+
+  flush() {
+    for (const record of this.windows.values()) {
+      if (record.clearPending) {
+        record.content.textContent = "";
+        record.clearPending = false;
+      }
+      if (record.cursorDirty) {
+        record.element.dataset.cursorX = String(record.cursorX);
+        record.element.dataset.cursorY = String(record.cursorY);
+        record.cursorDirty = false;
+      }
+      if (!record.dirty) continue;
+      if (record.type === GLK_WINDOW_TEXT_GRID) {
+        record.content.textContent = record.text;
+      } else if (record.pendingText.length > 0) {
+        record.content.append(document.createTextNode(record.pendingText));
+        record.pendingText = "";
+      }
+      record.dirty = false;
+    }
+    if (this.scrollTarget) {
+      this.scrollTarget.scrollIntoView({ block: "end" });
+      this.scrollTarget = undefined;
+    }
   }
 
   shiftLine(window) {
@@ -250,43 +287,42 @@ async function instantiate() {
     document.querySelector("#status"),
   );
 
-  const [wasmBytes, story] = await Promise.all([
-    fetch("./glupsk.wasm").then((response) => response.arrayBuffer()),
-    fetch("./aa.ulx").then((response) => response.arrayBuffer()),
+  const imports = {
+    env: {
+      glupsk_host_window_open: (
+        window,
+        stream,
+        split,
+        method,
+        size,
+        type,
+        rock,
+      ) => host.openWindow(window, stream, split, method, size, type, rock),
+      glupsk_host_window_width: (window) => host.windowWidth(window),
+      glupsk_host_window_height: (window) => host.windowHeight(window),
+      glupsk_host_window_clear: (window) => host.clearWindow(window),
+      glupsk_host_window_move_cursor: (window, x, y) =>
+        host.moveCursor(window, x, y),
+      glupsk_host_write_latin1: (window, stream, ptr, length) =>
+        host.writeLatin1(window, stream, ptr, length),
+      glupsk_host_write_unicode: (window, stream, ptr, length) =>
+        host.writeUnicode(window, stream, ptr, length),
+      glupsk_host_read_line_latin1: (window, ptr, maxLength) =>
+        host.readLineLatin1(window, ptr, maxLength),
+      glupsk_host_read_line_unicode: (window, ptr, maxLength) =>
+        host.readLineUnicode(window, ptr, maxLength),
+    },
+    wasi_snapshot_preview1: wasi.exports(),
+  };
+
+  const [wasmResult, story] = await Promise.all([
+    instantiateWasmStreaming(fetch("./glupsk.wasm"), imports),
+    fetch("./aa.ulx").then(requireOk).then((response) =>
+      response.arrayBuffer()
+    ),
   ]);
 
-  const instance = await WebAssembly.instantiate(
-    await WebAssembly.compile(wasmBytes),
-    {
-      env: {
-        glupsk_host_window_open: (
-          window,
-          stream,
-          split,
-          method,
-          size,
-          type,
-          rock,
-        ) => host.openWindow(window, stream, split, method, size, type, rock),
-        glupsk_host_window_width: (window) => host.windowWidth(window),
-        glupsk_host_window_height: (window) => host.windowHeight(window),
-        glupsk_host_window_clear: (window) => host.clearWindow(window),
-        glupsk_host_window_move_cursor: (window, x, y) =>
-          host.moveCursor(window, x, y),
-        glupsk_host_write_latin1: (window, stream, ptr, length) =>
-          host.writeLatin1(window, stream, ptr, length),
-        glupsk_host_write_unicode: (window, stream, ptr, length) =>
-          host.writeUnicode(window, stream, ptr, length),
-        glupsk_host_read_line_latin1: (window, ptr, maxLength) =>
-          host.readLineLatin1(window, ptr, maxLength),
-        glupsk_host_read_line_unicode: (window, ptr, maxLength) =>
-          host.readLineUnicode(window, ptr, maxLength),
-      },
-      wasi_snapshot_preview1: wasi.exports(),
-    },
-  );
-
-  const exports = instance.exports;
+  const exports = wasmResult.instance.exports;
   wasi.setMemory(exports.memory);
   host.setExports(exports);
 
@@ -311,16 +347,20 @@ async function instantiate() {
     );
   }
 
-  const run = () => {
+  const run = async () => {
     while (true) {
-      const status = exports.vm_run_until_blocked(vm, 1_000_000);
+      const status = exports.vm_run_until_blocked(vm, 100_000);
+      host.flush();
       if (status === VM_HALTED) {
         host.commandInput.disabled = true;
         host.status.value = "Halted";
         return;
       }
       if (status === VM_BLOCKED) return;
-      if (status === VM_OK) continue;
+      if (status === VM_OK) {
+        await nextFrame();
+        continue;
+      }
       if (status === VM_ERROR) {
         throw new Error(
           cString(exports, exports.vm_last_error(vm)) || "VM error",
@@ -332,17 +372,40 @@ async function instantiate() {
 
   document.querySelector("#command-form").addEventListener(
     "submit",
-    (event) => {
+    async (event) => {
       event.preventDefault();
       const text = host.commandInput.value;
       host.commandInput.value = "";
       if (!host.submitLine(text)) return;
       exports.vm_resume(vm);
-      run();
+      await run();
     },
   );
 
-  run();
+  await run();
+}
+
+async function instantiateWasmStreaming(responsePromise, imports) {
+  const response = await responsePromise.then(requireOk);
+  try {
+    return await WebAssembly.instantiateStreaming(
+      Promise.resolve(response.clone()),
+      imports,
+    );
+  } catch {
+    return WebAssembly.instantiate(await response.arrayBuffer(), imports);
+  }
+}
+
+function requireOk(response) {
+  if (!response.ok) {
+    throw new Error(`fetch failed: ${response.status} ${response.url}`);
+  }
+  return response;
+}
+
+function nextFrame() {
+  return new Promise((resolve) => requestAnimationFrame(resolve));
 }
 
 instantiate().catch((error) => {
