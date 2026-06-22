@@ -376,23 +376,7 @@ class GlkSession : public GlkRuntime {
             return glk_returned();
         }
         auto& stream = registry_.require_stream(handle.id);
-        if (auto* host_stream = std::get_if<HostStream>(&stream.backing)) {
-            auto result = host_.write(host_stream->stream, text);
-            if (std::holds_alternative<GlkReturned>(result)) {
-                stream.write_count += glk_text_length(text);
-            }
-            return result;
-        }
-        if (auto* memory = std::get_if<GlkMemoryStream>(&stream.backing)) {
-            glk_write_to_memory_stream(machine, stream, *memory, text);
-            return glk_returned();
-        }
-        if (auto* memory = std::get_if<GlkUnicodeMemoryStream>(&stream.backing)) {
-            glk_write_to_unicode_memory_stream(machine, stream, *memory, text);
-            return glk_returned();
-        }
-        throw std::runtime_error(
-            std::format("invalid Glk stream handle {}", handle.id));
+        return glk_write_to_stream_record(host_, machine, stream, text);
     }
 
     void request_line_event(Machine& machine,

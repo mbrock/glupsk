@@ -163,11 +163,16 @@ Memory streams are common Glk behavior, not host-specific platform IO.
 Implemented in ~core/glk_streams.hpp~. Byte and Unicode memory stream writes no
 longer live inside ~GlkSession~.
 
-*** TODO Separate host stream/current stream orchestration
+*** DONE Extract stream record write routing
+
+~glk_write_to_stream_record~ now owns host-stream writes, memory-stream writes,
+and write-count accounting.
+
+*** TODO Separate current stream and window-stream orchestration
 
 ~write~, ~write_to~, ~close_stream~, ~set_current_stream~, and ~set_window~
-still live in ~GlkSession~ because they coordinate host streams, common memory
-streams, and window streams.
+still live in ~GlkSession~ because they coordinate handles and current stream
+state.
 
 ** TODO Separate Glk event/select state
 :PROPERTIES:

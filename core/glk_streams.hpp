@@ -2,6 +2,7 @@
 
 #include "core/glk_registry.hpp"
 #include "core/machine.hpp"
+#include "core/glk_text.hpp"
 
 #include <stdexcept>
 
@@ -67,6 +68,29 @@ void glk_write_to_unicode_memory_stream(Machine& machine,
     for (const auto ch : std::get<std::vector<u32>>(text)) {
         write_codepoint(ch);
     }
+}
+
+template <typename Host>
+GlkCallResult glk_write_to_stream_record(Host& host,
+                                         Machine& machine,
+                                         GlkStreamRecord<Host>& record,
+                                         const GlkTextData& text) {
+    if (auto* host_stream = std::get_if<GlkHostStream<Host>>(&record.backing)) {
+        auto result = host.write(host_stream->stream, text);
+        if (std::holds_alternative<GlkReturned>(result)) {
+            record.write_count += glk_text_length(text);
+        }
+        return result;
+    }
+    if (auto* memory = std::get_if<GlkMemoryStream>(&record.backing)) {
+        glk_write_to_memory_stream(machine, record, *memory, text);
+        return glk_returned();
+    }
+    if (auto* memory = std::get_if<GlkUnicodeMemoryStream>(&record.backing)) {
+        glk_write_to_unicode_memory_stream(machine, record, *memory, text);
+        return glk_returned();
+    }
+    throw std::runtime_error("invalid Glk stream record");
 }
 
 }  // namespace glupsk
