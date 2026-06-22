@@ -14,6 +14,7 @@ u32 value_stack_base(const Machine& machine);
 void push_call_stub(Machine& machine, StoreRef dest, u32 pc);
 void pop_call_stub(Machine& machine, u32 value);
 
+void enter_function(Machine& machine, u32 address, span<const u32> args);
 void finish_return(Machine& machine, u32 value);
 void branch_to(Machine& machine, u32 next_pc, u32 offset);
 

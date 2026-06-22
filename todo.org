@@ -34,7 +34,7 @@ Implemented in ~core/vm_operands.hpp~ and ~core/vm_operands.cpp~. The module
 now owns operand loading, store destinations, temporary call arguments, and
 opcode-specific store/load metadata.
 
-** TODO Extract stack frame and call helpers
+** DONE Extract stack frame and call helpers
 :PROPERTIES:
 :Suggested_File: core/vm_frames.hpp core/vm_frames.cpp
 :END:
@@ -51,11 +51,10 @@ Implemented in ~core/vm_frames.hpp~ and ~core/vm_frames.cpp~. This covers call
 stub push/pop, value-stack base calculation, function return, and branch
 offset handling.
 
-*** TODO Move function entry and local frame initialization
+*** DONE Move function entry and local frame initialization
 
-~enter_function~ still lives in ~core/execute.cpp~ because it currently calls
-the acceleration machinery, which is also still embedded there. Move this after
-or alongside the acceleration split.
+~enter_function~ now lives in ~core/vm_frames.cpp~ after the acceleration
+machinery was split out behind ~core/vm_accel.hpp~.
 
 ** TODO Extract Glulx string output machinery
 :PROPERTIES:
@@ -68,14 +67,16 @@ output helpers out of the dispatcher file.
 This is a distinct subsystem with tricky rules, so it should be easy to read
 and test in isolation.
 
-** TODO Extract search opcode helpers
+** DONE Extract search opcode helpers
 :PROPERTIES:
 :Suggested_File: core/vm_search.hpp core/vm_search.cpp
 :END:
 
 Move linear, binary, and linked search helper logic into a focused module.
 
-** TODO Extract Inform acceleration support
+Implemented in ~core/vm_search.hpp~ and ~core/vm_search.cpp~.
+
+** DONE Extract Inform acceleration support
 :PROPERTIES:
 :Suggested_File: core/vm_accel.hpp core/vm_accel.cpp
 :END:
@@ -83,6 +84,8 @@ Move linear, binary, and linked search helper logic into a focused module.
 Move acceleration parameters and accelerated function implementations into
 their own file. This is Inform-specific support and should not visually
 dominate the generic execution loop.
+
+Implemented in ~core/vm_accel.hpp~ and ~core/vm_accel.cpp~.
 
 * TODO Create shared opcode metadata
 :PROPERTIES:
