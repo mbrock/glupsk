@@ -323,6 +323,9 @@ int main(int argc, char** argv) {
             }
         }
 
+        // step() does not flush buffered output; drain it before reporting.
+        machine.glk->flush(machine);
+
         std::println("status halted={} blocked={} pc=0x{:08x} sp={} fp={} out={}",
                      machine.halted, machine.blocked, machine.regs.pc,
                      machine.stack.sp, machine.regs.frame_ptr,

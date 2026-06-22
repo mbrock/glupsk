@@ -215,6 +215,12 @@ struct GlkRuntime {
                                u32 selector,
                                span<const u32> args) = 0;
     virtual void put_char(Machine& machine, u32 ch) = 0;
+
+    // Drain any output buffered on the current stream to its backend. Called at
+    // VM-instruction observe points (the run loop, before each @glk call) so
+    // buffered per-character output never outlives a point where it could be
+    // observed. The default is a no-op for runtimes that do not buffer.
+    virtual void flush(Machine& machine) { (void) machine; }
 };
 
 inline GlkCallResult glk_returned(u32 value = 0) {

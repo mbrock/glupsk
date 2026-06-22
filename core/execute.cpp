@@ -610,6 +610,11 @@ RunResult run_until_blocked(Machine& machine, u64 max_steps) {
         step(machine);
         ++result.steps;
     }
+    // Drain output buffered since the last @glk call so a halt (VM quit) or a
+    // blocked input prompt is visible before control returns to the host.
+    if (machine.glk) {
+        machine.glk->flush(machine);
+    }
     result.blocked = machine.blocked;
     result.halted = machine.halted;
     return result;

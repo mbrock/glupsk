@@ -4,6 +4,7 @@
 #include "core/glk.hpp"
 #include "core/glk_events.hpp"
 #include "core/machine.hpp"
+#include "core/ring.hpp"
 #include "core/types.hpp"
 
 #include <memory>
@@ -49,6 +50,9 @@ struct GlkStreamRecord {
     u32 pos = 0;
     u32 read_count = 0;
     u32 write_count = 0;
+    // Coalescing buffer for per-character output. Non-empty only on host
+    // streams; memory streams leave it at capacity 0 (drain-immediately).
+    Ring<u32> buffer = {};
 
     bool allocated() const {
         return !std::holds_alternative<std::monostate>(backing);

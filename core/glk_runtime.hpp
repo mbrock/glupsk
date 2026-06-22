@@ -57,6 +57,11 @@ class GlkSession : public GlkRuntime {
     GlkCallResult call(Machine& machine,
                        u32 selector,
                        span<const u32> args) override {
+        // Every @glk call is an observe point: drain buffered per-character
+        // output (under the style/stream current at this instant) before the
+        // call's own effect — input, window changes, style changes, or its own
+        // write-through output — can be observed out of order.
+        flush(machine);
         const auto raw = GlkArgs{args};
         switch (static_cast<GlkSelector>(selector)) {
             case GlkSelector::exit:
@@ -279,7 +284,22 @@ class GlkSession : public GlkRuntime {
         fail("Glk call blocked");
     }
 
+    // The VM string decoder emits output one codepoint at a time. For host
+    // streams we enqueue into the stream's ring and let flush() coalesce a whole
+    // string into a single host.write; other backings fall back to write-through.
     void put_char(Machine& machine, u32 ch) override {
+        if (current_stream_.id != 0) {
+            auto& record = registry_.require_stream(current_stream_.id);
+            if (auto* host_stream = std::get_if<HostStream>(&record.backing);
+                host_stream && record.buffer.capacity() != 0) {
+                if (record.buffer.full()) {
+                    drain(record, *host_stream);
+                }
+                record.buffer.push(ch);
+                ++record.write_count;
+                return;
+            }
+        }
         const auto result = write(machine, GlkTextChar{
                                                .value = ch,
                                                .encoding = GlkTextEncoding::unicode,
@@ -292,10 +312,42 @@ class GlkSession : public GlkRuntime {
         }
     }
 
+    void flush(Machine&) override {
+        if (current_stream_.id == 0) {
+            return;
+        }
+        auto& record = registry_.require_stream(current_stream_.id);
+        if (auto* host_stream = std::get_if<HostStream>(&record.backing)) {
+            drain(record, *host_stream);
+        }
+    }
+
   private:
     using WindowRecord = GlkWindowRecord<Host>;
     using StreamRecord = GlkStreamRecord<Host>;
     using HostStream = GlkHostStream<Host>;
+
+    static constexpr std::size_t kHostStreamBufferCapacity = 512;
+
+    // Drain a host stream's ring to its backend as one styled run. The chars
+    // were counted into write_count at push time, so draining does not recount.
+    void drain(StreamRecord& record, HostStream& host_stream) {
+        if (record.buffer.empty()) {
+            return;
+        }
+        auto codepoints = std::vector<u32>{};
+        codepoints.reserve(record.buffer.size());
+        while (!record.buffer.empty()) {
+            const auto run = record.buffer.readable();
+            codepoints.insert(codepoints.end(), run.begin(), run.end());
+            record.buffer.consume(run.size());
+        }
+        const auto result = host_.write(
+            host_stream.stream, GlkTextData{std::move(codepoints)}, current_style_);
+        if (const auto* fatal = std::get_if<GlkFatal>(&result)) {
+            fail(fatal->message);
+        }
+    }
 
     GlkWindowHandle open_window(GlkWindowSpec spec) {
         if (spec.split.id != 0) {
@@ -305,6 +357,7 @@ class GlkSession : public GlkRuntime {
         const auto stream = registry_.allocate_stream(StreamRecord{
             .backing = HostStream{.stream = std::move(opened.stream)},
             .rock = 0,
+            .buffer = Ring<u32>{kHostStreamBufferCapacity},
         });
         const auto window = registry_.allocate_window(WindowRecord{
             .window = std::move(opened.window),
