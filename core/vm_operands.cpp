@@ -3,8 +3,6 @@
 #include <stdexcept>
 
 namespace glupsk {
-namespace {
-
 u32 locals_pos(const Machine& machine) {
     return machine.stack.read32(machine.regs.frame_ptr + 4);
 }
@@ -12,6 +10,8 @@ u32 locals_pos(const Machine& machine) {
 u32 locals_base(const Machine& machine) {
     return machine.regs.frame_ptr + locals_pos(machine);
 }
+
+namespace {
 
 // Local operands are byte offsets into the current frame's locals area, not
 // indexes into a separate register file.
@@ -102,6 +102,58 @@ u32 load_operand(Machine& machine, Operand operand, u8 width) {
             break;
     }
     throw std::runtime_error("invalid operand load");
+}
+
+u32 peek_operand(const Machine& machine, Operand operand, u32 stack_index, u8 width) {
+    switch (operand.mode) {
+        using enum OperandMode;
+        case zero:
+            return 0;
+        case const8:
+            return sign_extend(operand.data, 8);
+        case const16:
+            return sign_extend(operand.data, 16);
+        case const32:
+            return operand.data;
+        case mem8:
+        case mem16:
+        case mem32:
+            switch (width) {
+                case 1:
+                    return machine.memory.read8(operand.data);
+                case 2:
+                    return machine.memory.read16(operand.data);
+                case 4:
+                    return machine.memory.read32(operand.data);
+            }
+            break;
+        case stack: {
+            const auto needed = 4 * (stack_index + 1);
+            if (machine.stack.sp < needed) {
+                throw std::runtime_error("stack operand is outside stack");
+            }
+            return machine.stack.read32(machine.stack.sp - needed);
+        }
+        case local8:
+        case local16:
+        case local32:
+            return read_local(machine, operand.data, width);
+        case ram8:
+        case ram16:
+        case ram32:
+            switch (width) {
+                case 1:
+                    return machine.memory.read8(ram_address(machine, operand.data));
+                case 2:
+                    return machine.memory.read16(ram_address(machine, operand.data));
+                case 4:
+                    return machine.memory.read32(ram_address(machine, operand.data));
+            }
+            break;
+        default:
+            break;
+    }
+    throw std::runtime_error("invalid operand peek");
 }
 
 StoreRef store_ref(const Machine& machine, Operand operand) {

@@ -224,10 +224,12 @@ Glk ABI and the host-facing interface.
 knowledge. After the VM execution split, make the trace tool mostly formatting
 and presentation code.
 
-** TODO Reuse operand inspection helpers from VM operand module
+** DONE Reuse operand inspection helpers from VM operand module
 
 Trace operand rendering should use the same addressing rules as execution,
 without mutating machine state.
+
+Implemented with ~glupsk::peek_operand~ in ~core/vm_operands.hpp~.
 
 ** DONE Share Glk selector and gestalt names
 :PROPERTIES:

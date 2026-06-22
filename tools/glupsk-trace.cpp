@@ -113,51 +113,6 @@ Options parse_options(int argc, char** argv) {
     return options;
 }
 
-glupsk::u32 locals_base(const glupsk::Machine& machine) {
-    if (machine.regs.frame_ptr + 8 > machine.stack.sp) {
-        return 0;
-    }
-    return machine.regs.frame_ptr + machine.stack.read32(machine.regs.frame_ptr + 4);
-}
-
-glupsk::u32 operand_value(const glupsk::Machine& machine,
-                          glupsk::Operand operand,
-                          glupsk::u32 stack_index) {
-    using enum glupsk::OperandMode;
-    switch (operand.mode) {
-        case zero:
-            return 0;
-        case const8:
-            return glupsk::sign_extend(operand.data, 8);
-        case const16:
-            return glupsk::sign_extend(operand.data, 16);
-        case const32:
-            return operand.data;
-        case stack: {
-            const auto needed = 4 * (stack_index + 1);
-            if (machine.stack.sp < needed) {
-                throw std::runtime_error("stack operand is outside stack");
-            }
-            const auto offset = machine.stack.sp - needed;
-            return machine.stack.read32(offset);
-        }
-        case local8:
-        case local16:
-        case local32:
-            return machine.stack.read32(locals_base(machine) + operand.data);
-        case ram8:
-        case ram16:
-        case ram32:
-            return machine.memory.read32(machine.memory.ramstart + operand.data);
-        case mem8:
-        case mem16:
-        case mem32:
-            return machine.memory.read32(operand.data);
-        default:
-            throw std::runtime_error("unused operand addressing mode");
-    }
-}
-
 std::string operand_detail(const glupsk::Machine& machine,
                            glupsk::Operand operand,
                            glupsk::u32 stack_index) {
@@ -168,11 +123,13 @@ std::string operand_detail(const glupsk::Machine& machine,
             case zero:
                 return "zero";
             case const8:
-            return std::format("const8({})", static_cast<std::int32_t>(
-                                                     glupsk::sign_extend(operand.data, 8)));
-        case const16:
-            return std::format("const16({})", static_cast<std::int32_t>(
-                                                      glupsk::sign_extend(operand.data, 16)));
+                return std::format(
+                    "const8({})",
+                    static_cast<std::int32_t>(glupsk::sign_extend(operand.data, 8)));
+            case const16:
+                return std::format(
+                    "const16({})",
+                    static_cast<std::int32_t>(glupsk::sign_extend(operand.data, 16)));
             case const32:
                 return std::format("const32(0x{:08x})", operand.data);
             case stack: {
@@ -185,8 +142,7 @@ std::string operand_detail(const glupsk::Machine& machine,
             case local8:
             case local16:
             case local32: {
-                const auto address = locals_base(machine) + operand.data;
-                const auto value = machine.stack.read32(address);
+                const auto value = glupsk::peek_operand(machine, operand, stack_index);
                 return std::format("{}(+0x{:x})=0x{:x}",
                                    glupsk::operand_mode_name(mode), operand.data,
                                    value);
@@ -197,14 +153,14 @@ std::string operand_detail(const glupsk::Machine& machine,
                 const auto address = machine.memory.ramstart + operand.data;
                 return std::format("{}(@0x{:x})=0x{:08x}",
                                    glupsk::operand_mode_name(mode), address,
-                                   machine.memory.read32(address));
+                                   glupsk::peek_operand(machine, operand, stack_index));
             }
             case mem8:
             case mem16:
             case mem32:
                 return std::format("{}(@0x{:x})=0x{:08x}",
                                    glupsk::operand_mode_name(mode), operand.data,
-                                   machine.memory.read32(operand.data));
+                                   glupsk::peek_operand(machine, operand, stack_index));
             default:
                 return std::format("{}(0x{:x})", glupsk::operand_mode_name(mode),
                                    operand.data);
@@ -306,7 +262,7 @@ void print_instruction(const glupsk::Machine& machine,
     for (glupsk::u8 index = 0; index < instruction.operand_count; ++index) {
         const auto operand = instruction.operands[index];
         try {
-            operand_values[index] = operand_value(machine, operand, stack_index);
+            operand_values[index] = glupsk::peek_operand(machine, operand, stack_index);
         } catch (const std::exception&) {
             operand_values[index] = 0;
         }
