@@ -104,6 +104,11 @@ web-assets: wasm $(AA_STORY)
 	cp "$(GLUPSK_WASM)" www/glupsk.wasm
 	cp "$(AA_STORY)" www/aa.ulx
 	chmod 644 www/glupsk.wasm www/aa.ulx
+	zstd -q -f -19 www/glupsk.wasm -o www/glupsk.wasm.zst
+	zstd -q -f -19 www/aa.ulx -o www/aa.ulx.zst
+	gzip -9 -k -f www/glupsk.wasm
+	gzip -9 -k -f www/aa.ulx
+	chmod 644 www/glupsk.wasm.zst www/aa.ulx.zst www/glupsk.wasm.gz www/aa.ulx.gz
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"
