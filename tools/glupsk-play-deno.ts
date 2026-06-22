@@ -3,6 +3,7 @@
 const latin1Decoder = new TextDecoder("latin1")
 const utf8Encoder = new TextEncoder()
 const utf8Decoder = new TextDecoder()
+const space = utf8Encoder.encode(" ")
 
 const VM_OK = 0
 const VM_BLOCKED = 1
@@ -79,6 +80,7 @@ class WasiPreview1 {
 class Terminal {
   exports?: Exports
   inputBytes: number[] = []
+  lastOutputCodepoint?: number
 
   constructor(private inputLines?: string[]) {}
 
@@ -92,7 +94,9 @@ class Terminal {
   }
 
   writeLatin1(ptr: number, length: number) {
-    Deno.stdout.writeSync(latin1BytesToUtf8(this.bytes(ptr, length)))
+    const bytes = this.bytes(ptr, length)
+    Deno.stdout.writeSync(latin1BytesToUtf8(bytes))
+    if (length > 0) this.lastOutputCodepoint = bytes[length - 1]
   }
 
   writeUnicode(ptr: number, length: number) {
@@ -102,6 +106,7 @@ class Terminal {
       codepoints.push(view.getUint32(ptr + index * 4, true))
     }
     Deno.stdout.writeSync(utf8Encoder.encode(String.fromCodePoint(...codepoints)))
+    if (length > 0) this.lastOutputCodepoint = codepoints.at(-1)
   }
 
   readLineLatin1(_window: number, ptr: number, maxLength: number) {
@@ -128,6 +133,8 @@ class Terminal {
   }
 
   private readLine() {
+    this.spaceAfterPrompt()
+
     if (this.inputLines) {
       const line = this.inputLines.shift()
       if (line === undefined) throw new Error("scripted input reached EOF")
@@ -135,6 +142,12 @@ class Terminal {
     }
 
     return readTerminalLine(this.inputBytes)
+  }
+
+  private spaceAfterPrompt() {
+    if (this.lastOutputCodepoint !== ">".codePointAt(0)) return
+    Deno.stdout.writeSync(space)
+    this.lastOutputCodepoint = " ".codePointAt(0)
   }
 }
 

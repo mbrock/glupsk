@@ -45,9 +45,11 @@ enum WasmStatus : std::uint32_t {
 struct DenoTerminalHost {
     struct Window {
         glupsk::u32 id = 0;
+        glupsk::u32 type = 0;
     };
     struct Stream {
         glupsk::u32 id = 0;
+        bool visible = true;
     };
     struct FileRef {};
 
@@ -58,10 +60,16 @@ struct DenoTerminalHost {
         return glupsk::glk_default_gestalt(query);
     }
 
-    glupsk::GlkOpenedWindow<DenoTerminalHost> open_window(glupsk::GlkWindowSpec) {
+    glupsk::GlkOpenedWindow<DenoTerminalHost> open_window(
+        glupsk::GlkWindowSpec spec) {
         return {
-            .window = Window{.id = next_window++},
-            .stream = Stream{.id = next_stream++},
+            .window = Window{.id = next_window++, .type = spec.type},
+            .stream = Stream{
+                .id = next_stream++,
+                .visible = spec.split.id == 0 &&
+                           spec.type != static_cast<glupsk::u32>(
+                                            glupsk::GlkWindowType::text_grid),
+            },
         };
     }
 
@@ -73,7 +81,11 @@ struct DenoTerminalHost {
 
     void window_move_cursor(Window&, glupsk::u32, glupsk::u32) {}
 
-    glupsk::GlkCallResult write(Stream&, glupsk::GlkTextData text) {
+    glupsk::GlkCallResult write(Stream& stream, glupsk::GlkTextData text) {
+        if (!stream.visible) {
+            return glupsk::glk_returned();
+        }
+
         if (const auto* bytes = std::get_if<std::string>(&text)) {
             glupsk_host_write_latin1(
                 reinterpret_cast<const std::uint8_t*>(bytes->data()),
