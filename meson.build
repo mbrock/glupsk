@@ -15,6 +15,7 @@ core_lib = static_library(
     'core/decode.cpp',
     'core/execute.cpp',
     'core/machine.cpp',
+    'core/opcode_meta.cpp',
     'core/story.cpp',
     'core/vm_accel.cpp',
     'core/vm_frames.cpp',

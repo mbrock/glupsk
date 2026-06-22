@@ -1,6 +1,7 @@
 #include "core/execute.hpp"
 
 #include "core/decode.hpp"
+#include "core/opcode_meta.hpp"
 #include "core/vm_accel.hpp"
 #include "core/vm_frames.hpp"
 #include "core/vm_operands.hpp"

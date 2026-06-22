@@ -108,6 +108,18 @@ Create one shared source of truth for:
 Keep this modest at first. The goal is not to rewrite the interpreter into a
 table-driven VM, just to stop duplicated opcode knowledge from drifting.
 
+** DONE Centralize operand counts and operand roles
+
+Implemented in ~core/opcode_meta.hpp~ and ~core/opcode_meta.cpp~. Decode now
+uses the shared operand-count table, and execution uses the shared store/load
+operand metadata.
+
+** TODO Move opcode names into shared metadata
+
+~opcode_name~ still lives in ~core/decode.cpp~. Move it behind the same metadata
+module so decode, trace, and diagnostics do not depend on decode-specific
+implementation details for naming.
+
 * TODO Split common Glk runtime into smaller modules
 :PROPERTIES:
 :Area: glk

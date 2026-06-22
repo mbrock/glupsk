@@ -44,7 +44,4 @@ void store_value(Machine& machine, Operand operand, u32 value, u8 width = 4);
 Arguments pop_arguments(Machine& machine, u32 argc);
 void restore_arguments(Machine& machine, const Arguments& args);
 
-bool is_store_operand(Opcode opcode, u8 index);
-u8 load_width_for(Opcode opcode, u8 index);
-
 }  // namespace glupsk
