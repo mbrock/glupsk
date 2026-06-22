@@ -241,6 +241,10 @@ class DomRenderer {
   appendText(operation, followOutput) {
     const record = this.windows.get(operation.window);
     const runs = operation.runs ?? [{ text: operation.text ?? "", style: 0 }];
+    console.log("appendText", {
+      window: operation.window,
+      runs: runs.map((run) => ({ style: run.style, text: run.text })),
+    });
     if (!record || runs.length === 0) return;
     if (record.glkType === GLK_WINDOW_TEXT_BUFFER) {
       this.appendBufferText(record, runs);

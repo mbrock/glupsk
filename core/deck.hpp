@@ -130,7 +130,7 @@ auto indexing_subrange(R &range, std::ranges::range_difference_t<R> base,
 template <typename T, typename R = std::span<T>>
   requires deck_storage<R, T> && std::is_trivially_copyable_v<T>
 class Deck {
-  using pos_t = std::ranges::range_difference_t<R>;
+  using diff_t = std::ranges::range_difference_t<R>;
 
 public:
   class Flip {
@@ -151,7 +151,7 @@ public:
   Deck() = default;
   explicit Deck(R storage) : storage_(storage) {}
 
-  T &at_logical(pos_t p) {
+  T &at_logical(diff_t p) {
       assert(sane());
     return std::ranges::begin(storage_)[roll(p, storage_)];
   }
@@ -243,7 +243,7 @@ public:
   }
 
   void consume(std::size_t count) {
-      lo_ += static_cast<pos_t>(std::min(count, size()));
+      lo_ += static_cast<diff_t>(std::min(count, size()));
   }
 
   void clear() { lo_ = 0; hi_ = 0; }
@@ -256,8 +256,8 @@ public:
 
 private:
   R storage_;
-  pos_t lo_{0};
-  pos_t hi_{0};
+  diff_t lo_{0};
+  diff_t hi_{0};
 };
 
 template <typename T, typename Storage = std::span<T>>

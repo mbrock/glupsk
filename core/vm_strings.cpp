@@ -2,8 +2,14 @@
 
 #include "core/error.hpp"
 
+#include <cstdio>
+
 namespace glupsk {
 namespace {
+
+// Flip to false to silence string-decoding logs. Routes to stderr, which the
+// wasm host bridges to the browser console via WASI fd_write.
+constexpr bool kLogStrings = false;
 
 enum class StringNodeType : u8 {
     branch = 0x00,
@@ -28,6 +34,18 @@ void output_c_string(Machine& machine, u32 address);
 void output_uni_string(Machine& machine, u32 address);
 void output_compressed_string(Machine& machine, u32 address);
 void output_huffman_leaf(Machine& machine, u32 node);
+
+const char* string_object_type_name(StringObjectType type) {
+    switch (type) {
+        case StringObjectType::c_string:
+            return "c_string";
+        case StringObjectType::compressed:
+            return "compressed";
+        case StringObjectType::unicode:
+            return "unicode";
+    }
+    return "unknown";
+}
 
 }  // namespace
 
@@ -137,6 +155,11 @@ void output_compressed_string(Machine& machine, u32 address) {
 
 void output_string_object(Machine& machine, u32 address) {
     const auto type = static_cast<StringObjectType>(machine.memory.read8(address));
+    if (kLogStrings) {
+        std::fprintf(stderr, "[streamstr] addr=0x%08x type=%s\n",
+                     static_cast<unsigned>(address),
+                     string_object_type_name(type));
+    }
     switch (type) {
         case StringObjectType::c_string:
             output_c_string(machine, address + 1);

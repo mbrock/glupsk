@@ -4,7 +4,7 @@
 #include "tests/test.hpp"
 
 #include <stdexcept>
-#include <string>
+
 
 namespace {
 

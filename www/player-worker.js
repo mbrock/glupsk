@@ -64,16 +64,19 @@ class WasiPreview1 {
         this.view().setBigUint64(newOffset, 0n, true);
         return 0;
       },
-      fd_write: (_fd, iovs, iovsLen, nwritten) => {
+      fd_write: (fd, iovs, iovsLen, nwritten) => {
         const view = this.view();
         let written = 0;
+        let text = "";
         for (let index = 0; index < iovsLen; ++index) {
           const iov = iovs + index * 8;
           const ptr = view.getUint32(iov, true);
           const len = view.getUint32(iov + 4, true);
-          console.debug(utf8Decoder.decode(this.bytes(ptr, len)));
+          text += utf8Decoder.decode(this.bytes(ptr, len));
           written += len;
         }
+        const tag = fd === 2 ? "wasm stderr" : `wasm fd${fd}`;
+        console.log(`[${tag}] ${text.replace(/\n$/, "")}`);
         view.setUint32(nwritten, written, true);
         return 0;
       },
@@ -223,11 +226,9 @@ class WorkerGlkHost {
   }
 
   writeLatin1(window, _stream, style, ptr, length) {
-    this.writeWindowText(
-      window,
-      latin1Decoder.decode(this.bytes(ptr, length)),
-      style,
-    );
+    const text = latin1Decoder.decode(this.bytes(ptr, length));
+    console.log("host.writeLatin1", { window, style, length, text });
+    this.writeWindowText(window, text, style);
   }
 
   writeUnicode(window, _stream, style, ptr, length) {
@@ -236,7 +237,9 @@ class WorkerGlkHost {
     for (let index = 0; index < length; ++index) {
       codepoints.push(view.getUint32(ptr + index * 4, true));
     }
-    this.writeWindowText(window, String.fromCodePoint(...codepoints), style);
+    const text = String.fromCodePoint(...codepoints);
+    console.log("host.writeUnicode", { window, style, length, text });
+    this.writeWindowText(window, text, style);
   }
 
   readLineLatin1(window, ptr, maxLength) {
@@ -327,6 +330,7 @@ class WorkerGlkHost {
       record.dirty = false;
     }
     if (this.operations.length === 0) return;
+    console.log("host.flush", this.operations);
     postMessage({ type: "flush", operations: this.operations });
     this.operations = [];
   }

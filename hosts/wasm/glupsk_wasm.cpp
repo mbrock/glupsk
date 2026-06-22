@@ -1,12 +1,10 @@
 #include "core/execute.hpp"
-#include "core/error.hpp"
 #include "core/glk.hpp"
 #include "core/glk_runtime.hpp"
 #include "core/machine.hpp"
 #include "core/story.hpp"
 #include "core/types.hpp"
 
-#include <cstddef>
 #include <cstdint>
 #include <cstdlib>
 #ifndef GLUPSK_NO_EXCEPTIONS
