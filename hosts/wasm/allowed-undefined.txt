@@ -1,0 +1,2 @@
+glupsk_host_glk_call
+glupsk_host_glk_put_char

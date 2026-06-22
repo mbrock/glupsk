@@ -1,5 +1,6 @@
 NIX ?= nix
 MESON ?= meson
+WASM_CXX ?= clang++
 
 AA_SOURCE := refdata/aa/aa.ni
 AA_STORY := refdata/aa.ulx
@@ -11,14 +12,48 @@ BUILD_DIR := build
 MESON_BUILD_DIR := $(BUILD_DIR)/meson
 WASM_BUILD_DIR := $(BUILD_DIR)/wasm
 MESON_BUILD_FILE := $(MESON_BUILD_DIR)/build.ninja
-WASM_BUILD_FILE := $(WASM_BUILD_DIR)/build.ninja
 MESON_COMPILE_COMMANDS := $(MESON_BUILD_DIR)/compile_commands.json
 
 GLUPSK_INFO := $(MESON_BUILD_DIR)/glupsk-info
 GLUPSK_PLAY := $(MESON_BUILD_DIR)/glupsk-play
 GLUPSK_TRACE := $(MESON_BUILD_DIR)/glupsk-trace
+GLUPSK_WASM := $(WASM_BUILD_DIR)/glupsk.wasm
 
-.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands info meson meson-setup meson-test play test tiny-i7 trace wasm wasm-setup
+CORE_SOURCES := \
+	core/decode.cpp \
+	core/execute.cpp \
+	core/glk_events.cpp \
+	core/glk_names.cpp \
+	core/glk_text.cpp \
+	core/machine.cpp \
+	core/opcode_meta.cpp \
+	core/story.cpp \
+	core/vm_accel.cpp \
+	core/vm_frames.cpp \
+	core/vm_operands.cpp \
+	core/vm_search.cpp \
+	core/vm_strings.cpp
+
+WASM_SOURCES := hosts/wasm/glupsk_wasm.cpp $(CORE_SOURCES)
+WASM_EXPORTS := \
+	-Wl,--export-memory \
+	-Wl,--export=vm_alloc \
+	-Wl,--export=vm_free \
+	-Wl,--export=vm_create \
+	-Wl,--export=vm_load_story \
+	-Wl,--export=vm_step \
+	-Wl,--export=vm_run_until_blocked \
+	-Wl,--export=vm_resume \
+	-Wl,--export=vm_status \
+	-Wl,--export=vm_pc \
+	-Wl,--export=vm_sp \
+	-Wl,--export=vm_last_error \
+	-Wl,--export=vm_snapshot_size \
+	-Wl,--export=vm_snapshot_write \
+	-Wl,--export=vm_snapshot_read \
+	-Wl,--export=vm_destroy
+
+.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands info meson meson-setup meson-test play test tiny-i7 trace wasm
 
 all: meson
 
@@ -42,20 +77,19 @@ $(MESON_BUILD_FILE): meson.build
 meson-setup: $(MESON_BUILD_FILE)
 	ln -sf "$(MESON_COMPILE_COMMANDS)" compile_commands.json
 
-$(WASM_BUILD_FILE): meson.build tools/meson/wasm32-unknown-unknown.ini
-	@if [ -f "$(WASM_BUILD_FILE)" ]; then \
-		$(MESON) setup --reconfigure --cross-file tools/meson/wasm32-unknown-unknown.ini "$(WASM_BUILD_DIR)"; \
-	else \
-		$(MESON) setup --cross-file tools/meson/wasm32-unknown-unknown.ini "$(WASM_BUILD_DIR)"; \
-	fi
-
-wasm-setup: $(WASM_BUILD_FILE)
-
 meson: meson-setup
 	$(MESON) compile -C "$(MESON_BUILD_DIR)"
 
-wasm: wasm-setup
-	$(MESON) compile -C "$(WASM_BUILD_DIR)"
+$(GLUPSK_WASM): $(WASM_SOURCES) hosts/wasm/allowed-undefined.txt
+	mkdir -p "$(WASM_BUILD_DIR)"
+	$(WASM_CXX) --target=wasm32-wasi -std=c++23 -O2 -g0 -I. \
+		-DGLUPSK_ENABLE_FILESYSTEM=0 -nostartfiles \
+		$(WASM_SOURCES) \
+		-Wl,--no-entry -Wl,--allow-undefined $(WASM_EXPORTS) \
+		-lc++abi -lc++ -lc \
+		-o "$@"
+
+wasm: $(GLUPSK_WASM)
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"

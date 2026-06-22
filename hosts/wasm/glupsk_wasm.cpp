@@ -6,10 +6,10 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdlib>
 #include <exception>
 #include <limits>
 #include <memory>
-#include <new>
 #include <stdexcept>
 #include <string>
 #include <utility>
@@ -90,7 +90,7 @@ struct WasmVm {
     }
 };
 
-thread_local std::string global_last_error;
+std::string global_last_error;
 
 WasmVm* as_vm(std::uint32_t handle) {
     return reinterpret_cast<WasmVm*>(static_cast<std::uintptr_t>(handle));
@@ -133,16 +133,15 @@ WasmStatus with_vm(std::uint32_t handle, Fn fn) {
 }  // namespace
 
 extern "C" void* vm_alloc(std::uint32_t size) {
-    try {
-        return ::operator new(size == 0 ? 1 : size);
-    } catch (...) {
+    auto* ptr = std::malloc(size == 0 ? 1 : size);
+    if (!ptr) {
         global_last_error = "allocation failed";
-        return nullptr;
     }
+    return ptr;
 }
 
 extern "C" void vm_free(void* ptr, std::uint32_t) {
-    ::operator delete(ptr);
+    std::free(ptr);
 }
 
 extern "C" std::uint32_t vm_create() {

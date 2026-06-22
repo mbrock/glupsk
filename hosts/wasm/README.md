@@ -1,13 +1,20 @@
 # Glupsk WebAssembly Host ABI
 
-This target is intentionally `wasm32-unknown-unknown`: no WASI, no Emscripten,
-and no ambient filesystem. The story is loaded from bytes supplied by the
-embedding host.
+This target is a small direct clang build, not an Emscripten build. It uses the
+Ubuntu/LLVM WASI libc++ packages for C and C++ runtime support, but it does not
+expect an Emscripten-generated JavaScript runtime or filesystem packaging layer.
+The story is loaded from bytes supplied by the embedding host.
 
 Build with:
 
 ```sh
 make wasm
+```
+
+On Ubuntu, the expected packages are:
+
+```sh
+sudo apt-get install wasi-libc libc++-22-dev-wasm32 libc++abi-22-dev-wasm32 libclang-rt-22-dev-wasm32 lld-22
 ```
 
 The resulting module exports:
@@ -23,7 +30,7 @@ The resulting module exports:
   `vm_snapshot_read(vm, ptr, size)`, which currently return `VM_UNSUPPORTED`
   until the save layer exists.
 
-The module imports only a narrow Glk-like host surface:
+The Glk-like host surface is:
 
 ```c
 uint32_t glupsk_host_glk_call(
@@ -38,3 +45,8 @@ uint32_t glupsk_host_glk_put_char(uint32_t value);
 Both imports return `0` for returned, `1` for blocked, and `2` for fatal. For
 `glupsk_host_glk_call`, returned calls write the Glk return value through
 `value`.
+
+The current module also imports a small set of WASI libc functions from
+`wasi_snapshot_preview1` and two C++ exception helper symbols. That is an
+implementation detail of the first C++ runtime build, not a commitment to a
+large WASI or Emscripten host layer.
