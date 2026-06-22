@@ -78,7 +78,7 @@ and resume the VM after a form submit.
 
 `tools/glupsk-play-deno.ts` is a terminal simulator for the window ABI. It prints
 the root text-buffer window normally and labels split/status-window output.
-`make web-assets` copies the built wasm module and tiny story into `www/`, whose
+`make web-assets` copies the built wasm module and AA story into `www/`, whose
 static files use DOM elements for Glk windows and run the VM in the browser.
 
 The wasm build uses `-fno-exceptions`. Core failure paths that throw in native

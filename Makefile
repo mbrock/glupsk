@@ -99,10 +99,10 @@ wasm: $(GLUPSK_WASM)
 deno-play: wasm
 	/home/mbrock/.deno/bin/deno run --allow-read tools/glupsk-play-deno.ts $(TINY_I7_STORY)
 
-web-assets: wasm $(TINY_I7_STORY)
+web-assets: wasm $(AA_STORY)
 	cp "$(GLUPSK_WASM)" www/glupsk.wasm
-	cp "$(TINY_I7_STORY)" www/apple.ulx
-	chmod 644 www/glupsk.wasm www/apple.ulx
+	cp "$(AA_STORY)" www/aa.ulx
+	chmod 644 www/glupsk.wasm www/aa.ulx
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"
