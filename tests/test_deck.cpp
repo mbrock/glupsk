@@ -1,4 +1,4 @@
-#include "core/ring.hpp"
+#include "core/deck.hpp"
 #include "core/types.hpp"
 
 #include "tests/test.hpp"
@@ -116,5 +116,71 @@ static suite ring_tests{"Ring", [] {
         expect(backing[0] == 7) << "push writes into the caller's array";
         expect(backing[1] == 8);
         expect(drain(ring) == std::vector<glupsk::u32>{7, 8});
+    };
+}};
+
+static suite deck_tests{"Deck", [] {
+    using Deck = glupsk::Deck<glupsk::u32>;
+
+    "produces and consumes FIFO via back/front"_test = [] {
+        auto deck = Deck{4};
+        deck.push_back(1);
+        deck.push_back(2);
+        deck.push_back(3);
+        expect(deck.pop_front() == std::optional<glupsk::u32>{1});
+        expect(deck.pop_front() == std::optional<glupsk::u32>{2});
+        expect(deck.pop_front() == std::optional<glupsk::u32>{3});
+        expect(deck.empty());
+        expect(deck.pop_front() == std::nullopt) << "empty front pop is nullopt";
+    };
+
+    "behaves as a stack via the back end"_test = [] {
+        auto deck = Deck{4};
+        deck.push_back(1);
+        deck.push_back(2);
+        deck.push_back(3);
+        expect(deck.pop_back() == std::optional<glupsk::u32>{3}) << "LIFO";
+        expect(deck.pop_back() == std::optional<glupsk::u32>{2});
+        expect(deck.pop_back() == std::optional<glupsk::u32>{1});
+        expect(deck.empty());
+    };
+
+    "prepends with push_front"_test = [] {
+        auto deck = Deck{4};
+        deck.push_back(2);
+        deck.push_front(1);  // 1 is now at the front
+        expect(deck.pop_front() == std::optional<glupsk::u32>{1});
+        expect(deck.pop_front() == std::optional<glupsk::u32>{2});
+    };
+
+    "flip swaps the ends (push to deck, pop from flip = stack)"_test = [] {
+        auto deck = Deck{4};
+        deck.push_back(1);
+        deck.push_back(2);
+        // pop from the flip == pop_back == LIFO
+        expect(deck.flip().pop_front() == std::optional<glupsk::u32>{2});
+        expect(deck.flip().pop_front() == std::optional<glupsk::u32>{1});
+        expect(deck.empty());
+    };
+
+    "flip().push_back prepends like push_front"_test = [] {
+        auto deck = Deck{4};
+        deck.push_back(2);
+        deck.flip().push_back(1);  // == push_front(1)
+        expect(deck.pop_front() == std::optional<glupsk::u32>{1});
+        expect(deck.pop_front() == std::optional<glupsk::u32>{2});
+    };
+
+    "keeps the balance sheet across mixed ends"_test = [] {
+        auto deck = Deck{4};
+        const auto balanced = [&] {
+            return deck.size() + deck.unused() == deck.capacity();
+        };
+        expect(balanced());
+        deck.push_back(1);
+        deck.push_front(2);
+        expect(balanced()) << "after both ends";
+        (void) deck.pop_back();
+        expect(balanced()) << "after pop";
     };
 }};

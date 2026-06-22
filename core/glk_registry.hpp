@@ -4,7 +4,7 @@
 #include "core/glk.hpp"
 #include "core/glk_events.hpp"
 #include "core/machine.hpp"
-#include "core/ring.hpp"
+#include "core/deck.hpp"
 #include "core/types.hpp"
 
 #include <memory>

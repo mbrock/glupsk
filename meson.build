@@ -59,7 +59,7 @@ test_story = executable(
     'tests/test_decode.cpp',
     'tests/test_execute.cpp',
     'tests/test_machine.cpp',
-    'tests/test_ring.cpp',
+    'tests/test_deck.cpp',
     'tests/test_story.cpp',
   ),
   include_directories: root_inc,
