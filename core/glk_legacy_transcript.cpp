@@ -376,11 +376,19 @@ GlkFileRefHandle TranscriptGlk::intern_fileref(TranscriptFileRef& fileref) {
     return {.id = fileref.id};
 }
 
-bool TranscriptGlk::select_would_block() const {
-    return !line_pending || input_lines.empty();
+GlkCallResult TranscriptGlk::call(Machine& machine,
+                                  u32 selector,
+                                  span<const u32> args) {
+    if (static_cast<GlkSelector>(selector) == GlkSelector::select &&
+        (args.empty() || !line_pending || input_lines.empty())) {
+        return glk_blocked();
+    }
+    return glk_returned(call_returned(machine, selector, args));
 }
 
-u32 TranscriptGlk::call(Machine& machine, u32 selector, span<const u32> args) {
+u32 TranscriptGlk::call_returned(Machine& machine,
+                                 u32 selector,
+                                 span<const u32> args) {
     switch (static_cast<GlkSelector>(selector)) {
         case GlkSelector::exit:
             machine.halted = true;

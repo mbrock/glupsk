@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <format>
 #include <stdexcept>
+#include <variant>
 
 namespace glupsk {
 namespace {
@@ -302,6 +303,12 @@ Arguments pop_arguments(Machine& machine, u32 argc) {
         args.values[index] = machine.stack.pop32();
     }
     return args;
+}
+
+void restore_arguments(Machine& machine, const Arguments& args) {
+    for (auto index = args.count; index > 0; --index) {
+        machine.stack.push32(args.values[index - 1]);
+    }
 }
 
 void push_call_stub(Machine& machine, StoreRef dest, u32 pc) {
@@ -1396,12 +1403,6 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             const auto selector = l(0);
             const auto argc = l(1);
             const auto dest = store_ref(machine, a[2]);
-            if (static_cast<GlkSelector>(selector) == GlkSelector::select &&
-                machine.glk && machine.glk->select_would_block()) {
-                machine.regs.pc = insn.address;
-                machine.blocked = true;
-                return;
-            }
             auto args = pop_arguments(machine, argc);
             auto result = u32{0};
             if (static_cast<GlkSelector>(selector) == GlkSelector::char_to_lower &&
@@ -1411,7 +1412,18 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
                        args.count == 1) {
                 result = glk_char_to_upper(args.values[0]);
             } else if (machine.glk) {
-                result = machine.glk->call(machine, selector, args.as_span());
+                const auto call_result =
+                    machine.glk->call(machine, selector, args.as_span());
+                if (std::holds_alternative<GlkBlocked>(call_result)) {
+                    restore_arguments(machine, args);
+                    machine.regs.pc = insn.address;
+                    machine.blocked = true;
+                    return;
+                }
+                if (const auto* fatal = std::get_if<GlkFatal>(&call_result)) {
+                    throw std::runtime_error(fatal->message);
+                }
+                result = std::get<GlkReturned>(call_result).value;
             }
             store_value(machine, dest, result);
             return;

@@ -180,8 +180,9 @@ using GlkEventResult = std::variant<GlkHostEvent, GlkBlocked, GlkFatal>;
 struct GlkRuntime {
     virtual ~GlkRuntime() = default;
 
-    virtual bool select_would_block() const = 0;
-    virtual u32 call(Machine& machine, u32 selector, span<const u32> args) = 0;
+    virtual GlkCallResult call(Machine& machine,
+                               u32 selector,
+                               span<const u32> args) = 0;
     virtual void put_char(Machine& machine, u32 ch) = 0;
 };
 
@@ -344,8 +345,8 @@ struct TranscriptGlk : GlkRuntime {
     GlkWindowHandle intern_window(TranscriptWindow& window);
     GlkStreamHandle intern_stream(TranscriptStream& stream);
     GlkFileRefHandle intern_fileref(TranscriptFileRef& fileref);
-    bool select_would_block() const override;
-    u32 call(Machine& machine, u32 selector, span<const u32> args) override;
+    GlkCallResult call(Machine& machine, u32 selector, span<const u32> args) override;
+    u32 call_returned(Machine& machine, u32 selector, span<const u32> args);
     void put_char(Machine& machine, u32 ch) override;
 };
 
