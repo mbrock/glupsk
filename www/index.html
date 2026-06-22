@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="./player.css">
   </head>
   <body>
-    <main class="player">
+    <main class="player" aria-label="Glupsk interactive fiction player">
       <section id="windows" class="windows" aria-live="polite"></section>
       <form id="command-form" class="command">
         <input
@@ -15,11 +15,12 @@
           autocomplete="off"
           spellcheck="false"
           aria-label="Command"
+          placeholder="Type a command..."
           disabled
         >
         <button type="submit">Send</button>
       </form>
-      <output id="status" class="status">Loading...</output>
+      <output id="status" class="status" aria-live="polite">Loading...</output>
     </main>
     <script type="module" src="./player.js"></script>
   </body>

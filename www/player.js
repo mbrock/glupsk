@@ -1,5 +1,12 @@
 const GLK_WINDOW_TEXT_BUFFER = 3;
 const GLK_WINDOW_TEXT_GRID = 4;
+const WINMETHOD_LEFT = 0x00;
+const WINMETHOD_RIGHT = 0x01;
+const WINMETHOD_ABOVE = 0x02;
+const WINMETHOD_BELOW = 0x03;
+const WINMETHOD_DIRECTION_MASK = 0x0f;
+const WINMETHOD_FIXED = 0x10;
+const WINMETHOD_DIVISION_MASK = 0xf0;
 
 class DomRenderer {
   windows = new Map();
@@ -35,12 +42,12 @@ class DomRenderer {
     this.pendingLineWindow = window;
     this.commandInput.disabled = false;
     this.commandInput.focus();
-    this.status.value = `Waiting for input in window ${window}`;
+    this.status.value = "Waiting for input";
   }
 
   setStatus(text) {
     this.flush();
-    this.status.value = text;
+    this.status.value = text === "Running" ? "" : text;
   }
 
   applyWithTransition(operations) {
@@ -96,23 +103,45 @@ class DomRenderer {
 
   openWindow(operation) {
     const element = document.createElement("section");
-    element.className = `window ${operation.split === 0 ? "root" : "split"} ${
-      operation.glkType === GLK_WINDOW_TEXT_GRID ? "grid" : "buffer"
-    }`;
+    const direction = splitDirection(operation.method);
+    element.className = [
+      "window",
+      operation.split === 0 ? "root" : "split",
+      operation.glkType === GLK_WINDOW_TEXT_GRID ? "grid" : "buffer",
+      direction,
+    ].join(" ");
     element.dataset.window = String(operation.window);
     element.dataset.stream = String(operation.stream);
+    element.dataset.split = String(operation.split);
+    element.dataset.method = String(operation.method);
+    element.style.setProperty("--glk-size", String(operation.size));
+    if (isFixedSplit(operation.method)) {
+      element.classList.add("fixed");
+    }
     element.innerHTML = `
-      <div class="window-header"></div>
       <div class="window-content"></div>
     `;
-    element.querySelector(".window-header").textContent =
-      `window ${operation.window} ${windowTypeName(operation.glkType)}`;
-    this.root.append(element);
+    this.insertWindow(element, operation);
     this.windows.set(operation.window, {
       ...operation,
       element,
       content: element.querySelector(".window-content"),
     });
+  }
+
+  insertWindow(element, operation) {
+    const split = this.windows.get(operation.split);
+    if (!split) {
+      this.root.append(element);
+      return;
+    }
+
+    const direction = operation.method & WINMETHOD_DIRECTION_MASK;
+    if (direction === WINMETHOD_ABOVE || direction === WINMETHOD_LEFT) {
+      split.element.before(element);
+      return;
+    }
+    split.element.after(element);
   }
 
   setCursor(operation) {
@@ -137,8 +166,29 @@ class DomRenderer {
   setText(operation) {
     const record = this.windows.get(operation.window);
     if (!record) return;
+    if (record.glkType === GLK_WINDOW_TEXT_GRID && renderStatusLine(record, operation.text)) {
+      return;
+    }
+    record.element.classList.remove("status-grid");
     record.content.textContent = operation.text;
   }
+}
+
+function renderStatusLine(record, text) {
+  const lines = text.replace(/\s+$/u, "").split("\n").filter((line) =>
+    line.trim().length > 0
+  );
+  if (lines.length !== 1) return false;
+  const match = lines[0].match(/^\s*(.*?)\s{2,}(\S.*?)\s*$/u);
+  if (!match) return false;
+
+  const left = document.createElement("span");
+  left.textContent = match[1];
+  const right = document.createElement("span");
+  right.textContent = match[2];
+  record.element.classList.add("status-grid");
+  record.content.replaceChildren(left, right);
+  return true;
 }
 
 function renderTextRun(run) {
@@ -151,10 +201,23 @@ function renderTextRun(run) {
   return element;
 }
 
-function windowTypeName(type) {
-  if (type === GLK_WINDOW_TEXT_BUFFER) return "text buffer";
-  if (type === GLK_WINDOW_TEXT_GRID) return "text grid";
-  return `type ${type}`;
+function splitDirection(method) {
+  switch (method & WINMETHOD_DIRECTION_MASK) {
+    case WINMETHOD_LEFT:
+      return "left";
+    case WINMETHOD_RIGHT:
+      return "right";
+    case WINMETHOD_ABOVE:
+      return "above";
+    case WINMETHOD_BELOW:
+      return "below";
+    default:
+      return "unplaced";
+  }
+}
+
+function isFixedSplit(method) {
+  return (method & WINMETHOD_DIVISION_MASK) === WINMETHOD_FIXED;
 }
 
 const worker = new Worker("./player-worker.js", { type: "module" });

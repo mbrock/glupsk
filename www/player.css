@@ -1,63 +1,87 @@
 :root {
   color-scheme: light dark;
+  --page-bg: #f6f2ea;
+  --paper: #fffdf8;
+  --ink: #211b17;
+  --muted: #6f655c;
+  --rule: #d8cec2;
+  --status-bg: #d8d7c8;
+  --status-ink: #151414;
+  --accent: #7a2e35;
   font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
   margin: 0;
-  background: Canvas;
-  color: CanvasText;
+  background: var(--page-bg);
+  color: var(--ink);
 }
 
 .player {
-  min-height: 100vh;
+  height: 100vh;
   display: grid;
-  grid-template-rows: 1fr auto auto;
+  grid-template-rows: minmax(0, 1fr) auto;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, rgba(33, 27, 23, 0.055), transparent 14rem),
+    var(--page-bg);
 }
 
 .windows {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   grid-auto-rows: min-content;
   align-content: start;
-  gap: 1px;
-  overflow: auto;
-  background: color-mix(in srgb, CanvasText 12%, Canvas);
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  background: var(--paper);
+  box-shadow: 0 0 0 1px rgba(33, 27, 23, 0.08);
 }
 
 .window {
-  min-height: 3rem;
-  background: Canvas;
-}
-
-.window-header {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  min-height: 1.75rem;
-  padding: 0 0.75rem;
-  font-size: 0.75rem;
-  color: color-mix(in srgb, CanvasText 62%, Canvas);
-  border-bottom: 1px solid color-mix(in srgb, CanvasText 12%, Canvas);
-}
-
-.window.root .window-header {
-  display: none;
+  min-width: 0;
+  background: var(--paper);
 }
 
 .window-content {
-  padding: 0.75rem;
+  min-width: 0;
   white-space: pre-wrap;
   overflow-wrap: break-word;
 }
 
 .window.buffer .window-content {
-  font: 1.125rem/1.48 Georgia, "Times New Roman", serif;
+  padding: clamp(1.25rem, 3vw, 3rem) clamp(1rem, 7vw, 6rem) 2rem;
+  font: 1.18rem/1.52 Georgia, "Times New Roman", serif;
 }
 
 .window.grid .window-content {
   white-space: pre;
-  overflow-x: auto;
-  font: 1rem/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow: hidden;
+  padding: 0.25rem clamp(1rem, 7vw, 6rem);
+  min-height: calc(max(1, var(--glk-size, 1)) * 1.35rem);
+  font: 1rem/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-weight: 700;
+  color: var(--status-ink);
+  background: var(--status-bg);
+  border-bottom: 1px solid color-mix(in srgb, var(--status-ink) 22%, var(--status-bg));
+}
+
+.window.status-grid .window-content {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  white-space: normal;
+}
+
+.window.grid.above {
+  position: sticky;
+  inset-block-start: 0;
+  z-index: 1;
 }
 
 .glk-style-1 {
@@ -80,13 +104,13 @@ body {
 
 .glk-style-5 {
   font-weight: 700;
-  color: color-mix(in srgb, CanvasText 70%, #b3261e);
+  color: color-mix(in srgb, var(--ink) 70%, #b3261e);
 }
 
 .glk-style-6,
 .glk-style-10 {
   font-style: italic;
-  color: color-mix(in srgb, CanvasText 68%, Canvas);
+  color: var(--muted);
 }
 
 .glk-style-7 {
@@ -96,16 +120,16 @@ body {
 
 .glk-style-8 {
   font-weight: 700;
-  color: color-mix(in srgb, CanvasText 74%, #8b2f36);
+  color: var(--accent);
 }
 
 .command {
   display: grid;
   grid-template-columns: 1fr auto;
   gap: 0.5rem;
-  padding: 0.75rem;
-  border-top: 1px solid color-mix(in srgb, CanvasText 12%, Canvas);
-  background: Canvas;
+  padding: 0.75rem clamp(1rem, 7vw, 6rem);
+  border-top: 1px solid var(--rule);
+  background: color-mix(in srgb, var(--paper) 88%, var(--page-bg));
 }
 
 .command input,
@@ -116,15 +140,39 @@ body {
 
 .command input {
   padding: 0 0.75rem;
+  border: 1px solid var(--rule);
+  border-radius: 4px;
+  background: var(--paper);
+  color: var(--ink);
 }
 
 .command button {
   padding: 0 1rem;
+  border: 1px solid var(--accent);
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fffdf8;
+  font-weight: 700;
 }
 
 .status {
-  min-height: 1.5rem;
-  padding: 0 0.75rem 0.5rem;
-  font-size: 0.8125rem;
-  color: color-mix(in srgb, CanvasText 62%, Canvas);
+  position: fixed;
+  inline-size: 1px;
+  block-size: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --page-bg: #191716;
+    --paper: #24201d;
+    --ink: #f4ece1;
+    --muted: #b8aaa0;
+    --rule: #4c423a;
+    --status-bg: #cfcebd;
+    --status-ink: #12110f;
+    --accent: #d78b92;
+  }
 }
