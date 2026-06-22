@@ -12,7 +12,6 @@
 #include <array>
 #include <charconv>
 #include <cstdint>
-#include <format>
 #include <variant>
 
 namespace glupsk {
@@ -565,8 +564,7 @@ void execute_instruction(Machine& machine, const Instruction& insn) {
             set_acceleration_param(machine, l(0), l(1));
             return;
         default:
-            fail(std::format(
-                "unimplemented opcode 0x{:x}", static_cast<u32>(op)));
+            fail("unimplemented opcode");
     }
 }
 

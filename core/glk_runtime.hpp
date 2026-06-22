@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include <concepts>
-#include <format>
 #include <memory>
 #include <optional>
 #include <utility>
@@ -132,8 +131,7 @@ class GlkSession : public GlkRuntime {
                 return glk_returned();
             case GlkSelector::fileref_get_rock:
                 if (!raw.empty() && raw.get(0) != 0) {
-                    fail(std::format(
-                        "fileref_get_rock received invalid fileref {}", raw.get(0)));
+                    fail("fileref_get_rock received invalid fileref");
                 }
                 return glk_returned();
             case GlkSelector::set_style:
@@ -258,8 +256,7 @@ class GlkSession : public GlkRuntime {
             case GlkSelector::char_to_upper:
                 return glk_returned(raw.empty() ? 0 : glk_char_to_upper(raw.get(0)));
             default:
-                fail(
-                    std::format("unsupported Glk selector 0x{:04x}", selector));
+                fail("unsupported Glk selector");
         }
     }
 

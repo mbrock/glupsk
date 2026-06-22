@@ -6,7 +6,6 @@
 #include "core/machine.hpp"
 #include "core/types.hpp"
 
-#include <format>
 #include <memory>
 #include <variant>
 #include <vector>
@@ -64,8 +63,7 @@ class GlkRegistry {
 
     WindowRecord& require_window(u32 id) {
         if (id == 0 || id > windows_.size() || !windows_[id - 1]) {
-            fail(
-                std::format("invalid Glk window handle {}", id));
+            fail("invalid Glk window handle");
         }
         return *windows_[id - 1];
     }
@@ -73,8 +71,7 @@ class GlkRegistry {
     StreamRecord& require_stream(u32 id) {
         if (id == 0 || id > streams_.size() || !streams_[id - 1] ||
             !streams_[id - 1]->allocated()) {
-            fail(
-                std::format("invalid Glk stream handle {}", id));
+            fail("invalid Glk stream handle");
         }
         return *streams_[id - 1];
     }
@@ -108,8 +105,7 @@ class GlkRegistry {
             }
         }
         if (!found_previous) {
-            fail(std::format(
-                "window_iterate received invalid window {}", previous_id));
+            fail("window_iterate received invalid window");
         }
         glk_write_ref(machine, rock_address, 0);
         return 0;
@@ -134,8 +130,7 @@ class GlkRegistry {
             }
         }
         if (!found_previous) {
-            fail(std::format(
-                "stream_iterate received invalid stream {}", previous_id));
+            fail("stream_iterate received invalid stream");
         }
         glk_write_ref(machine, rock_address, 0);
         return 0;

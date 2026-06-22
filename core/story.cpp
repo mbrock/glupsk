@@ -3,10 +3,10 @@
 #include "core/bytes.hpp"
 #include "core/error.hpp"
 
-#include <format>
 #if GLUPSK_ENABLE_FILESYSTEM
 #include <fstream>
 #endif
+#include <string>
 
 namespace glupsk {
 namespace {
@@ -98,7 +98,8 @@ Version Story::version() const {
 
 std::string Story::version_string() const {
     const Version v = version();
-    return std::format("{}.{}.{}", v.major, v.minor, v.patch);
+    return std::to_string(v.major) + "." + std::to_string(v.minor) + "." +
+           std::to_string(v.patch);
 }
 
 }  // namespace glupsk

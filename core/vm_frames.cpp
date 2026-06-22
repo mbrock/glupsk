@@ -3,8 +3,6 @@
 #include "core/error.hpp"
 #include "core/vm_accel.hpp"
 
-#include <format>
-
 namespace glupsk {
 namespace {
 
@@ -63,8 +61,7 @@ void enter_function(Machine& machine, u32 address, span<const u32> args) {
 
     const auto type = machine.memory.read8(address++);
     if (type != 0xc0 && type != 0xc1) {
-        fail(std::format("call to non-function at 0x{:x}",
-                                            address - 1));
+        fail("call to non-function");
     }
 
     const auto frame_ptr = machine.stack.sp;

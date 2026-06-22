@@ -9,8 +9,7 @@ namespace glupsk {
 
 inline void glk_validate_memory_stream_mode(u32 mode) {
     if (mode != 0 && mode != 1 && mode != 2 && mode != 3) {
-        fail(
-            std::format("unsupported memory stream mode {}", mode));
+        fail("unsupported memory stream mode");
     }
 }
 
