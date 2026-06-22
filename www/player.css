@@ -24,7 +24,7 @@ body {
 .player {
   height: 100vh;
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
   background:
     linear-gradient(90deg, rgba(33, 27, 23, 0.055), transparent 14rem),
@@ -124,35 +124,33 @@ body {
 }
 
 .command {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 0.5rem;
-  padding: 0.75rem clamp(1rem, 7vw, 6rem);
-  border-top: 1px solid var(--rule);
-  background: color-mix(in srgb, var(--paper) 88%, var(--page-bg));
-}
-
-.command input,
-.command button {
-  min-height: 2.5rem;
-  font: inherit;
+  display: inline-flex;
+  align-items: baseline;
+  inline-size: min(calc(var(--command-ch, 8) * 1ch), 56vw);
+  margin-inline-start: 0.08em;
+  vertical-align: baseline;
 }
 
 .command input {
-  padding: 0 0.75rem;
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  background: var(--paper);
-  color: var(--ink);
+  inline-size: 100%;
+  min-inline-size: 4ch;
+  block-size: 1.55em;
+  padding: 0 0.22em;
+  border: 0;
+  border-block-end: 2px solid color-mix(in srgb, var(--accent) 58%, transparent);
+  border-radius: 3px 3px 0 0;
+  outline: 0;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  color: var(--accent);
+  font: inherit;
+  font-weight: 700;
+  caret-color: var(--accent);
 }
 
-.command button {
-  padding: 0 1rem;
-  border: 1px solid var(--accent);
-  border-radius: 4px;
-  background: var(--accent);
-  color: #fffdf8;
-  font-weight: 700;
+.command input:focus {
+  border-block-end-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  box-shadow: 0 0.18em 0.55em rgba(122, 46, 53, 0.14);
 }
 
 .status {

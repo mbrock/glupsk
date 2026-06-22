@@ -15,11 +15,14 @@ class DomRenderer {
   pendingOperations = [];
   flushScheduled = false;
 
-  constructor(root, commandInput, status, worker) {
+  constructor(root, commandForm, commandInput, status, worker) {
     this.root = root;
+    this.commandForm = commandForm;
     this.commandInput = commandInput;
     this.status = status;
     this.worker = worker;
+    this.commandInput.addEventListener("input", () => this.updateCommandWidth());
+    this.updateCommandWidth();
   }
 
   enqueue(operations) {
@@ -29,17 +32,22 @@ class DomRenderer {
     requestAnimationFrame(() => this.flush());
   }
 
-  flush() {
+  flush(useTransition = true) {
     this.flushScheduled = false;
     if (this.pendingOperations.length === 0) return;
     const operations = this.pendingOperations;
     this.pendingOperations = [];
+    if (!useTransition) {
+      this.apply(operations);
+      return;
+    }
     this.applyWithTransition(operations);
   }
 
   requestInput(window) {
-    this.flush();
+    this.flush(false);
     this.pendingLineWindow = window;
+    this.placeCommandForm(window);
     this.commandInput.disabled = false;
     this.commandInput.focus();
     this.status.value = "Waiting for input";
@@ -73,12 +81,28 @@ class DomRenderer {
     const text = this.commandInput.value;
     this.commandInput.value = "";
     this.commandInput.disabled = true;
+    this.commandForm.hidden = true;
+    this.commandForm.remove();
     this.worker.postMessage({
       type: "line",
       window: this.pendingLineWindow,
       text,
     });
     this.pendingLineWindow = undefined;
+  }
+
+  placeCommandForm(window) {
+    const record = this.windows.get(window);
+    if (!record) return;
+    this.commandForm.hidden = false;
+    this.updateCommandWidth();
+    record.content.append(this.commandForm);
+    this.scrollTarget = record.element;
+  }
+
+  updateCommandWidth() {
+    const ch = Math.max(8, Math.min(32, this.commandInput.value.length + 2));
+    this.commandForm.style.setProperty("--command-ch", String(ch));
   }
 
   applyOne(operation) {
@@ -223,6 +247,7 @@ function isFixedSplit(method) {
 const worker = new Worker("./player-worker.js", { type: "module" });
 const renderer = new DomRenderer(
   document.querySelector("#windows"),
+  document.querySelector("#command-form"),
   document.querySelector("#command-input"),
   document.querySelector("#status"),
   worker,
