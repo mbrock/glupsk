@@ -56,7 +56,7 @@ struct StdioGlkHost {
 
     void window_move_cursor(Window&, u32, u32) {}
 
-    GlkCallResult write(Stream& stream, const GlkTextData& text) {
+    GlkCallResult write(Stream& stream, const GlkTextData& text, GlkStyle) {
         if (!stream.visible) {
             return glk_returned();
         }

@@ -34,10 +34,12 @@ extern "C" void glupsk_host_window_move_cursor(std::uint32_t window,
                                                 std::uint32_t y);
 extern "C" void glupsk_host_write_latin1(std::uint32_t window,
                                           std::uint32_t stream,
+                                          std::uint32_t style,
                                           const std::uint8_t* bytes,
                                           std::uint32_t length);
 extern "C" void glupsk_host_write_unicode(std::uint32_t window,
                                            std::uint32_t stream,
+                                           std::uint32_t style,
                                            const std::uint32_t* codepoints,
                                            std::uint32_t length);
 extern "C" std::uint32_t glupsk_host_read_line_latin1(std::uint32_t window,
@@ -109,11 +111,15 @@ struct DenoTerminalHost {
         glupsk_host_window_move_cursor(window.id, x, y);
     }
 
-    glupsk::GlkCallResult write(Stream& stream, glupsk::GlkTextData text) {
+    glupsk::GlkCallResult write(Stream& stream,
+                                glupsk::GlkTextData text,
+                                glupsk::GlkStyle style) {
+        const auto style_id = static_cast<std::uint32_t>(style);
         if (const auto* bytes = std::get_if<std::string>(&text)) {
             glupsk_host_write_latin1(
                 stream.window,
                 stream.id,
+                style_id,
                 reinterpret_cast<const std::uint8_t*>(bytes->data()),
                 static_cast<std::uint32_t>(bytes->size()));
             return glupsk::glk_returned();
@@ -122,6 +128,7 @@ struct DenoTerminalHost {
         const auto& codepoints = std::get<std::vector<glupsk::u32>>(text);
         glupsk_host_write_unicode(stream.window,
                                   stream.id,
+                                  style_id,
                                   codepoints.data(),
                                   static_cast<std::uint32_t>(codepoints.size()));
         return glupsk::glk_returned();

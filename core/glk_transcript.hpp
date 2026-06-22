@@ -21,6 +21,7 @@ struct TranscriptGlkHost {
 
     struct Write {
         GlkTextData text;
+        GlkStyle style = GlkStyle::normal;
     };
 
     std::deque<GlkInputText> input_lines;
@@ -50,10 +51,12 @@ struct TranscriptGlkHost {
 
     void window_move_cursor(Window&, u32, u32) {}
 
-    GlkCallResult write(Stream& stream, const GlkTextData& data) {
+    GlkCallResult write(Stream& stream,
+                        const GlkTextData& data,
+                        GlkStyle style) {
         append(stream.text, data);
         append(text, data);
-        writes.push_back(Write{.text = data});
+        writes.push_back(Write{.text = data, .style = style});
         return glk_returned();
     }
 

@@ -47,13 +47,56 @@ body {
 .window-content {
   padding: 0.75rem;
   white-space: pre-wrap;
-  overflow-wrap: anywhere;
-  font: 1rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: break-word;
+}
+
+.window.buffer .window-content {
+  font: 1.125rem/1.48 Georgia, "Times New Roman", serif;
 }
 
 .window.grid .window-content {
   white-space: pre;
   overflow-x: auto;
+  font: 1rem/1.25 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.glk-style-1 {
+  font-style: italic;
+}
+
+.glk-style-2 {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.glk-style-3 {
+  font-weight: 700;
+  font-size: 1.12em;
+}
+
+.glk-style-4,
+.glk-style-9 {
+  font-weight: 700;
+}
+
+.glk-style-5 {
+  font-weight: 700;
+  color: color-mix(in srgb, CanvasText 70%, #b3261e);
+}
+
+.glk-style-6,
+.glk-style-10 {
+  font-style: italic;
+  color: color-mix(in srgb, CanvasText 68%, Canvas);
+}
+
+.glk-style-7 {
+  display: inline-block;
+  margin-inline: 1.25rem;
+}
+
+.glk-style-8 {
+  font-weight: 700;
+  color: color-mix(in srgb, CanvasText 74%, #8b2f36);
 }
 
 .command {

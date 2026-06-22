@@ -38,7 +38,7 @@ concept GlkHost =
         { host.window_size(window) } -> std::same_as<GlkWindowSize>;
         { host.window_clear(window) } -> std::same_as<void>;
         { host.window_move_cursor(window, value, value) } -> std::same_as<void>;
-        { host.write(stream, text) } -> std::same_as<GlkCallResult>;
+        { host.write(stream, text, GlkStyle::normal) } -> std::same_as<GlkCallResult>;
         { host.select(event_request) } -> std::same_as<GlkEventResult>;
         { host.echo_line_input() } -> std::same_as<bool>;
     };
@@ -135,6 +135,9 @@ class GlkSession : public GlkRuntime {
                 }
                 return glk_returned();
             case GlkSelector::set_style:
+                current_style_ = raw.empty() ? GlkStyle::normal
+                                             : static_cast<GlkStyle>(raw.get(0));
+                return glk_returned();
             case GlkSelector::stylehint_set:
                 return glk_returned();
             case GlkSelector::put_char:
@@ -375,7 +378,8 @@ class GlkSession : public GlkRuntime {
             return glk_returned();
         }
         auto& stream = registry_.require_stream(handle.id);
-        return glk_write_to_stream_record(host_, machine, stream, text);
+        return glk_write_to_stream_record(
+            host_, machine, stream, text, current_style_);
     }
 
     // Select orchestration is the point where host events become VM-visible
@@ -468,21 +472,23 @@ class GlkSession : public GlkRuntime {
                             GlkWindowHandle window,
                             const GlkInputText& text) {
         const auto stream = registry_.require_window(window.id).stream;
-        if (auto result = write_to(machine, stream, text);
-            !std::holds_alternative<GlkReturned>(result)) {
-            return result;
+        const auto previous_style = current_style_;
+        current_style_ = GlkStyle::input;
+        auto result = write_to(machine, stream, text);
+        if (std::holds_alternative<GlkReturned>(result)) {
+            result = std::holds_alternative<std::string>(text)
+                         ? write_to(machine, stream, std::string{"\n"})
+                         : write_to(machine, stream, std::vector<u32>{'\n'});
         }
-        if (const auto* bytes = std::get_if<std::string>(&text)) {
-            (void) bytes;
-            return write_to(machine, stream, std::string{"\n"});
-        }
-        return write_to(machine, stream, std::vector<u32>{'\n'});
+        current_style_ = previous_style;
+        return result;
     }
 
     Host host_;
     GlkRegistry<Host> registry_;
     GlkWindowHandle root_window_ = {};
     GlkStreamHandle current_stream_ = {};
+    GlkStyle current_style_ = GlkStyle::normal;
     std::vector<GlkEventInterest> event_interests_;
     std::optional<GlkPendingLine> pending_line_;
 };

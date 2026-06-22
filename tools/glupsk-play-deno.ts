@@ -148,11 +148,23 @@ class WindowHost {
     this.sideWindowCursor.set(window, y * this.windowWidth(window) + x);
   }
 
-  writeLatin1(window: number, _stream: number, ptr: number, length: number) {
+  writeLatin1(
+    window: number,
+    _stream: number,
+    _style: number,
+    ptr: number,
+    length: number,
+  ) {
     this.writeWindowText(window, latin1Decoder.decode(this.bytes(ptr, length)));
   }
 
-  writeUnicode(window: number, _stream: number, ptr: number, length: number) {
+  writeUnicode(
+    window: number,
+    _stream: number,
+    _style: number,
+    ptr: number,
+    length: number,
+  ) {
     const view = new DataView(this.memory().buffer);
     const codepoints = [];
     for (let index = 0; index < length; ++index) {
@@ -344,15 +356,17 @@ const instance = await WebAssembly.instantiate(
       glupsk_host_write_latin1: (
         window: number,
         stream: number,
+        style: number,
         ptr: number,
         length: number,
-      ) => host.writeLatin1(window, stream, ptr, length),
+      ) => host.writeLatin1(window, stream, style, ptr, length),
       glupsk_host_write_unicode: (
         window: number,
         stream: number,
+        style: number,
         ptr: number,
         length: number,
-      ) => host.writeUnicode(window, stream, ptr, length),
+      ) => host.writeUnicode(window, stream, style, ptr, length),
       glupsk_host_read_line_latin1: (
         window: number,
         ptr: number,

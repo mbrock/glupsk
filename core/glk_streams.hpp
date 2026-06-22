@@ -72,9 +72,10 @@ template <typename Host>
 GlkCallResult glk_write_to_stream_record(Host& host,
                                          Machine& machine,
                                          GlkStreamRecord<Host>& record,
-                                         const GlkTextData& text) {
+                                         const GlkTextData& text,
+                                         GlkStyle style) {
     if (auto* host_stream = std::get_if<GlkHostStream<Host>>(&record.backing)) {
-        auto result = host.write(host_stream->stream, text);
+        auto result = host.write(host_stream->stream, text, style);
         if (std::holds_alternative<GlkReturned>(result)) {
             record.write_count += glk_text_length(text);
         }

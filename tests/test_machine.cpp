@@ -301,12 +301,17 @@ static suite machine_tests{"Machine", [] {
         machine.memory.write8(text, 'H');
         machine.memory.write8(text + 1, 'i');
 
+        glk.call_returned(
+            machine, 0x86,
+            std::array<glupsk::u32, 1>{
+                static_cast<glupsk::u32>(glupsk::GlkStyle::header)});
         auto result =
             glk.call(machine, 0x84, std::array<glupsk::u32, 2>{text, 2});
         expect(std::holds_alternative<glupsk::GlkReturned>(result));
         expect(glk.transcript == "Hi");
         expect(glk.host().writes.size() == 1);
         expect(std::get<std::string>(glk.host().writes.front().text) == "Hi");
+        expect(glk.host().writes.front().style == glupsk::GlkStyle::header);
     };
 
     "handles Glk Unicode buffer case selectors"_test = [] {

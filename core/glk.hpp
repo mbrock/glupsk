@@ -102,6 +102,20 @@ enum class GlkTextEncoding : u8 {
     unicode,
 };
 
+enum class GlkStyle : u32 {
+    normal = 0,
+    emphasized = 1,
+    preformatted = 2,
+    header = 3,
+    subheader = 4,
+    alert = 5,
+    note = 6,
+    block_quote = 7,
+    input = 8,
+    user1 = 9,
+    user2 = 10,
+};
+
 struct GlkTextChar {
     u32 value = 0;
     GlkTextEncoding encoding = GlkTextEncoding::latin1;

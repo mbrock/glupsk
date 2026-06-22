@@ -52,12 +52,14 @@ void glupsk_host_window_move_cursor(uint32_t window, uint32_t x, uint32_t y);
 void glupsk_host_write_latin1(
     uint32_t window,
     uint32_t stream,
+    uint32_t style,
     const uint8_t* bytes,
     uint32_t length);
 
 void glupsk_host_write_unicode(
     uint32_t window,
     uint32_t stream,
+    uint32_t style,
     const uint32_t* codepoints,
     uint32_t length);
 

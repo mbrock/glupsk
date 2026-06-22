@@ -8,6 +8,7 @@ const VM_ERROR = 3;
 const HOST_INPUT_BLOCKED = 0xffffffff;
 const GLK_WINDOW_TEXT_BUFFER = 3;
 const GLK_WINDOW_TEXT_GRID = 4;
+const GLK_STYLE_INPUT = 8;
 
 class WasiPreview1 {
   memory;
@@ -92,7 +93,7 @@ class WorkerGlkHost {
       rock,
       cursor: 0,
       text: "",
-      pendingText: "",
+      pendingRuns: [],
       dirty: true,
       clearPending: false,
       cursorX: 0,
@@ -124,7 +125,7 @@ class WorkerGlkHost {
     if (!record) return;
     record.text = "";
     record.cursor = 0;
-    record.pendingText = "";
+    record.pendingRuns = [];
     record.clearPending = true;
     record.dirty = true;
   }
@@ -138,20 +139,21 @@ class WorkerGlkHost {
     record.cursorDirty = true;
   }
 
-  writeLatin1(window, _stream, ptr, length) {
+  writeLatin1(window, _stream, style, ptr, length) {
     this.writeWindowText(
       window,
       latin1Decoder.decode(this.bytes(ptr, length)),
+      style,
     );
   }
 
-  writeUnicode(window, _stream, ptr, length) {
+  writeUnicode(window, _stream, style, ptr, length) {
     const view = new DataView(this.memory().buffer);
     const codepoints = [];
     for (let index = 0; index < length; ++index) {
       codepoints.push(view.getUint32(ptr + index * 4, true));
     }
-    this.writeWindowText(window, String.fromCodePoint(...codepoints));
+    this.writeWindowText(window, String.fromCodePoint(...codepoints), style);
   }
 
   readLineLatin1(window, ptr, maxLength) {
@@ -179,19 +181,29 @@ class WorkerGlkHost {
     const lines = this.queuedLines.get(window) ?? [];
     lines.push(text);
     this.queuedLines.set(window, lines);
-    this.writeWindowText(window, `${text}\n`);
+    this.writeWindowText(window, `${text}\n`, GLK_STYLE_INPUT);
     this.pendingLineWindow = undefined;
   }
 
-  writeWindowText(window, text) {
+  writeWindowText(window, text, style = 0) {
     const record = this.windows.get(window);
     if (!record) return;
     if (record.glkType === GLK_WINDOW_TEXT_GRID) {
       this.writeGridText(record, text);
       return;
     }
-    record.pendingText += text;
+    this.appendRun(record, text, style);
     record.dirty = true;
+  }
+
+  appendRun(record, text, style) {
+    if (text.length === 0) return;
+    const previous = record.pendingRuns.at(-1);
+    if (previous && previous.style === style) {
+      previous.text += text;
+      return;
+    }
+    record.pendingRuns.push({ text, style });
   }
 
   writeGridText(record, text) {
@@ -221,13 +233,13 @@ class WorkerGlkHost {
       if (!record.dirty) continue;
       if (record.glkType === GLK_WINDOW_TEXT_GRID) {
         this.operations.push({ type: "setText", window, text: record.text });
-      } else if (record.pendingText.length > 0) {
+      } else if (record.pendingRuns.length > 0) {
         this.operations.push({
           type: "append",
           window,
-          text: record.pendingText,
+          runs: record.pendingRuns,
         });
-        record.pendingText = "";
+        record.pendingRuns = [];
       }
       record.dirty = false;
     }
@@ -338,10 +350,10 @@ async function startPlayer() {
       glupsk_host_window_clear: (window) => host.clearWindow(window),
       glupsk_host_window_move_cursor: (window, x, y) =>
         host.moveCursor(window, x, y),
-      glupsk_host_write_latin1: (window, stream, ptr, length) =>
-        host.writeLatin1(window, stream, ptr, length),
-      glupsk_host_write_unicode: (window, stream, ptr, length) =>
-        host.writeUnicode(window, stream, ptr, length),
+      glupsk_host_write_latin1: (window, stream, style, ptr, length) =>
+        host.writeLatin1(window, stream, style, ptr, length),
+      glupsk_host_write_unicode: (window, stream, style, ptr, length) =>
+        host.writeUnicode(window, stream, style, ptr, length),
       glupsk_host_read_line_latin1: (window, ptr, maxLength) =>
         host.readLineLatin1(window, ptr, maxLength),
       glupsk_host_read_line_unicode: (window, ptr, maxLength) =>

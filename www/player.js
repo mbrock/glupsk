@@ -124,8 +124,13 @@ class DomRenderer {
 
   appendText(operation) {
     const record = this.windows.get(operation.window);
-    if (!record || operation.text.length === 0) return;
-    record.content.append(document.createTextNode(operation.text));
+    const runs = operation.runs ?? [{ text: operation.text ?? "", style: 0 }];
+    if (!record || runs.length === 0) return;
+    const fragment = document.createDocumentFragment();
+    for (const run of runs) {
+      fragment.append(renderTextRun(run));
+    }
+    record.content.append(fragment);
     this.scrollTarget = record.element;
   }
 
@@ -134,6 +139,16 @@ class DomRenderer {
     if (!record) return;
     record.content.textContent = operation.text;
   }
+}
+
+function renderTextRun(run) {
+  if (run.style === 0) {
+    return document.createTextNode(run.text);
+  }
+  const element = document.createElement("span");
+  element.className = `glk-style-${run.style}`;
+  element.textContent = run.text;
+  return element;
 }
 
 function windowTypeName(type) {
