@@ -1,25 +1,61 @@
 :root {
   color-scheme: light dark;
-  --page-bg: #f6f2ea;
-  --paper: #fffdf8;
-  --ink: #211b17;
-  --muted: #6f655c;
-  --rule: #d8cec2;
-  --status-bg: #d8d7c8;
-  --status-ink: #151414;
-  --accent: #7a2e35;
+  --page-bg: #f7f5ef;
+  --paper: #fffefa;
+  --ink: #2c363c;
+  --muted: #667078;
+  --rule: #ded8ce;
+  --status-bg: #e4e0d3;
+  --status-ink: #1d2529;
+  --accent: #9a3248;
   --buffer-font: "Libre Caslon Text", Georgia, "Times New Roman", serif;
-  font-family: ui-sans-serif, system-ui, sans-serif;
+  --display-font: "Alegreya Sans", ui-sans-serif, system-ui, sans-serif;
+  --mono-font: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--buffer-font);
+  font-size: 17px;
+  font-optical-sizing: auto;
+  font-weight: 400;
 }
 
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
+}
+
+html {
+  min-block-size: 100%;
+  background: var(--page-bg);
+  color: var(--ink);
+  line-height: 1.35;
+  text-rendering: optimizeLegibility;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   margin: 0;
   background: var(--page-bg);
   color: var(--ink);
+  font: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-inline-size: 100%;
+}
+
+strong,
+b {
+  font-weight: 700;
 }
 
 .player {
@@ -27,9 +63,7 @@ body {
   display: grid;
   grid-template-rows: minmax(0, 1fr);
   overflow: hidden;
-  background:
-    linear-gradient(90deg, rgba(33, 27, 23, 0.055), transparent 14rem),
-    var(--page-bg);
+  background: var(--page-bg);
 }
 
 .windows {
@@ -41,7 +75,7 @@ body {
   overflow-y: auto;
   overflow-x: hidden;
   background: var(--paper);
-  box-shadow: 0 0 0 1px rgba(33, 27, 23, 0.08);
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--ink) 8%, transparent);
 }
 
 .window {
@@ -56,13 +90,13 @@ body {
 }
 
 .window.buffer .window-content {
-  max-inline-size: 72ch;
-  padding: clamp(1.25rem, 3vw, 3rem) clamp(1rem, 7vw, 6rem) 2rem;
-  font: 1.18rem/1.52 var(--buffer-font);
+  max-inline-size: 66ch;
+  padding: clamp(1.5rem, 4vw, 3.25rem) clamp(1rem, 8vw, 7rem) 2.75rem;
+  font: 1.12rem/1.46 var(--buffer-font);
 }
 
 .buffer-paragraph {
-  margin: 0 0 1.15em;
+  margin: 0 0 1rem;
   hyphens: manual;
   text-align: justify;
   text-align-last: start;
@@ -76,30 +110,36 @@ body {
 
 .glk-paragraph-style-header,
 .glk-paragraph-style-subheader {
+  font-family: var(--display-font);
+  line-height: 1.16;
+  letter-spacing: 0;
   text-align: start;
 }
 
 .glk-paragraph-style-header {
+  margin-block: 2.25rem 1.1rem;
   font-weight: 700;
-  font-size: 1.22em;
+  font-size: 2rem;
 }
 
 .glk-paragraph-style-subheader {
+  margin-block: 1.9rem 0.75rem;
   font-weight: 700;
-  font-size: 1.08em;
+  font-size: 1.35rem;
 }
 
 .glk-paragraph-style-block-quote {
-  margin-inline: 1.25rem;
+  margin: 1.25rem 2rem;
   color: var(--muted);
+  font-style: italic;
 }
 
 .window.grid .window-content {
   white-space: pre;
   overflow: hidden;
   padding: 0.25rem clamp(1rem, 7vw, 6rem);
-  min-height: calc(max(1, var(--glk-size, 1)) * 1.35rem);
-  font: 1rem/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  min-height: calc(max(1, var(--glk-size, 1)) * 1.25rem);
+  font: 700 0.95rem/1.25 var(--display-font);
   font-weight: 700;
   color: var(--status-ink);
   background: var(--status-bg);
@@ -119,20 +159,26 @@ body {
 
 .glk-style-2,
 .glk-style-preformatted {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-family: var(--mono-font);
+  font-size: 0.9em;
+  line-height: 1.25;
 }
 
 .glk-style-3,
 .glk-style-header {
+  font-family: var(--display-font);
   font-weight: 700;
   font-size: 1.12em;
+  line-height: 1.16;
 }
 
 .glk-style-4,
 .glk-style-9,
 .glk-style-subheader,
 .glk-style-user1 {
+  font-family: var(--display-font);
   font-weight: 700;
+  line-height: 1.16;
 }
 
 .glk-style-5,
@@ -202,13 +248,31 @@ body {
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --page-bg: #191716;
-    --paper: #24201d;
-    --ink: #f4ece1;
-    --muted: #b8aaa0;
-    --rule: #4c423a;
-    --status-bg: #cfcebd;
-    --status-ink: #12110f;
-    --accent: #d78b92;
+    --page-bg: #090b0c;
+    --paper: #111517;
+    --ink: #c2cbd0;
+    --muted: #8b969d;
+    --rule: #2f383d;
+    --status-bg: #d7d2c4;
+    --status-ink: #111719;
+    --accent: #de6e7c;
+  }
+}
+
+@media screen and (max-width: 90ch) {
+  :root {
+    font-size: 18px;
+  }
+
+  .window.buffer .window-content {
+    padding-inline: clamp(1rem, 5vw, 2rem);
+  }
+
+  .glk-paragraph-style-header {
+    font-size: 1.65rem;
+  }
+
+  .glk-paragraph-style-subheader {
+    font-size: 1.25rem;
   }
 }
