@@ -132,7 +132,7 @@ class Terminal {
       return line
     }
 
-    const line = prompt("\n> ")
+    const line = prompt("")
     if (line === null) throw new Error("terminal input cancelled")
     return line
   }
