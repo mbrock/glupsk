@@ -216,38 +216,33 @@ b {
 .glk-style-8,
 .glk-style-input {
   font-weight: 700;
-  color: var(--accent);
+  /*color: var(--accent);*/
+  font-family: var(--mono-font);
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-inline-start: 0.5em;
 }
 
 .command {
   display: inline-flex;
   align-items: baseline;
-  inline-size: min(calc(var(--command-ch, 8) * 1ch), 56vw);
-  margin-inline-start: 0.08em;
+  margin-inline-start: 0.5em;
   vertical-align: baseline;
 }
 
 .command input {
-  inline-size: 100%;
-  min-inline-size: 4ch;
-  block-size: 1.55em;
-  padding: 0 0.22em;
+  padding: 0 0.2em;
   border: 0;
-  border-block-end: 2px solid
-    color-mix(in srgb, var(--accent) 58%, transparent);
-  border-radius: 3px 3px 0 0;
   outline: 0;
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
-  font: inherit;
+  color: var(--paper);
+  background: var(--ink);
+  caret-color: var(--ink);
+  font-family: var(--mono-font);
   font-weight: 700;
-  caret-color: var(--accent);
-}
-
-.command input:focus {
-  border-block-end-color: var(--accent);
-  background: color-mix(in srgb, var(--accent) 18%, transparent);
-  box-shadow: 0 0.18em 0.55em rgba(122, 46, 53, 0.14);
+  text-transform: uppercase;
+  field-sizing: content;
+  caret-shape: block;
+  caret-animation: manual;
 }
 
 .status {
