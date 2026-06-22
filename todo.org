@@ -158,6 +158,17 @@ and select-blocking state.
 The host should receive semantic wait requests; bridge bookkeeping should stay
 in common runtime code.
 
+*** DONE Extract event writeback and pending line buffer data
+
+Implemented in ~core/glk_events.hpp~ and ~core/glk_events.cpp~. This covers
+Glk reference writes, event structure field writes, pending line request data,
+and line-input text writeback into VM memory.
+
+*** TODO Separate select orchestration from GlkSession
+
+~select~, ~write_event~, ~write_line_event~, and echo handling still live in
+~GlkSession~ because they coordinate host calls with stream writes.
+
 ** DONE Separate Glk text materialization
 :PROPERTIES:
 :Suggested_File: core/glk_text.hpp

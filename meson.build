@@ -14,6 +14,7 @@ core_lib = static_library(
   files(
     'core/decode.cpp',
     'core/execute.cpp',
+    'core/glk_events.cpp',
     'core/glk_names.cpp',
     'core/glk_text.cpp',
     'core/machine.cpp',

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/glk.hpp"
+#include "core/glk_events.hpp"
 #include "core/glk_text.hpp"
 #include "core/machine.hpp"
 
@@ -91,8 +92,8 @@ class GlkSession : public GlkRuntime {
             case GlkSelector::window_get_size:
                 if (args.size() >= 3) {
                     const auto size = host_.window_size(require_window(args[0]).window);
-                    write_glk_ref(machine, args[1], size.width);
-                    write_glk_ref(machine, args[2], size.height);
+                    glk_write_ref(machine, args[1], size.width);
+                    glk_write_ref(machine, args[2], size.height);
                 }
                 return glk_returned();
             case GlkSelector::window_clear:
@@ -148,7 +149,7 @@ class GlkSession : public GlkRuntime {
                 return glk_returned(current_stream_.id);
             case GlkSelector::fileref_iterate:
                 if (args.size() >= 2) {
-                    write_glk_ref(machine, args[1], 0);
+                    glk_write_ref(machine, args[1], 0);
                 }
                 return glk_returned();
             case GlkSelector::fileref_get_rock:
@@ -348,31 +349,6 @@ class GlkSession : public GlkRuntime {
         }
     };
 
-    static void write_glk_ref(Machine& machine, u32 address, u32 value) {
-        if (address == 0) {
-            return;
-        }
-        if (address == 0xffffffffu) {
-            machine.stack.push32(value);
-            return;
-        }
-        machine.memory.write32(address, value);
-    }
-
-    static void write_event_field(Machine& machine,
-                                  u32 address,
-                                  u32 field,
-                                  u32 value) {
-        if (address == 0) {
-            return;
-        }
-        if (address == 0xffffffffu) {
-            machine.stack.push32(value);
-            return;
-        }
-        machine.memory.write32(address + field * 4, value);
-    }
-
     WindowRecord& require_window(u32 id) {
         if (id == 0 || id > windows_.size() || !windows_[id - 1]) {
             throw std::runtime_error(
@@ -451,8 +427,8 @@ class GlkSession : public GlkRuntime {
         if (std::holds_alternative<HostStream>(stream.backing)) {
             throw std::runtime_error("stream_close cannot close a window stream");
         }
-        write_event_field(machine, result_address, 0, stream.read_count);
-        write_event_field(machine, result_address, 1, stream.write_count);
+        glk_write_event_field(machine, result_address, 0, stream.read_count);
+        glk_write_event_field(machine, result_address, 1, stream.write_count);
         stream = {};
         if (current_stream_.id == handle.id) {
             current_stream_ = {};
@@ -481,7 +457,7 @@ class GlkSession : public GlkRuntime {
             }
             const auto id = static_cast<u32>(index + 1);
             if (return_next) {
-                write_glk_ref(machine, rock_address, window->rock);
+                glk_write_ref(machine, rock_address, window->rock);
                 return id;
             }
             if (id == previous_id) {
@@ -493,7 +469,7 @@ class GlkSession : public GlkRuntime {
             throw std::runtime_error(std::format(
                 "window_iterate received invalid window {}", previous_id));
         }
-        write_glk_ref(machine, rock_address, 0);
+        glk_write_ref(machine, rock_address, 0);
         return 0;
     }
 
@@ -507,7 +483,7 @@ class GlkSession : public GlkRuntime {
             }
             const auto id = static_cast<u32>(index + 1);
             if (return_next) {
-                write_glk_ref(machine, rock_address, stream->rock);
+                glk_write_ref(machine, rock_address, stream->rock);
                 return id;
             }
             if (id == previous_id) {
@@ -519,7 +495,7 @@ class GlkSession : public GlkRuntime {
             throw std::runtime_error(std::format(
                 "stream_iterate received invalid stream {}", previous_id));
         }
-        write_glk_ref(machine, rock_address, 0);
+        glk_write_ref(machine, rock_address, 0);
         return 0;
     }
 
@@ -633,7 +609,7 @@ class GlkSession : public GlkRuntime {
                             u32 initial_length,
                             GlkTextEncoding encoding) {
         (void) require_window(window.id);
-        pending_line_ = PendingLine{
+        pending_line_ = GlkPendingLine{
             .window = window,
             .buffer_address = buffer_address,
             .max_length = max_length,
@@ -666,13 +642,6 @@ class GlkSession : public GlkRuntime {
         return write_event(machine, event_address, std::get<GlkHostEvent>(result));
     }
 
-    struct PendingLine {
-        GlkWindowHandle window = {};
-        u32 buffer_address = 0;
-        u32 max_length = 0;
-        GlkTextEncoding encoding = GlkTextEncoding::latin1;
-    };
-
     GlkCallResult write_event(Machine& machine,
                               u32 event_address,
                               const GlkHostEvent& event) {
@@ -680,16 +649,16 @@ class GlkSession : public GlkRuntime {
             return write_line_event(machine, event_address, *line);
         }
         if (const auto* ch = std::get_if<GlkCharInputEvent>(&event)) {
-            write_event_field(machine, event_address, 0, 2);
-            write_event_field(machine, event_address, 1, ch->window.id);
-            write_event_field(machine, event_address, 2, ch->value);
-            write_event_field(machine, event_address, 3, 0);
+            glk_write_event_field(machine, event_address, 0, 2);
+            glk_write_event_field(machine, event_address, 1, ch->window.id);
+            glk_write_event_field(machine, event_address, 2, ch->value);
+            glk_write_event_field(machine, event_address, 3, 0);
             return glk_returned();
         }
-        write_event_field(machine, event_address, 0, 1);
-        write_event_field(machine, event_address, 1, 0);
-        write_event_field(machine, event_address, 2, 0);
-        write_event_field(machine, event_address, 3, 0);
+        glk_write_event_field(machine, event_address, 0, 1);
+        glk_write_event_field(machine, event_address, 1, 0);
+        glk_write_event_field(machine, event_address, 2, 0);
+        glk_write_event_field(machine, event_address, 3, 0);
         return glk_returned();
     }
 
@@ -700,11 +669,11 @@ class GlkSession : public GlkRuntime {
             return glk_fatal("line input event without matching request");
         }
 
-        const auto count = write_input_text(machine, *pending_line_, event.text);
-        write_event_field(machine, event_address, 0, 3);
-        write_event_field(machine, event_address, 1, event.window.id);
-        write_event_field(machine, event_address, 2, count);
-        write_event_field(machine, event_address, 3, 0);
+        const auto count = glk_write_input_text(machine, *pending_line_, event.text);
+        glk_write_event_field(machine, event_address, 0, 3);
+        glk_write_event_field(machine, event_address, 1, event.window.id);
+        glk_write_event_field(machine, event_address, 2, count);
+        glk_write_event_field(machine, event_address, 3, 0);
         pending_line_.reset();
         event_interests_.clear();
 
@@ -732,45 +701,13 @@ class GlkSession : public GlkRuntime {
         return write_to(machine, stream, std::vector<u32>{'\n'});
     }
 
-    static u32 write_input_text(Machine& machine,
-                                const PendingLine& pending,
-                                const GlkInputText& text) {
-        if (const auto* latin1 = std::get_if<std::string>(&text)) {
-            const auto count = std::min<u32>(
-                pending.max_length, static_cast<u32>(latin1->size()));
-            for (u32 index = 0; index < count; ++index) {
-                const auto ch = static_cast<u8>((*latin1)[index]);
-                if (pending.encoding == GlkTextEncoding::unicode) {
-                    machine.memory.write32(pending.buffer_address + index * 4, ch);
-                } else {
-                    machine.memory.write8(pending.buffer_address + index, ch);
-                }
-            }
-            return count;
-        }
-
-        const auto& unicode = std::get<std::vector<u32>>(text);
-        const auto count =
-            std::min<u32>(pending.max_length, static_cast<u32>(unicode.size()));
-        for (u32 index = 0; index < count; ++index) {
-            if (pending.encoding == GlkTextEncoding::unicode) {
-                machine.memory.write32(pending.buffer_address + index * 4,
-                                       unicode[index]);
-            } else {
-                machine.memory.write8(pending.buffer_address + index,
-                                      static_cast<u8>(unicode[index]));
-            }
-        }
-        return count;
-    }
-
     Host host_;
     GlkWindowHandle root_window_ = {};
     GlkStreamHandle current_stream_ = {};
     std::vector<std::unique_ptr<WindowRecord>> windows_;
     std::vector<std::unique_ptr<StreamRecord>> streams_;
     std::vector<GlkEventInterest> event_interests_;
-    std::optional<PendingLine> pending_line_;
+    std::optional<GlkPendingLine> pending_line_;
 };
 
 }  // namespace glupsk
