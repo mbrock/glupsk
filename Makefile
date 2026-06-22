@@ -85,12 +85,13 @@ meson: meson-setup
 
 $(GLUPSK_WASM): $(WASM_SOURCES) hosts/wasm/allowed-undefined.txt Makefile
 	mkdir -p "$(WASM_BUILD_DIR)"
-	$(WASM_CXX) --target=wasm32-wasi -std=c++23 -O2 -g0 -I. \
+	$(WASM_CXX) --target=wasm32-wasi -std=c++23 -Oz -flto -g0 -I. \
 		-DGLUPSK_ENABLE_FILESYSTEM=0 -DGLUPSK_NO_EXCEPTIONS \
 		-fno-exceptions -fno-use-cxa-atexit -mexec-model=reactor \
 		$(WASM_SOURCES) \
 		-Wl,--allow-undefined-file=hosts/wasm/allowed-undefined.txt \
 		$(WASM_EXPORTS) \
+		-Wl,--gc-sections -Wl,--strip-all \
 		-lc++abi -lc++ -lc \
 		-o "$@"
 
