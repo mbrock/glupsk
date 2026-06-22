@@ -2,6 +2,7 @@
 
 const latin1Decoder = new TextDecoder("latin1")
 const utf8Encoder = new TextEncoder()
+const utf8Decoder = new TextDecoder()
 
 const VM_OK = 0
 const VM_BLOCKED = 1
@@ -77,6 +78,7 @@ class WasiPreview1 {
 
 class Terminal {
   exports?: Exports
+  inputBytes: number[] = []
 
   constructor(private inputLines?: string[]) {}
 
@@ -132,9 +134,7 @@ class Terminal {
       return line
     }
 
-    const line = prompt("")
-    if (line === null) throw new Error("terminal input cancelled")
-    return line
+    return readTerminalLine(this.inputBytes)
   }
 }
 
@@ -154,6 +154,35 @@ function inputLines(text: string) {
   const lines = text.replaceAll("\r\n", "\n").replaceAll("\r", "\n").split("\n")
   if (lines.at(-1) === "") lines.pop()
   return lines
+}
+
+function readTerminalLine(buffered: number[]) {
+  const line = []
+  const byte = new Uint8Array(1)
+
+  while (true) {
+    const next = buffered.length === 0 ? readStdinByte(byte) : buffered.shift()
+    if (next === undefined) {
+      if (line.length === 0) throw new Error("terminal input reached EOF")
+      break
+    }
+    if (next === 0x0a) break
+    if (next === 0x0d) {
+      const afterCarriageReturn = readStdinByte(byte)
+      if (afterCarriageReturn !== undefined && afterCarriageReturn !== 0x0a) {
+        buffered.push(afterCarriageReturn)
+      }
+      break
+    }
+    line.push(next)
+  }
+
+  return utf8Decoder.decode(new Uint8Array(line))
+}
+
+function readStdinByte(byte: Uint8Array) {
+  const count = Deno.stdin.readSync(byte)
+  return count === null ? undefined : byte[0]
 }
 
 function cString(exports: Exports, ptr: number) {
