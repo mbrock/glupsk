@@ -55,6 +55,7 @@ body {
 }
 
 .window.buffer .window-content {
+  max-inline-size: 72ch;
   padding: clamp(1.25rem, 3vw, 3rem) clamp(1rem, 7vw, 6rem) 2rem;
   font: 1.18rem/1.52 Georgia, "Times New Roman", serif;
 }
