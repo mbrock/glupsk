@@ -129,7 +129,7 @@ diagnostics do not depend on decode-specific implementation details for naming.
 but it is already dense. Keep ~GlkSession<Host>~ as the central coordinator and
 separate the common runtime concepts underneath it.
 
-** TODO Separate Glk registry and handle records
+** DONE Separate Glk registry and handle records
 :PROPERTIES:
 :Suggested_File: core/glk_registry.hpp
 :END:
@@ -248,7 +248,7 @@ would make execution and tracing visibly agree.
 
 Trace now reuses ~glupsk::sign_extend~ from ~core/vm_operands.hpp~.
 
-* TODO Make stream opcode output blocking semantics explicit
+* DONE Make stream opcode output blocking semantics explicit
 :PROPERTIES:
 :Area: effects glk
 :Value: medium
@@ -261,6 +261,11 @@ synchronous.
 Decide whether all output should participate in the same effect-handler style
 blocking/resume model. If yes, design a resumable representation for blocked
 stream output opcodes.
+
+Decision: stream opcode output remains synchronous for now and fails loudly if
+the host blocks outside an ~@glk~ call. This is documented in
+~core/vm_strings.cpp~ at the stream opcode output boundary. A future resumable
+opcode state can replace that behavior when output blocking becomes necessary.
 
 * WAIT Consider splitting the test harness
 :PROPERTIES:
