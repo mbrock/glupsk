@@ -41,6 +41,9 @@ class DomRenderer {
   scrollTarget;
   pendingOperations = [];
   flushScheduled = false;
+  outputHasRendered = false;
+  followNextOutput = false;
+  inputHasBeenRequested = false;
 
   constructor(root, commandForm, commandInput, status, worker) {
     this.root = root;
@@ -74,11 +77,15 @@ class DomRenderer {
 
   requestInput(window) {
     this.flush(false);
+    const followInput = this.followNextOutput ||
+      (this.inputHasBeenRequested && this.isScrolledNearBottom());
+    this.followNextOutput = false;
     this.pendingLineWindow = window;
-    this.placeCommandForm(window);
+    this.placeCommandForm(window, followInput);
     this.commandInput.disabled = false;
-    this.commandInput.focus();
+    this.commandInput.focus({ preventScroll: !followInput });
     this.status.value = "Waiting for input";
+    this.inputHasBeenRequested = true;
   }
 
   setStatus(text) {
@@ -95,12 +102,15 @@ class DomRenderer {
   }
 
   apply(operations) {
+    const followOutput = this.followNextOutput ||
+      (this.outputHasRendered && this.isScrolledNearBottom());
+    this.followNextOutput = false;
     for (const operation of operations) {
-      this.applyOne(operation);
+      this.applyOne(operation, followOutput);
     }
     this.scheduleResizeReport();
     if (this.scrollTarget) {
-      this.scrollTarget.scrollIntoView({ block: "end" });
+      this.root.scrollTo({ top: this.root.scrollHeight });
       this.scrollTarget = undefined;
     }
   }
@@ -117,10 +127,11 @@ class DomRenderer {
       window: this.pendingLineWindow,
       text,
     });
+    this.followNextOutput = true;
     this.pendingLineWindow = undefined;
   }
 
-  placeCommandForm(window) {
+  placeCommandForm(window, followInput = true) {
     const record = this.windows.get(window);
     if (!record) return;
     this.commandForm.hidden = false;
@@ -134,7 +145,9 @@ class DomRenderer {
     } else {
       record.content.append(this.commandForm);
     }
-    this.scrollTarget = record.element;
+    if (followInput) {
+      this.scrollTarget = record.element;
+    }
   }
 
   updateCommandWidth() {
@@ -142,7 +155,7 @@ class DomRenderer {
     this.commandForm.style.setProperty("--command-ch", String(ch));
   }
 
-  applyOne(operation) {
+  applyOne(operation, followOutput) {
     switch (operation.type) {
       case "openWindow":
         this.openWindow(operation);
@@ -154,10 +167,10 @@ class DomRenderer {
         this.setCursor(operation);
         return;
       case "append":
-        this.appendText(operation);
+        this.appendText(operation, followOutput);
         return;
       case "setText":
-        this.setText(operation);
+        this.setText(operation, followOutput);
         return;
     }
   }
@@ -225,13 +238,13 @@ class DomRenderer {
     record.element.dataset.cursorY = String(operation.y);
   }
 
-  appendText(operation) {
+  appendText(operation, followOutput) {
     const record = this.windows.get(operation.window);
     const runs = operation.runs ?? [{ text: operation.text ?? "", style: 0 }];
     if (!record || runs.length === 0) return;
     if (record.glkType === GLK_WINDOW_TEXT_BUFFER) {
       this.appendBufferText(record, runs);
-      this.scrollTarget = record.element;
+      this.noteOutput(record, followOutput);
       return;
     }
     const fragment = document.createDocumentFragment();
@@ -239,7 +252,7 @@ class DomRenderer {
       fragment.append(renderTextRun(run));
     }
     record.content.append(fragment);
-    this.scrollTarget = record.element;
+    this.noteOutput(record, followOutput);
   }
 
   appendBufferText(record, runs) {
@@ -301,12 +314,27 @@ class DomRenderer {
     return next;
   }
 
-  setText(operation) {
+  setText(operation, followOutput) {
     const record = this.windows.get(operation.window);
     if (!record) return;
     record.content.textContent = operation.text;
     record.currentParagraph = undefined;
     record.lastParagraph = undefined;
+    this.noteOutput(record, followOutput);
+  }
+
+  noteOutput(record, followOutput) {
+    this.outputHasRendered = true;
+    if (followOutput) {
+      this.scrollTarget = record.element;
+    }
+  }
+
+  isScrolledNearBottom() {
+    const remaining = this.root.scrollHeight -
+      this.root.scrollTop -
+      this.root.clientHeight;
+    return remaining <= 48;
   }
 
   scheduleResizeReport() {
