@@ -27,7 +27,7 @@ class DomRenderer {
     if (this.pendingOperations.length === 0) return;
     const operations = this.pendingOperations;
     this.pendingOperations = [];
-    this.apply(operations);
+    this.applyWithTransition(operations);
   }
 
   requestInput(window) {
@@ -41,6 +41,22 @@ class DomRenderer {
   setStatus(text) {
     this.flush();
     this.status.value = text;
+  }
+
+  applyWithTransition(operations) {
+    if (!this.shouldTransition(operations) || !document.startViewTransition) {
+      this.apply(operations);
+      return;
+    }
+    document.startViewTransition(() => this.apply(operations));
+  }
+
+  shouldTransition(operations) {
+    return operations.some((operation) =>
+      operation.type === "openWindow" ||
+      operation.type === "clear" ||
+      operation.type === "setText"
+    );
   }
 
   apply(operations) {
