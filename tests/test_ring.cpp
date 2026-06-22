@@ -9,7 +9,8 @@ using namespace glupsk::test;
 
 namespace {
 
-std::vector<glupsk::u32> drain(glupsk::Ring<glupsk::u32>& ring) {
+template <typename Ring>
+std::vector<glupsk::u32> drain(Ring& ring) {
     auto out = std::vector<glupsk::u32>{};
     while (!ring.empty()) {
         const auto run = ring.readable();
@@ -102,5 +103,18 @@ static suite ring_tests{"Ring", [] {
         expect(ring.readable().empty());
         ring.consume(5);  // must be a safe no-op
         expect(ring.empty());
+    };
+
+    "rides on caller-owned borrowed storage"_test = [] {
+        auto backing = std::array<glupsk::u32, 4>{};
+        using Storage = glupsk::BorrowedStorage<glupsk::u32>;
+        auto ring =
+            glupsk::Ring<glupsk::u32, Storage>{Storage{backing.data(), backing.size()}};
+        expect(ring.capacity() == 4);
+        expect(ring.push(7));
+        expect(ring.push(8));
+        expect(backing[0] == 7) << "push writes into the caller's array";
+        expect(backing[1] == 8);
+        expect(drain(ring) == std::vector<glupsk::u32>{7, 8});
     };
 }};
