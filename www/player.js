@@ -7,6 +7,44 @@ const WINMETHOD_BELOW = 0x03;
 const WINMETHOD_DIRECTION_MASK = 0x0f;
 const WINMETHOD_FIXED = 0x10;
 const WINMETHOD_DIVISION_MASK = 0xf0;
+const BUFFER_FONTS = [
+  "Georgia",
+  "Sanchez",
+  "Enriqueta",
+  "Kay Pho Du",
+  "Zilla Slab",
+  "Courier Prime",
+  "IBM Plex Serif",
+  "Instrument Serif",
+  "Source Serif 4",
+  "Literata",
+  "Scheherazade New",
+  "Lisu Bosa",
+  "Gentium Book Plus",
+  "Vollkorn",
+  "Vollkorn SC",
+  "Vesper Libre",
+  "EB Garamond",
+  "Crimson Text",
+  "Fraunces",
+  "Crimson Pro",
+  "Libre Caslon Text",
+  "Buenard",
+  "Eczar",
+  "Xanh Mono",
+  "Neuton",
+  "Bona Nova",
+  "Coustard",
+  "Public Sans",
+  "Host Grotesk",
+  "Padauk",
+  "Atkinson Hyperlegible",
+  "Atkinson Hyperlegible Next",
+  "Rubik",
+  "Datatype",
+  "DM Sans",
+];
+const BUFFER_FONT_STORAGE_KEY = "glupsk.bufferFont";
 
 class DomRenderer {
   windows = new Map();
@@ -284,6 +322,34 @@ function isFixedSplit(method) {
   return (method & WINMETHOD_DIVISION_MASK) === WINMETHOD_FIXED;
 }
 
+function installFontPicker(select) {
+  for (const font of BUFFER_FONTS) {
+    const option = document.createElement("option");
+    option.value = font;
+    option.textContent = font;
+    option.style.fontFamily = fontStack(font);
+    select.append(option);
+  }
+
+  const stored = localStorage.getItem(BUFFER_FONT_STORAGE_KEY);
+  const initial = BUFFER_FONTS.includes(stored) ? stored : BUFFER_FONTS[0];
+  select.value = initial;
+  applyBufferFont(initial);
+  select.addEventListener("change", () => {
+    applyBufferFont(select.value);
+    localStorage.setItem(BUFFER_FONT_STORAGE_KEY, select.value);
+  });
+}
+
+function applyBufferFont(font) {
+  document.documentElement.style.setProperty("--buffer-font", fontStack(font));
+}
+
+function fontStack(font) {
+  if (font === "Georgia") return `Georgia, "Times New Roman", serif`;
+  return `"${font}", Georgia, "Times New Roman", serif`;
+}
+
 const worker = new Worker("./player-worker.js", { type: "module" });
 const renderer = new DomRenderer(
   document.querySelector("#windows"),
@@ -292,6 +358,7 @@ const renderer = new DomRenderer(
   document.querySelector("#status"),
   worker,
 );
+installFontPicker(document.querySelector("#buffer-font"));
 
 worker.addEventListener("message", (event) => {
   const message = event.data;
