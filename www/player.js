@@ -251,12 +251,8 @@ async function instantiate() {
   );
 
   const [wasmBytes, story] = await Promise.all([
-    fetch("../build/wasm/glupsk.wasm").then((response) =>
-      response.arrayBuffer()
-    ),
-    fetch("../refdata/tiny-i7/apple.ulx").then((response) =>
-      response.arrayBuffer()
-    ),
+    fetch("./glupsk.wasm").then((response) => response.arrayBuffer()),
+    fetch("./apple.ulx").then((response) => response.arrayBuffer()),
   ]);
 
   const instance = await WebAssembly.instantiate(

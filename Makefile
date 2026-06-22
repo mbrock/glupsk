@@ -56,7 +56,7 @@ WASM_EXPORTS := \
 	-Wl,--export=vm_snapshot_read \
 	-Wl,--export=vm_destroy
 
-.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play test tiny-i7 trace wasm web-serve
+.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play test tiny-i7 trace wasm web-assets
 
 all: meson
 
@@ -99,8 +99,10 @@ wasm: $(GLUPSK_WASM)
 deno-play: wasm
 	/home/mbrock/.deno/bin/deno run --allow-read tools/glupsk-play-deno.ts $(TINY_I7_STORY)
 
-web-serve: wasm
-	/home/mbrock/.deno/bin/deno run --allow-read --allow-net tools/glupsk-web-server.ts
+web-assets: wasm $(TINY_I7_STORY)
+	cp "$(GLUPSK_WASM)" www/glupsk.wasm
+	cp "$(TINY_I7_STORY)" www/apple.ulx
+	chmod 644 www/glupsk.wasm www/apple.ulx
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"
