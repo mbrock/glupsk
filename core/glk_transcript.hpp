@@ -75,6 +75,10 @@ struct TranscriptGlkHost {
         return GlkBlocked{};
     }
 
+    bool echo_line_input() {
+        return true;
+    }
+
   private:
     static void append(std::string& out, const GlkTextData& data) {
         std::visit([&](const auto& value) { append(out, value); }, data);

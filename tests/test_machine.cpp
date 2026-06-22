@@ -241,11 +241,10 @@ static suite machine_tests{"Machine", [] {
         const auto story =
             glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
         auto machine = glupsk::Machine::from_story(story);
-        auto input = std::istringstream{"look\n"};
         auto output = std::ostringstream{};
-        auto glk = glupsk::StdioGlk{
-            glupsk::StdioGlkHost{.input = &input, .output = &output},
-        };
+        auto host = glupsk::StdioGlkHost{};
+        host.output = &output;
+        auto glk = glupsk::StdioGlk{std::move(host)};
 
         const auto root = glk.call_returned(
             machine, 0x23, std::array<glupsk::u32, 5>{0, 0, 0, 0, 77});
@@ -272,6 +271,11 @@ static suite machine_tests{"Machine", [] {
             machine, 0xd0,
             std::array<glupsk::u32, 4>{root, line_buffer, 8, 0});
         result = glk.call(machine, 0xc0, std::array<glupsk::u32, 1>{event});
+        expect(std::holds_alternative<glupsk::GlkBlocked>(result));
+        expect(glk.wants_line_input());
+
+        glk.add_input_line("look");
+        result = glk.call(machine, 0xc0, std::array<glupsk::u32, 1>{event});
         expect(std::holds_alternative<glupsk::GlkReturned>(result));
         expect(machine.memory.read32(event) == 3);
         expect(machine.memory.read32(event + 4) == root);
@@ -280,7 +284,7 @@ static suite machine_tests{"Machine", [] {
         expect(machine.memory.read8(line_buffer + 1) == 'o');
         expect(machine.memory.read8(line_buffer + 2) == 'o');
         expect(machine.memory.read8(line_buffer + 3) == 'k');
-        expect(output.str() == "OKlook\n");
+        expect(output.str() == "OK");
     };
 
     "records transcript runtime writes as materialized text"_test = [] {

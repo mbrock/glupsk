@@ -34,6 +34,13 @@ glupsk_trace = executable(
   link_with: core_lib,
 )
 
+glupsk_play = executable(
+  'glupsk-play',
+  files('tools/glupsk-play.cpp'),
+  include_directories: root_inc,
+  link_with: core_lib,
+)
+
 test_story = executable(
   'test_story',
   files(

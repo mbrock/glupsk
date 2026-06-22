@@ -36,6 +36,7 @@ concept GlkHost =
         { host.window_move_cursor(window, value, value) } -> std::same_as<void>;
         { host.write(stream, text) } -> std::same_as<GlkCallResult>;
         { host.select(event_request) } -> std::same_as<GlkEventResult>;
+        { host.echo_line_input() } -> std::same_as<bool>;
     };
 
 template <GlkHost Host>
@@ -826,9 +827,11 @@ class GlkSession : public GlkRuntime {
         pending_line_.reset();
         event_interests_.clear();
 
-        if (auto echo = echo_line(machine, event.window, event.text);
-            !std::holds_alternative<GlkReturned>(echo)) {
-            return echo;
+        if (host_.echo_line_input()) {
+            if (auto echo = echo_line(machine, event.window, event.text);
+                !std::holds_alternative<GlkReturned>(echo)) {
+                return echo;
+            }
         }
         return glk_returned();
     }

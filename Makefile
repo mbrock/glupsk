@@ -13,9 +13,10 @@ MESON_BUILD_FILE := $(MESON_BUILD_DIR)/build.ninja
 MESON_COMPILE_COMMANDS := $(MESON_BUILD_DIR)/compile_commands.json
 
 GLUPSK_INFO := $(MESON_BUILD_DIR)/glupsk-info
+GLUPSK_PLAY := $(MESON_BUILD_DIR)/glupsk-play
 GLUPSK_TRACE := $(MESON_BUILD_DIR)/glupsk-trace
 
-.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands info meson meson-setup meson-test test tiny-i7 trace
+.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands info meson meson-setup meson-test play test tiny-i7 trace
 
 all: meson
 
@@ -53,6 +54,9 @@ trace: meson
 
 info: meson
 	$(GLUPSK_INFO) $(AA_STORY)
+
+play: meson
+	$(GLUPSK_PLAY) $(AA_STORY)
 
 clean:
 	rm -rf $(BUILD_DIR) compile_commands.json

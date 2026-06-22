@@ -218,6 +218,13 @@ struct GlkWindowSpec {
     u32 rock = 0;
 };
 
+enum class GlkWindowType : u32 {
+    blank = 2,
+    text_buffer = 3,
+    text_grid = 4,
+    graphics = 5,
+};
+
 struct GlkWindowSize {
     u32 width = 80;
     u32 height = 24;

@@ -2,29 +2,49 @@
 
 #include "core/glk_runtime.hpp"
 
+#include <deque>
 #include <iostream>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace glupsk {
 
 struct StdioGlkHost {
-    struct Window {};
-    struct Stream {};
+    struct Window {
+        u32 type = 0;
+    };
+
+    struct Stream {
+        bool visible = true;
+    };
+
     struct FileRef {};
 
-    std::istream* input = &std::cin;
     std::ostream* output = &std::cout;
+    std::deque<std::string> input_lines;
+    bool waiting_for_line_input = false;
+
+    void add_input_line(std::string line) {
+        input_lines.push_back(std::move(line));
+        waiting_for_line_input = false;
+    }
+
+    bool wants_line_input() const {
+        return waiting_for_line_input;
+    }
 
     u32 gestalt(GlkGestaltQuery query) {
         return glk_default_gestalt(query);
     }
 
-    GlkOpenedWindow<StdioGlkHost> open_window(GlkWindowSpec) {
+    GlkOpenedWindow<StdioGlkHost> open_window(GlkWindowSpec spec) {
         return {
-            .window = Window{},
-            .stream = Stream{},
+            .window = Window{.type = spec.type},
+            .stream = Stream{.visible = spec.type !=
+                                          static_cast<u32>(
+                                              GlkWindowType::text_grid)},
         };
     }
 
@@ -36,7 +56,10 @@ struct StdioGlkHost {
 
     void window_move_cursor(Window&, u32, u32) {}
 
-    GlkCallResult write(Stream&, const GlkTextData& text) {
+    GlkCallResult write(Stream& stream, const GlkTextData& text) {
+        if (!stream.visible) {
+            return glk_returned();
+        }
         std::visit([&](const auto& value) { write_text(value); }, text);
         output->flush();
         return glk_returned();
@@ -46,17 +69,25 @@ struct StdioGlkHost {
         for (const auto& interest : request.interests) {
             if (const auto* line =
                     std::get_if<GlkLineInputRequest>(&interest)) {
-                auto text = std::string{};
-                if (!std::getline(*input, text)) {
-                    return GlkFatal{.message = "stdio input stream ended"};
+                if (input_lines.empty()) {
+                    waiting_for_line_input = true;
+                    return GlkBlocked{};
                 }
+                auto text = std::move(input_lines.front());
+                input_lines.pop_front();
+                waiting_for_line_input = false;
                 return GlkHostEvent{GlkLineInputEvent{
                     .window = line->window,
                     .text = std::move(text),
                 }};
             }
         }
+        waiting_for_line_input = false;
         return GlkBlocked{};
+    }
+
+    bool echo_line_input() {
+        return false;
     }
 
   private:
@@ -82,6 +113,17 @@ struct StdioGlkHost {
 
 static_assert(GlkHost<StdioGlkHost>);
 
-using StdioGlk = GlkSession<StdioGlkHost>;
+class StdioGlk : public GlkSession<StdioGlkHost> {
+  public:
+    using GlkSession<StdioGlkHost>::GlkSession;
+
+    void add_input_line(std::string line) {
+        host().add_input_line(std::move(line));
+    }
+
+    bool wants_line_input() const {
+        return host().wants_line_input();
+    }
+};
 
 }  // namespace glupsk
