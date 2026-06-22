@@ -8,7 +8,7 @@
   --status-bg: #d8d7c8;
   --status-ink: #151414;
   --accent: #7a2e35;
-  --buffer-font: Georgia, "Times New Roman", serif;
+  --buffer-font: "Libre Caslon Text", Georgia, "Times New Roman", serif;
   font-family: ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -61,6 +61,17 @@ body {
   font: 1.18rem/1.52 var(--buffer-font);
 }
 
+.buffer-paragraph {
+  margin: 0 0 1.15em;
+  hyphens: manual;
+  text-align: justify;
+  text-align-last: start;
+}
+
+.buffer-paragraph:last-child {
+  margin-block-end: 0;
+}
+
 .window.grid .window-content {
   white-space: pre;
   overflow: hidden;
@@ -77,33 +88,6 @@ body {
   position: sticky;
   inset-block-start: 0;
   z-index: 1;
-}
-
-.font-picker {
-  position: fixed;
-  inset-block-start: 2.25rem;
-  inset-inline-end: 1rem;
-  z-index: 3;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-  padding: 0.45rem 0.55rem;
-  border: 1px solid color-mix(in srgb, var(--rule) 82%, transparent);
-  border-radius: 6px;
-  background: color-mix(in srgb, var(--paper) 88%, transparent);
-  box-shadow: 0 0.4rem 1.6rem rgba(33, 27, 23, 0.12);
-  color: var(--muted);
-  font-size: 0.78rem;
-  backdrop-filter: blur(10px);
-}
-
-.font-picker select {
-  max-inline-size: min(18rem, 56vw);
-  border: 1px solid var(--rule);
-  border-radius: 4px;
-  background: var(--paper);
-  color: var(--ink);
-  font: inherit;
 }
 
 .glk-style-1 {

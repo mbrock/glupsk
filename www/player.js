@@ -1,3 +1,5 @@
+import { refresh as refreshJustification } from "./kp.js";
+
 const GLK_WINDOW_TEXT_BUFFER = 3;
 const GLK_WINDOW_TEXT_GRID = 4;
 const WINMETHOD_LEFT = 0x00;
@@ -7,44 +9,6 @@ const WINMETHOD_BELOW = 0x03;
 const WINMETHOD_DIRECTION_MASK = 0x0f;
 const WINMETHOD_FIXED = 0x10;
 const WINMETHOD_DIVISION_MASK = 0xf0;
-const BUFFER_FONTS = [
-  "Georgia",
-  "Sanchez",
-  "Enriqueta",
-  "Kay Pho Du",
-  "Zilla Slab",
-  "Courier Prime",
-  "IBM Plex Serif",
-  "Instrument Serif",
-  "Source Serif 4",
-  "Literata",
-  "Scheherazade New",
-  "Lisu Bosa",
-  "Gentium Book Plus",
-  "Vollkorn",
-  "Vollkorn SC",
-  "Vesper Libre",
-  "EB Garamond",
-  "Crimson Text",
-  "Fraunces",
-  "Crimson Pro",
-  "Libre Caslon Text",
-  "Buenard",
-  "Eczar",
-  "Xanh Mono",
-  "Neuton",
-  "Bona Nova",
-  "Coustard",
-  "Public Sans",
-  "Host Grotesk",
-  "Padauk",
-  "Atkinson Hyperlegible",
-  "Atkinson Hyperlegible Next",
-  "Rubik",
-  "Datatype",
-  "DM Sans",
-];
-const BUFFER_FONT_STORAGE_KEY = "glupsk.bufferFont";
 
 class DomRenderer {
   windows = new Map();
@@ -136,7 +100,14 @@ class DomRenderer {
     if (!record) return;
     this.commandForm.hidden = false;
     this.updateCommandWidth();
-    record.content.append(this.commandForm);
+    if (record.glkType === GLK_WINDOW_TEXT_BUFFER) {
+      const paragraph = record.currentParagraph ?? record.lastParagraph ??
+        this.createBufferParagraph(record);
+      record.currentParagraph = paragraph;
+      paragraph.append(this.commandForm);
+    } else {
+      record.content.append(this.commandForm);
+    }
     this.scrollTarget = record.element;
   }
 
@@ -151,7 +122,7 @@ class DomRenderer {
         this.openWindow(operation);
         return;
       case "clear":
-        this.windows.get(operation.window)?.content.replaceChildren();
+        this.clearWindow(operation.window);
         return;
       case "cursor":
         this.setCursor(operation);
@@ -190,7 +161,17 @@ class DomRenderer {
       ...operation,
       element,
       content: element.querySelector(".window-content"),
+      currentParagraph: undefined,
+      lastParagraph: undefined,
     });
+  }
+
+  clearWindow(window) {
+    const record = this.windows.get(window);
+    if (!record) return;
+    record.content.replaceChildren();
+    record.currentParagraph = undefined;
+    record.lastParagraph = undefined;
   }
 
   insertWindow(element, operation) {
@@ -219,6 +200,11 @@ class DomRenderer {
     const record = this.windows.get(operation.window);
     const runs = operation.runs ?? [{ text: operation.text ?? "", style: 0 }];
     if (!record || runs.length === 0) return;
+    if (record.glkType === GLK_WINDOW_TEXT_BUFFER) {
+      this.appendBufferText(record, runs);
+      this.scrollTarget = record.element;
+      return;
+    }
     const fragment = document.createDocumentFragment();
     for (const run of runs) {
       fragment.append(renderTextRun(run));
@@ -227,10 +213,43 @@ class DomRenderer {
     this.scrollTarget = record.element;
   }
 
+  appendBufferText(record, runs) {
+    const changedParagraphs = new Set();
+    for (const run of runs) {
+      const parts = run.text.split(/(\n+)/);
+      for (const part of parts) {
+        if (part === "") continue;
+        if (part[0] === "\n") {
+          record.currentParagraph = undefined;
+          continue;
+        }
+        if (!record.currentParagraph) {
+          if (part.trim() === "") continue;
+          record.currentParagraph = this.createBufferParagraph(record);
+        }
+        record.currentParagraph.append(renderTextRun({ ...run, text: part }));
+        changedParagraphs.add(record.currentParagraph);
+      }
+    }
+    for (const paragraph of changedParagraphs) {
+      refreshJustification(paragraph);
+    }
+  }
+
+  createBufferParagraph(record) {
+    const paragraph = document.createElement("p");
+    paragraph.className = "buffer-paragraph";
+    record.content.append(paragraph);
+    record.lastParagraph = paragraph;
+    return paragraph;
+  }
+
   setText(operation) {
     const record = this.windows.get(operation.window);
     if (!record) return;
     record.content.textContent = operation.text;
+    record.currentParagraph = undefined;
+    record.lastParagraph = undefined;
   }
 
   scheduleResizeReport() {
@@ -322,34 +341,6 @@ function isFixedSplit(method) {
   return (method & WINMETHOD_DIVISION_MASK) === WINMETHOD_FIXED;
 }
 
-function installFontPicker(select) {
-  for (const font of BUFFER_FONTS) {
-    const option = document.createElement("option");
-    option.value = font;
-    option.textContent = font;
-    option.style.fontFamily = fontStack(font);
-    select.append(option);
-  }
-
-  const stored = localStorage.getItem(BUFFER_FONT_STORAGE_KEY);
-  const initial = BUFFER_FONTS.includes(stored) ? stored : BUFFER_FONTS[0];
-  select.value = initial;
-  applyBufferFont(initial);
-  select.addEventListener("change", () => {
-    applyBufferFont(select.value);
-    localStorage.setItem(BUFFER_FONT_STORAGE_KEY, select.value);
-  });
-}
-
-function applyBufferFont(font) {
-  document.documentElement.style.setProperty("--buffer-font", fontStack(font));
-}
-
-function fontStack(font) {
-  if (font === "Georgia") return `Georgia, "Times New Roman", serif`;
-  return `"${font}", Georgia, "Times New Roman", serif`;
-}
-
 const worker = new Worker("./player-worker.js", { type: "module" });
 const renderer = new DomRenderer(
   document.querySelector("#windows"),
@@ -358,7 +349,6 @@ const renderer = new DomRenderer(
   document.querySelector("#status"),
   worker,
 );
-installFontPicker(document.querySelector("#buffer-font"));
 
 worker.addEventListener("message", (event) => {
   const message = event.data;
