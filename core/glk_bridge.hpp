@@ -7,7 +7,6 @@
 #include <memory>
 #include <optional>
 #include <stdexcept>
-#include <type_traits>
 #include <utility>
 #include <vector>
 
@@ -159,10 +158,11 @@ class GlkBridge {
         if (stream.id == 0) {
             return glk_returned();
         }
-        return host_.write(machine, registry_, stream, std::move(text));
+        return host_.write(registry_, stream, materialize_text(machine, text));
     }
 
-    void request_line_event(GlkWindowHandle window,
+    void request_line_event(Machine& machine,
+                            GlkWindowHandle window,
                             u32 buffer_address,
                             u32 max_length,
                             u32 initial_length,
@@ -179,17 +179,18 @@ class GlkBridge {
             .window = window,
             .max_length = max_length,
             .encoding = encoding,
-            .initial_text = {
-                .address = buffer_address,
-                .length = initial_length,
-                .encoding = encoding,
-            },
+            .initial_text = materialize_text(
+                machine, GlkTextBuffer{
+                             .address = buffer_address,
+                             .length = initial_length,
+                             .encoding = encoding,
+                         }),
         });
     }
 
     GlkCallResult select(Machine& machine, u32 event_address) {
         const auto result = host_.select(
-            machine, registry_,
+            registry_,
             GlkEventRequest{.interests = span<const GlkEventInterest>{
                                 event_interests_.data(), event_interests_.size()}});
         if (std::holds_alternative<GlkBlocked>(result)) {
@@ -208,6 +209,66 @@ class GlkBridge {
         u32 max_length = 0;
         GlkTextEncoding encoding = GlkTextEncoding::latin1;
     };
+
+    static GlkTextData materialize_text(Machine& machine, const GlkText& text) {
+        return std::visit(
+            [&](const auto& value) -> GlkTextData {
+                return materialize_text(machine, value);
+            },
+            text);
+    }
+
+    static GlkTextData materialize_text(Machine&, const GlkTextChar& text) {
+        if (text.encoding == GlkTextEncoding::unicode) {
+            return std::vector<u32>{text.value};
+        }
+        return std::string{static_cast<char>(text.value & 0xffu)};
+    }
+
+    static GlkTextData materialize_text(Machine& machine,
+                                        const GlkTextBuffer& text) {
+        if (text.encoding == GlkTextEncoding::unicode) {
+            auto codepoints = std::vector<u32>{};
+            codepoints.reserve(text.length);
+            for (u32 index = 0; index < text.length; ++index) {
+                codepoints.push_back(machine.memory.read32(text.address + index * 4));
+            }
+            return codepoints;
+        }
+
+        auto bytes = std::string{};
+        bytes.reserve(text.length);
+        for (u32 index = 0; index < text.length; ++index) {
+            bytes.push_back(static_cast<char>(machine.memory.read8(text.address + index)));
+        }
+        return bytes;
+    }
+
+    static GlkTextData materialize_text(Machine& machine,
+                                        const GlkTextString& text) {
+        if (text.encoding == GlkTextEncoding::unicode) {
+            auto codepoints = std::vector<u32>{};
+            auto address = text.address;
+            while (true) {
+                const auto ch = machine.memory.read32(address);
+                address += 4;
+                if (ch == 0) {
+                    return codepoints;
+                }
+                codepoints.push_back(ch);
+            }
+        }
+
+        auto bytes = std::string{};
+        auto address = text.address;
+        while (true) {
+            const auto ch = machine.memory.read8(address++);
+            if (ch == 0) {
+                return bytes;
+            }
+            bytes.push_back(static_cast<char>(ch));
+        }
+    }
 
     static void write_event_field(Machine& machine,
                                   u32 address,

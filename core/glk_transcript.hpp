@@ -2,29 +2,42 @@
 
 #include "core/glk_bridge.hpp"
 
-#include <iostream>
+#include <deque>
 #include <string>
 #include <string_view>
+#include <vector>
 
 namespace glupsk {
 
-struct StdioGlkHost {
+struct TranscriptGlkHost {
     struct Window {
         u32 rock = 0;
+        u32 type = 0;
         GlkStreamHandle stream = {};
     };
 
     struct Stream {
         u32 rock = 0;
+        std::string text;
     };
 
     struct FileRef {
         u32 rock = 0;
     };
 
-    std::istream* input = &std::cin;
-    std::ostream* output = &std::cout;
+    struct Write {
+        GlkStreamHandle stream = {};
+        GlkTextData text;
+    };
+
+    std::deque<GlkInputText> input_lines;
+    std::vector<Write> writes;
+    std::string text;
     GlkWindowHandle root_window = {};
+
+    void add_input_line(std::string line) {
+        input_lines.push_back(std::move(line));
+    }
 
     u32 gestalt(u32 selector, u32) {
         switch (static_cast<GlkGestaltSelector>(selector)) {
@@ -46,11 +59,12 @@ struct StdioGlkHost {
                                 GlkWindowHandle,
                                 u32,
                                 u32,
-                                u32,
+                                u32 type,
                                 u32 rock) {
         const auto stream = registry.add_stream(Stream{});
         const auto window = registry.add_window(Window{
             .rock = rock,
+            .type = type,
             .stream = stream,
         });
         if (root_window.id == 0) {
@@ -83,24 +97,25 @@ struct StdioGlkHost {
     template <typename Registry>
     GlkCallResult write(Registry& registry,
                         GlkStreamHandle stream,
-                        const GlkTextData& text) {
-        (void) registry.require_stream(stream);
-        std::visit([&](const auto& value) { write_text(value); }, text);
-        output->flush();
+                        const GlkTextData& data) {
+        auto& native_stream = registry.require_stream(stream);
+        append(native_stream.text, data);
+        append(text, data);
+        writes.push_back(Write{.stream = stream, .text = data});
         return glk_returned();
     }
 
     template <typename Registry>
-    GlkEventResult select(Registry& registry,
-                          GlkEventRequest request) {
+    GlkEventResult select(Registry& registry, GlkEventRequest request) {
         (void) registry;
         for (const auto& interest : request.interests) {
             if (const auto* line =
                     std::get_if<GlkLineInputRequest>(&interest)) {
-                auto text = std::string{};
-                if (!std::getline(*input, text)) {
-                    return GlkFatal{.message = "stdio input stream ended"};
+                if (input_lines.empty()) {
+                    return GlkBlocked{};
                 }
+                auto text = std::move(input_lines.front());
+                input_lines.pop_front();
                 return GlkHostEvent{GlkLineInputEvent{
                     .window = line->window,
                     .text = std::move(text),
@@ -111,29 +126,34 @@ struct StdioGlkHost {
     }
 
   private:
-    void write_text(std::string_view text) {
-        for (const auto ch : text) {
-            write_codepoint(static_cast<u8>(ch));
+    static void append(std::string& out, const GlkTextData& data) {
+        std::visit([&](const auto& value) { append(out, value); }, data);
+    }
+
+    static void append(std::string& out, const std::string& text) {
+        append(out, std::string_view{text});
+    }
+
+    static void append(std::string& out, std::string_view text) {
+        for (auto ch : text) {
+            out.push_back(ch == '\r' ? '\n' : ch);
         }
     }
 
-    void write_text(const std::vector<u32>& text) {
-        for (const auto ch : text) {
-            write_codepoint(ch);
+    static void append(std::string& out, const std::vector<u32>& text) {
+        for (auto ch : text) {
+            if (ch == '\r') {
+                ch = '\n';
+            }
+            out.push_back(ch <= 0x7fu ? static_cast<char>(ch) : '?');
         }
-    }
-
-    void write_codepoint(u32 ch) {
-        if (ch == '\r') {
-            ch = '\n';
-        }
-        *output << (ch <= 0x7f ? static_cast<char>(ch) : '?');
     }
 };
 
 static_assert(SemanticGlkHost<
-              StdioGlkHost,
-              GlkObjectRegistry<StdioGlkHost::Window, StdioGlkHost::Stream,
-                                StdioGlkHost::FileRef>>);
+              TranscriptGlkHost,
+              GlkObjectRegistry<TranscriptGlkHost::Window,
+                                TranscriptGlkHost::Stream,
+                                TranscriptGlkHost::FileRef>>);
 
 }  // namespace glupsk

@@ -1,6 +1,7 @@
 #include "core/bytes.hpp"
 #include "core/glk_bridge.hpp"
 #include "core/glk_stdio.hpp"
+#include "core/glk_transcript.hpp"
 #include "core/machine.hpp"
 #include "core/story.hpp"
 
@@ -265,7 +266,7 @@ static suite machine_tests{"Machine", [] {
 
         const auto line_buffer = machine.memory.ramstart + 16;
         const auto event = machine.memory.ramstart + 32;
-        bridge.request_line_event(root, line_buffer, 8, 0,
+        bridge.request_line_event(machine, root, line_buffer, 8, 0,
                                   glupsk::GlkTextEncoding::latin1);
         result = bridge.select(machine, event);
         expect(std::holds_alternative<glupsk::GlkReturned>(result));
@@ -276,6 +277,34 @@ static suite machine_tests{"Machine", [] {
         expect(machine.memory.read8(line_buffer + 1) == 'o');
         expect(machine.memory.read8(line_buffer + 2) == 'o');
         expect(machine.memory.read8(line_buffer + 3) == 'k');
+    };
+
+    "records bridge transcript writes as materialized text"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto bridge = glupsk::GlkBridge<glupsk::TranscriptGlkHost>{};
+
+        const auto root = bridge.window_open({}, 0, 0, 0, 9);
+        const auto stream = bridge.window_get_stream(root);
+        bridge.set_current_stream(stream);
+
+        const auto text = machine.memory.ramstart;
+        machine.memory.write8(text, 'H');
+        machine.memory.write8(text + 1, 'i');
+        machine.memory.write8(text + 2, 0);
+
+        auto result = bridge.write(
+            machine, glupsk::GlkTextString{
+                         .address = text,
+                         .encoding = glupsk::GlkTextEncoding::latin1,
+                     });
+        expect(std::holds_alternative<glupsk::GlkReturned>(result));
+        expect(bridge.host().text == "Hi");
+        expect(bridge.host().writes.size() == 1);
+        expect(bridge.host().writes.front().stream.id == stream.id);
+        expect(std::get<std::string>(bridge.host().writes.front().text) == "Hi");
+        expect(bridge.registry().require_stream(stream).text == "Hi");
     };
 
     "handles Glk Unicode buffer case selectors"_test = [] {

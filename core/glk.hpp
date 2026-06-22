@@ -101,12 +101,15 @@ struct GlkTextString {
     GlkTextEncoding encoding = GlkTextEncoding::latin1;
 };
 
-// A borrowed text source in VM memory, or an immediate character.
-//
-// GlkTextBuffer uses an explicit length. GlkTextString is zero-terminated in
-// VM memory. Neither owns host pointers; the host receives Machine& plus Glulx
-// addresses so it can copy, retain, or stream from VM memory deliberately.
+// A borrowed text source in VM memory, or an immediate character. This is a
+// bridge-side representation; semantic hosts should receive GlkTextData after
+// the bridge has decoded the VM memory involved.
 using GlkText = std::variant<GlkTextChar, GlkTextBuffer, GlkTextString>;
+
+// Materialized text passed across the semantic host boundary. std::string is
+// used for Latin-1/byte-oriented Glk text; std::vector<u32> is used for Unicode
+// codepoints.
+using GlkTextData = std::variant<std::string, std::vector<u32>>;
 
 struct GlkEvent {
     u32 type = 0;
@@ -119,7 +122,7 @@ struct GlkLineInputRequest {
     GlkWindowHandle window = {};
     u32 max_length = 0;
     GlkTextEncoding encoding = GlkTextEncoding::latin1;
-    GlkTextBuffer initial_text = {};
+    GlkTextData initial_text = std::string{};
 };
 
 struct GlkCharInputRequest {
@@ -138,7 +141,7 @@ struct GlkEventRequest {
     span<const GlkEventInterest> interests;
 };
 
-using GlkInputText = std::variant<std::string, std::vector<u32>>;
+using GlkInputText = GlkTextData;
 
 struct GlkLineInputEvent {
     GlkWindowHandle window = {};
@@ -232,7 +235,7 @@ concept SemanticGlkHost =
              GlkStreamHandle stream,
              u32 rock,
              u32 value,
-             GlkText text,
+             GlkTextData text,
              GlkEventRequest event_request) {
         // The semantic boundary uses typed, serializable Glulx handles. The
         // registry resolves those handles to host/native objects when needed.
@@ -253,16 +256,14 @@ concept SemanticGlkHost =
         // backend policy decision. The semantic host writes to explicit streams.
         { host.stream_get_rock(registry, stream) } -> std::same_as<u32>;
 
-        // Write an immediate character, a fixed-length VM buffer, or a
-        // zero-terminated VM string to an explicit stream.
-        { host.write(machine, registry, stream, text) }
-            -> std::same_as<GlkCallResult>;
+        // Write already-materialized text to an explicit stream. The bridge
+        // owns decoding borrowed VM text into this representation.
+        { host.write(registry, stream, text) } -> std::same_as<GlkCallResult>;
 
         // The bridge accumulates pending Glk requests and asks the host for the
         // next matching event. The bridge owns mapping host events back into
         // Glulx event_t structs and VM input buffers.
-        { host.select(machine, registry, event_request) }
-            -> std::same_as<GlkEventResult>;
+        { host.select(registry, event_request) } -> std::same_as<GlkEventResult>;
     };
 
 struct TranscriptStream {
