@@ -14,6 +14,7 @@ core_lib = static_library(
   files(
     'core/decode.cpp',
     'core/execute.cpp',
+    'core/glk_legacy_transcript.cpp',
     'core/machine.cpp',
     'core/story.cpp',
   ),
