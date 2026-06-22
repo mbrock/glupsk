@@ -137,6 +137,17 @@ separate the common runtime concepts underneath it.
 Extract handle allocation, lookup, iteration, and record storage for windows,
 streams, and file refs.
 
+*** DONE Extract typed window and stream records
+
+Implemented in ~core/glk_registry.hpp~. The runtime still owns lookup,
+allocation, and iteration, but the host-parameterized record types are no
+longer embedded in ~GlkSession~.
+
+*** TODO Extract allocation, lookup, and iteration helpers
+
+~require_window~, ~require_stream~, handle allocation, and handle iteration
+still live in ~GlkSession~.
+
 ** TODO Separate Glk stream behavior
 :PROPERTIES:
 :Suggested_File: core/glk_streams.hpp

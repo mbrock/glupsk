@@ -2,6 +2,7 @@
 
 #include "core/glk.hpp"
 #include "core/glk_events.hpp"
+#include "core/glk_registry.hpp"
 #include "core/glk_text.hpp"
 #include "core/machine.hpp"
 
@@ -310,44 +311,9 @@ class GlkSession : public GlkRuntime {
     }
 
   private:
-    struct HostStream {
-        typename Host::Stream stream;
-    };
-
-    struct GlkMemoryStream {
-        u32 address = 0;
-        u32 len = 0;
-        u32 mode = 0;
-    };
-
-    struct GlkUnicodeMemoryStream {
-        u32 address = 0;
-        u32 len = 0;
-        u32 mode = 0;
-    };
-
-    using StreamBacking =
-        std::variant<std::monostate, HostStream, GlkMemoryStream,
-                     GlkUnicodeMemoryStream>;
-
-    struct WindowRecord {
-        typename Host::Window window;
-        u32 rock = 0;
-        u32 type = 0;
-        GlkStreamHandle stream = {};
-    };
-
-    struct StreamRecord {
-        StreamBacking backing = {};
-        u32 rock = 0;
-        u32 pos = 0;
-        u32 read_count = 0;
-        u32 write_count = 0;
-
-        bool allocated() const {
-            return !std::holds_alternative<std::monostate>(backing);
-        }
-    };
+    using WindowRecord = GlkWindowRecord<Host>;
+    using StreamRecord = GlkStreamRecord<Host>;
+    using HostStream = GlkHostStream<Host>;
 
     WindowRecord& require_window(u32 id) {
         if (id == 0 || id > windows_.size() || !windows_[id - 1]) {
