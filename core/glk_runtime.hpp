@@ -140,123 +140,123 @@ class GlkSession : public GlkRuntime {
             case GlkSelector::stylehint_set:
                 return glk_returned();
             case GlkSelector::put_char:
-                return args.empty() ? glk_returned()
-                                    : write(machine, GlkTextChar{.value = args[0]});
+                return raw.empty() ? glk_returned()
+                                    : write(machine, GlkTextChar{.value = raw.get(0)});
             case GlkSelector::put_char_uni:
-                return args.empty()
+                return raw.empty()
                            ? glk_returned()
                            : write(machine, GlkTextChar{
-                                                .value = args[0],
+                                                .value = raw.get(0),
                                                 .encoding = GlkTextEncoding::unicode,
                                             });
             case GlkSelector::put_char_stream:
-                return args.size() < 2
+                return raw.size() < 2
                            ? glk_returned()
-                           : write_to(machine, GlkStreamHandle{.id = args[0]},
-                                      GlkTextChar{.value = args[1]});
+                           : write_to(machine, raw.stream(0),
+                                      GlkTextChar{.value = raw.get(1)});
             case GlkSelector::put_char_stream_uni:
-                return args.size() < 2
+                return raw.size() < 2
                            ? glk_returned()
-                           : write_to(machine, GlkStreamHandle{.id = args[0]},
+                           : write_to(machine, raw.stream(0),
                                       GlkTextChar{
-                                          .value = args[1],
+                                          .value = raw.get(1),
                                           .encoding = GlkTextEncoding::unicode,
                                       });
             case GlkSelector::put_string:
-                return args.empty()
+                return raw.empty()
                            ? glk_returned()
-                           : write(machine, GlkTextString{.address = args[0] + 1});
+                           : write(machine, GlkTextString{.address = raw.get(0) + 1});
             case GlkSelector::put_string_stream:
-                return args.size() < 2
+                return raw.size() < 2
                            ? glk_returned()
-                           : write_to(machine, GlkStreamHandle{.id = args[0]},
-                                      GlkTextString{.address = args[1] + 1});
+                           : write_to(machine, raw.stream(0),
+                                      GlkTextString{.address = raw.get(1) + 1});
             case GlkSelector::put_string_uni:
-                return args.empty()
+                return raw.empty()
                            ? glk_returned()
                            : write(machine, GlkTextString{
-                                                .address = args[0] + 4,
+                                                .address = raw.get(0) + 4,
                                                 .encoding = GlkTextEncoding::unicode,
                                             });
             case GlkSelector::put_string_stream_uni:
-                return args.size() < 2
+                return raw.size() < 2
                            ? glk_returned()
-                           : write_to(machine, GlkStreamHandle{.id = args[0]},
+                           : write_to(machine, raw.stream(0),
                                       GlkTextString{
-                                          .address = args[1] + 4,
+                                          .address = raw.get(1) + 4,
                                           .encoding = GlkTextEncoding::unicode,
                                       });
             case GlkSelector::put_buffer:
-                return args.size() < 2
+                return raw.size() < 2
                            ? glk_returned()
-                           : write(machine, GlkTextBuffer{.address = args[0],
-                                                          .length = args[1]});
+                           : write(machine, GlkTextBuffer{.address = raw.get(0),
+                                                          .length = raw.get(1)});
             case GlkSelector::put_buffer_stream:
-                return args.size() < 3
+                return raw.size() < 3
                            ? glk_returned()
-                           : write_to(machine, GlkStreamHandle{.id = args[0]},
-                                      GlkTextBuffer{.address = args[1],
-                                                    .length = args[2]});
+                           : write_to(machine, raw.stream(0),
+                                      GlkTextBuffer{.address = raw.get(1),
+                                                    .length = raw.get(2)});
             case GlkSelector::put_buffer_uni:
-                return args.size() < 2
+                return raw.size() < 2
                            ? glk_returned()
                            : write(machine, GlkTextBuffer{
-                                                .address = args[0],
-                                                .length = args[1],
+                                                .address = raw.get(0),
+                                                .length = raw.get(1),
                                                 .encoding = GlkTextEncoding::unicode,
                                             });
             case GlkSelector::put_buffer_stream_uni:
-                return args.size() < 3
+                return raw.size() < 3
                            ? glk_returned()
-                           : write_to(machine, GlkStreamHandle{.id = args[0]},
+                           : write_to(machine, raw.stream(0),
                                       GlkTextBuffer{
-                                          .address = args[1],
-                                          .length = args[2],
+                                          .address = raw.get(1),
+                                          .length = raw.get(2),
                                           .encoding = GlkTextEncoding::unicode,
                                       });
             case GlkSelector::buffer_to_lower_case_uni:
-                return glk_returned(args.size() >= 3
+                return glk_returned(raw.size() >= 3
                                         ? glk_transform_unicode_buffer(
-                                              machine, args[0], args[1], args[2],
+                                              machine, raw.get(0), raw.get(1), raw.get(2),
                                               glk_char_to_lower)
                                         : 0);
             case GlkSelector::buffer_to_upper_case_uni:
-                return glk_returned(args.size() >= 3
+                return glk_returned(raw.size() >= 3
                                         ? glk_transform_unicode_buffer(
-                                              machine, args[0], args[1], args[2],
+                                              machine, raw.get(0), raw.get(1), raw.get(2),
                                               glk_char_to_upper)
                                         : 0);
             case GlkSelector::buffer_to_title_case_uni:
-                return glk_returned(args.size() >= 4
+                return glk_returned(raw.size() >= 4
                                         ? glk_title_case_unicode_buffer(
-                                              machine, args[0], args[1], args[2],
-                                              args[3] != 0)
+                                              machine, raw.get(0), raw.get(1), raw.get(2),
+                                              raw.get(3) != 0)
                                         : 0);
             case GlkSelector::buffer_canon_decompose_uni:
             case GlkSelector::buffer_canon_normalize_uni:
-                return glk_returned(args.size() >= 3 ? args[2] : 0);
+                return glk_returned(raw.size() >= 3 ? raw.get(2) : 0);
             case GlkSelector::request_line_event:
-                if (args.size() >= 3) {
-                    request_line_event(machine, GlkWindowHandle{.id = args[0]},
-                                       args[1], args[2],
-                                       args.size() >= 4 ? args[3] : 0,
+                if (raw.size() >= 3) {
+                    request_line_event(machine, raw.window(0),
+                                       raw.get(1), raw.get(2),
+                                       raw.get(3),
                                        GlkTextEncoding::latin1);
                 }
                 return glk_returned();
             case GlkSelector::request_line_event_uni:
-                if (args.size() >= 3) {
-                    request_line_event(machine, GlkWindowHandle{.id = args[0]},
-                                       args[1], args[2],
-                                       args.size() >= 4 ? args[3] : 0,
+                if (raw.size() >= 3) {
+                    request_line_event(machine, raw.window(0),
+                                       raw.get(1), raw.get(2),
+                                       raw.get(3),
                                        GlkTextEncoding::unicode);
                 }
                 return glk_returned();
             case GlkSelector::select:
-                return select(machine, args.empty() ? 0 : args[0]);
+                return select(machine, raw.get(0));
             case GlkSelector::char_to_lower:
-                return glk_returned(args.empty() ? 0 : glk_char_to_lower(args[0]));
+                return glk_returned(raw.empty() ? 0 : glk_char_to_lower(raw.get(0)));
             case GlkSelector::char_to_upper:
-                return glk_returned(args.empty() ? 0 : glk_char_to_upper(args[0]));
+                return glk_returned(raw.empty() ? 0 : glk_char_to_upper(raw.get(0)));
             default:
                 throw std::runtime_error(
                     std::format("unsupported Glk selector 0x{:04x}", selector));

@@ -221,8 +221,9 @@ Glk ABI and the host-facing interface.
 
 *** DONE Extract raw argument adapter
 
-Implemented ~GlkArgs~ in ~core/glk_dispatch.hpp~ and started using it for
-gestalt, window, stream, and fileref selectors.
+Implemented ~GlkArgs~ in ~core/glk_dispatch.hpp~. The selector switch now uses
+the adapter for raw argument reads instead of indexing the VM argument span
+directly.
 
 *** TODO Move remaining selector dispatch structure out of GlkSession
 
