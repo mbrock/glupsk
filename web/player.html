@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Glupsk Web Player</title>
+    <link rel="stylesheet" href="./player.css">
+  </head>
+  <body>
+    <main class="player">
+      <section id="windows" class="windows" aria-live="polite"></section>
+      <form id="command-form" class="command">
+        <input
+          id="command-input"
+          autocomplete="off"
+          spellcheck="false"
+          aria-label="Command"
+          disabled
+        >
+        <button type="submit">Send</button>
+      </form>
+      <output id="status" class="status">Loading...</output>
+    </main>
+    <script type="module" src="./player.js"></script>
+  </body>
+</html>

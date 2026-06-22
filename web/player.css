@@ -1,0 +1,87 @@
+:root {
+  color-scheme: light dark;
+  font-family: ui-sans-serif, system-ui, sans-serif;
+}
+
+body {
+  margin: 0;
+  background: Canvas;
+  color: CanvasText;
+}
+
+.player {
+  min-height: 100vh;
+  display: grid;
+  grid-template-rows: 1fr auto auto;
+}
+
+.windows {
+  display: grid;
+  grid-auto-rows: min-content;
+  align-content: start;
+  gap: 1px;
+  overflow: auto;
+  background: color-mix(in srgb, CanvasText 12%, Canvas);
+}
+
+.window {
+  min-height: 3rem;
+  background: Canvas;
+}
+
+.window-header {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  min-height: 1.75rem;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  color: color-mix(in srgb, CanvasText 62%, Canvas);
+  border-bottom: 1px solid color-mix(in srgb, CanvasText 12%, Canvas);
+}
+
+.window.root .window-header {
+  display: none;
+}
+
+.window-content {
+  padding: 0.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  font: 1rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+.window.grid .window-content {
+  white-space: pre;
+  overflow-x: auto;
+}
+
+.command {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid color-mix(in srgb, CanvasText 12%, Canvas);
+  background: Canvas;
+}
+
+.command input,
+.command button {
+  min-height: 2.5rem;
+  font: inherit;
+}
+
+.command input {
+  padding: 0 0.75rem;
+}
+
+.command button {
+  padding: 0 1rem;
+}
+
+.status {
+  min-height: 1.5rem;
+  padding: 0 0.75rem 0.5rem;
+  font-size: 0.8125rem;
+  color: color-mix(in srgb, CanvasText 62%, Canvas);
+}

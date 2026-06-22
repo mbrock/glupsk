@@ -19,9 +19,26 @@
 #include <variant>
 #include <vector>
 
-extern "C" void glupsk_host_write_latin1(const std::uint8_t* bytes,
+extern "C" void glupsk_host_window_open(std::uint32_t window,
+                                         std::uint32_t stream,
+                                         std::uint32_t split,
+                                         std::uint32_t method,
+                                         std::uint32_t size,
+                                         std::uint32_t type,
+                                         std::uint32_t rock);
+extern "C" std::uint32_t glupsk_host_window_width(std::uint32_t window);
+extern "C" std::uint32_t glupsk_host_window_height(std::uint32_t window);
+extern "C" void glupsk_host_window_clear(std::uint32_t window);
+extern "C" void glupsk_host_window_move_cursor(std::uint32_t window,
+                                                std::uint32_t x,
+                                                std::uint32_t y);
+extern "C" void glupsk_host_write_latin1(std::uint32_t window,
+                                          std::uint32_t stream,
+                                          const std::uint8_t* bytes,
                                           std::uint32_t length);
-extern "C" void glupsk_host_write_unicode(const std::uint32_t* codepoints,
+extern "C" void glupsk_host_write_unicode(std::uint32_t window,
+                                           std::uint32_t stream,
+                                           const std::uint32_t* codepoints,
                                            std::uint32_t length);
 extern "C" std::uint32_t glupsk_host_read_line_latin1(std::uint32_t window,
                                                        std::uint8_t* bytes,
@@ -42,6 +59,8 @@ enum WasmStatus : std::uint32_t {
     VM_UNSUPPORTED = 5,
 };
 
+constexpr auto HOST_INPUT_BLOCKED = std::numeric_limits<std::uint32_t>::max();
+
 struct DenoTerminalHost {
     struct Window {
         glupsk::u32 id = 0;
@@ -49,7 +68,7 @@ struct DenoTerminalHost {
     };
     struct Stream {
         glupsk::u32 id = 0;
-        bool visible = true;
+        glupsk::u32 window = 0;
     };
     struct FileRef {};
 
@@ -62,39 +81,48 @@ struct DenoTerminalHost {
 
     glupsk::GlkOpenedWindow<DenoTerminalHost> open_window(
         glupsk::GlkWindowSpec spec) {
+        const auto window = next_window++;
+        const auto stream = next_stream++;
+        glupsk_host_window_open(window, stream, spec.split.id, spec.method,
+                                spec.size, spec.type, spec.rock);
         return {
-            .window = Window{.id = next_window++, .type = spec.type},
+            .window = Window{.id = window, .type = spec.type},
             .stream = Stream{
-                .id = next_stream++,
-                .visible = spec.split.id == 0 &&
-                           spec.type != static_cast<glupsk::u32>(
-                                            glupsk::GlkWindowType::text_grid),
+                .id = stream,
+                .window = window,
             },
         };
     }
 
-    glupsk::GlkWindowSize window_size(Window&) {
-        return {.width = 80, .height = 24};
+    glupsk::GlkWindowSize window_size(Window& window) {
+        return {
+            .width = glupsk_host_window_width(window.id),
+            .height = glupsk_host_window_height(window.id),
+        };
     }
 
-    void window_clear(Window&) {}
+    void window_clear(Window& window) {
+        glupsk_host_window_clear(window.id);
+    }
 
-    void window_move_cursor(Window&, glupsk::u32, glupsk::u32) {}
+    void window_move_cursor(Window& window, glupsk::u32 x, glupsk::u32 y) {
+        glupsk_host_window_move_cursor(window.id, x, y);
+    }
 
     glupsk::GlkCallResult write(Stream& stream, glupsk::GlkTextData text) {
-        if (!stream.visible) {
-            return glupsk::glk_returned();
-        }
-
         if (const auto* bytes = std::get_if<std::string>(&text)) {
             glupsk_host_write_latin1(
+                stream.window,
+                stream.id,
                 reinterpret_cast<const std::uint8_t*>(bytes->data()),
                 static_cast<std::uint32_t>(bytes->size()));
             return glupsk::glk_returned();
         }
 
         const auto& codepoints = std::get<std::vector<glupsk::u32>>(text);
-        glupsk_host_write_unicode(codepoints.data(),
+        glupsk_host_write_unicode(stream.window,
+                                  stream.id,
+                                  codepoints.data(),
                                   static_cast<std::uint32_t>(codepoints.size()));
         return glupsk::glk_returned();
     }
@@ -107,6 +135,9 @@ struct DenoTerminalHost {
                     auto codepoints = std::vector<glupsk::u32>(line->max_length);
                     const auto count = glupsk_host_read_line_unicode(
                         line->window.id, codepoints.data(), line->max_length);
+                    if (count == HOST_INPUT_BLOCKED) {
+                        return glupsk::GlkBlocked{};
+                    }
                     codepoints.resize(count);
                     return glupsk::GlkLineInputEvent{
                         .window = line->window,
@@ -119,6 +150,9 @@ struct DenoTerminalHost {
                     line->window.id,
                     reinterpret_cast<std::uint8_t*>(bytes.data()),
                     line->max_length);
+                if (count == HOST_INPUT_BLOCKED) {
+                    return glupsk::GlkBlocked{};
+                }
                 bytes.resize(count);
                 return glupsk::GlkLineInputEvent{
                     .window = line->window,

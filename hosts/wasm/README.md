@@ -30,11 +30,36 @@ The resulting module exports:
   `vm_snapshot_read(vm, ptr, size)`, which currently return `VM_UNSUPPORTED`
   until the save layer exists.
 
-The terminal host surface is intentionally small and semantic:
+The host surface is window-aware but still semantic. C++ owns the Glk registry,
+memory streams, event structs, and text decoding; the embedding host owns window
+presentation and line input:
 
 ```c
-void glupsk_host_write_latin1(const uint8_t* bytes, uint32_t length);
-void glupsk_host_write_unicode(const uint32_t* codepoints, uint32_t length);
+void glupsk_host_window_open(
+    uint32_t window,
+    uint32_t stream,
+    uint32_t split,
+    uint32_t method,
+    uint32_t size,
+    uint32_t type,
+    uint32_t rock);
+
+uint32_t glupsk_host_window_width(uint32_t window);
+uint32_t glupsk_host_window_height(uint32_t window);
+void glupsk_host_window_clear(uint32_t window);
+void glupsk_host_window_move_cursor(uint32_t window, uint32_t x, uint32_t y);
+
+void glupsk_host_write_latin1(
+    uint32_t window,
+    uint32_t stream,
+    const uint8_t* bytes,
+    uint32_t length);
+
+void glupsk_host_write_unicode(
+    uint32_t window,
+    uint32_t stream,
+    const uint32_t* codepoints,
+    uint32_t length);
 
 uint32_t glupsk_host_read_line_latin1(
     uint32_t window,
@@ -47,10 +72,14 @@ uint32_t glupsk_host_read_line_unicode(
     uint32_t max_length);
 ```
 
-The C++ wasm wrapper owns the lightweight Glk session, window/stream registry,
-memory streams, event structs, and text decoding. The embedding host only writes
-terminal output and fills line-input buffers. See `tools/glupsk-play-deno.ts`
-for a minimal Deno runner.
+Line-input imports return the number of code units written, or `0xffffffff`
+when input is not ready yet. That lets a browser host return to the event loop
+and resume the VM after a form submit.
+
+`tools/glupsk-play-deno.ts` is a terminal simulator for the window ABI. It prints
+the root text-buffer window normally and labels split/status-window output.
+`make web-serve` starts a small Deno static server for `web/player.html`, which
+uses DOM elements for Glk windows and runs the VM in the browser.
 
 The wasm build uses `-fno-exceptions`. Core failure paths that throw in native
 builds trap in wasm instead. Tiny internal `__cxa_*` trap shims catch any

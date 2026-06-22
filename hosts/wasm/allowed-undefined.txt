@@ -1,3 +1,8 @@
+glupsk_host_window_open
+glupsk_host_window_width
+glupsk_host_window_height
+glupsk_host_window_clear
+glupsk_host_window_move_cursor
 glupsk_host_write_latin1
 glupsk_host_write_unicode
 glupsk_host_read_line_latin1
