@@ -80,7 +80,8 @@ and resume the VM after a form submit.
 the root text-buffer window normally and labels split/status-window output.
 `make web-assets` copies the built wasm module and AA story into `www/`, plus
 `.zst` and `.gz` sidecars for Caddy's precompressed file server. The static
-files use DOM elements for Glk windows and run the VM in the browser.
+files use DOM elements for Glk windows and run the VM in a Web Worker so Glulx
+execution does not block main-thread rendering or input.
 
 The wasm build uses `-fno-exceptions`. Core failure paths that throw in native
 builds trap in wasm instead. Tiny internal `__cxa_*` trap shims catch any
