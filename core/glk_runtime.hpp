@@ -11,7 +11,6 @@
 
 #include <algorithm>
 #include <concepts>
-#include <memory>
 #include <optional>
 #include <utility>
 #include <variant>
@@ -357,8 +356,13 @@ class GlkSession : public GlkRuntime {
         const auto stream = registry_.allocate_stream(StreamRecord{
             .backing = HostStream{.stream = std::move(opened.stream)},
             .rock = 0,
-            .buffer = Ring<u32>{kHostStreamBufferCapacity},
+            .buffer_storage = std::vector<u32>(kHostStreamBufferCapacity),
         });
+        // Wire the borrowing ring once the record is pinned behind its
+        // unique_ptr: buffer_storage's heap is stable and never reallocates.
+        auto& record = registry_.require_stream(stream.id);
+        record.buffer = Ring<u32>{BorrowedStorage<u32>{
+            record.buffer_storage.data(), record.buffer_storage.size()}};
         const auto window = registry_.allocate_window(WindowRecord{
             .window = std::move(opened.window),
             .rock = spec.rock,

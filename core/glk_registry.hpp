@@ -50,9 +50,12 @@ struct GlkStreamRecord {
     u32 pos = 0;
     u32 read_count = 0;
     u32 write_count = 0;
-    // Coalescing buffer for per-character output. Non-empty only on host
-    // streams; memory streams leave it at capacity 0 (drain-immediately).
-    Ring<u32> buffer = {};
+    // Coalescing buffer for per-character output: an explicitly-owned vault
+    // (buffer_storage) and a borrowing view (buffer) over it. Host streams size
+    // the vault and wire the view after allocation, once the record is pinned;
+    // memory streams leave both empty (capacity 0, drain-immediately).
+    std::vector<u32> buffer_storage{};
+    Ring<u32> buffer{};
 
     bool allocated() const {
         return !std::holds_alternative<std::monostate>(backing);

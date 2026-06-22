@@ -23,8 +23,13 @@ std::vector<glupsk::u32> drain(Ring& ring) {
 }  // namespace
 
 static suite ring_tests{"Ring", [] {
+    using glupsk::Ring;
+    using glupsk::BorrowedStorage;
+    using glupsk::u32;
+
     "starts empty"_test = [] {
-        auto ring = glupsk::Ring<glupsk::u32>{4};
+        std::array<u32, 4> rack;
+        auto ring = Ring<u32>(rack);
         expect(ring.capacity() == 4);
         expect(ring.size() == 0);
         expect(ring.empty());
@@ -34,26 +39,29 @@ static suite ring_tests{"Ring", [] {
     };
 
     "pushes single values until full"_test = [] {
-        auto ring = glupsk::Ring<glupsk::u32>{3};
+        std::array<u32, 3> rack;
+        auto ring = Ring<u32>{rack};
         expect(ring.push(10));
         expect(ring.push(20));
         expect(ring.push(30));
         expect(ring.full());
         expect(!ring.push(40)) << "push past capacity must fail";
         expect(ring.size() == 3);
-        expect(drain(ring) == std::vector<glupsk::u32>{10, 20, 30});
+        expect(drain(ring) == std::vector<u32>{10, 20, 30});
     };
 
     "pushes a span and reports the accepted count"_test = [] {
-        auto ring = glupsk::Ring<glupsk::u32>{3};
-        const auto values = std::array<glupsk::u32, 5>{1, 2, 3, 4, 5};
-        const auto accepted = ring.push(glupsk::span<const glupsk::u32>{values});
+        std::array<u32, 3> rack;
+        auto ring = Ring<u32>{rack};
+        const auto values = std::array<u32, 5>{1, 2, 3, 4, 5};
+        const auto accepted = ring.push(glupsk::span<const u32>{values});
         expect(accepted == 3) << "only three should fit";
-        expect(drain(ring) == std::vector<glupsk::u32>{1, 2, 3});
+        expect(drain(ring) == std::vector<u32>{1, 2, 3});
     };
 
     "wraps around after partial consume"_test = [] {
-        auto ring = glupsk::Ring<glupsk::u32>{4};
+        std::array<u32, 4> rack;
+        auto ring = Ring<u32>{rack};
         for (auto value : {1u, 2u, 3u, 4u}) {
             ring.push(value);
         }
@@ -69,7 +77,8 @@ static suite ring_tests{"Ring", [] {
     };
 
     "occupancy plus free equals capacity (balance sheet)"_test = [] {
-        auto ring = glupsk::Ring<glupsk::u32>{4};
+        std::array<u32, 4> rack;
+        auto ring = Ring<u32>{rack};
         const auto balanced = [&] {
             return ring.size() + ring.unused() == ring.capacity();
         };
@@ -86,7 +95,8 @@ static suite ring_tests{"Ring", [] {
     };
 
     "clear resets to empty"_test = [] {
-        auto ring = glupsk::Ring<glupsk::u32>{4};
+        std::array<u32, 4> rack;
+        auto ring = Ring<u32>{rack};
         ring.push(1);
         ring.push(2);
         ring.clear();
@@ -96,7 +106,7 @@ static suite ring_tests{"Ring", [] {
     };
 
     "zero-capacity ring accepts nothing"_test = [] {
-        auto ring = glupsk::Ring<glupsk::u32>{0};
+        auto ring = Ring<u32>{};
         expect(ring.capacity() == 0);
         expect(ring.full());
         expect(!ring.push(1));
@@ -106,16 +116,16 @@ static suite ring_tests{"Ring", [] {
     };
 
     "rides on caller-owned borrowed storage"_test = [] {
-        auto backing = std::array<glupsk::u32, 4>{};
-        using Storage = glupsk::BorrowedStorage<glupsk::u32>;
+        auto backing = std::array<u32, 4>{};
+        using Storage = glupsk::BorrowedStorage<u32>;
         auto ring =
-            glupsk::Ring<glupsk::u32, Storage>{Storage{backing.data(), backing.size()}};
+            Ring<u32, Storage>{Storage{backing.data(), backing.size()}};
         expect(ring.capacity() == 4);
         expect(ring.push(7));
         expect(ring.push(8));
         expect(backing[0] == 7) << "push writes into the caller's array";
         expect(backing[1] == 8);
-        expect(drain(ring) == std::vector<glupsk::u32>{7, 8});
+        expect(drain(ring) == std::vector<u32>{7, 8});
     };
 }};
 
@@ -123,7 +133,8 @@ static suite deck_tests{"Deck", [] {
     using Deck = glupsk::Deck<glupsk::u32>;
 
     "produces and consumes FIFO via back/front"_test = [] {
-        auto deck = Deck{4};
+        std::array<glupsk::u32, 4> rack;
+        auto deck = Deck{rack};
         deck.push_back(1);
         deck.push_back(2);
         deck.push_back(3);
@@ -135,7 +146,8 @@ static suite deck_tests{"Deck", [] {
     };
 
     "behaves as a stack via the back end"_test = [] {
-        auto deck = Deck{4};
+        std::array<glupsk::u32, 4> rack;
+        auto deck = Deck{rack};
         deck.push_back(1);
         deck.push_back(2);
         deck.push_back(3);
@@ -146,7 +158,8 @@ static suite deck_tests{"Deck", [] {
     };
 
     "prepends with push_front"_test = [] {
-        auto deck = Deck{4};
+        std::array<glupsk::u32, 4> rack;
+        auto deck = Deck{rack};
         deck.push_back(2);
         deck.push_front(1);  // 1 is now at the front
         expect(deck.pop_front() == std::optional<glupsk::u32>{1});
@@ -154,7 +167,8 @@ static suite deck_tests{"Deck", [] {
     };
 
     "flip swaps the ends (push to deck, pop from flip = stack)"_test = [] {
-        auto deck = Deck{4};
+        std::array<glupsk::u32, 4> rack;
+        auto deck = Deck{rack};
         deck.push_back(1);
         deck.push_back(2);
         // pop from the flip == pop_back == LIFO
@@ -164,7 +178,8 @@ static suite deck_tests{"Deck", [] {
     };
 
     "flip().push_back prepends like push_front"_test = [] {
-        auto deck = Deck{4};
+        std::array<glupsk::u32, 4> rack;
+        auto deck = Deck{rack};
         deck.push_back(2);
         deck.flip().push_back(1);  // == push_front(1)
         expect(deck.pop_front() == std::optional<glupsk::u32>{1});
@@ -172,7 +187,8 @@ static suite deck_tests{"Deck", [] {
     };
 
     "keeps the balance sheet across mixed ends"_test = [] {
-        auto deck = Deck{4};
+        std::array<glupsk::u32, 4> rack;
+        auto deck = Deck{rack};
         const auto balanced = [&] {
             return deck.size() + deck.unused() == deck.capacity();
         };

@@ -8,7 +8,7 @@
 #include <optional>
 #include <type_traits>
 #include <utility>
-#include <vector>
+#include <ranges>
 
 namespace glupsk {
 
@@ -35,23 +35,6 @@ concept ContiguousDeckStorage =
         { storage.data() } -> std::convertible_to<T*>;
     };
 
-// Vault that owns its values in a heap vector sized at construction.
-template <typename T>
-class OwnedStorage {
-  public:
-    OwnedStorage() = default;
-    explicit OwnedStorage(std::size_t capacity) : values_(capacity) {}
-
-    std::size_t capacity() const { return values_.size(); }
-    void store(std::size_t index, T value) { values_[index] = value; }
-    T load(std::size_t index) const { return values_[index]; }
-    const T* data() const { return values_.data(); }
-    T* data() { return values_.data(); }
-
-  private:
-    std::vector<T> values_;
-};
-
 // Vault over caller-owned contiguous storage the deck does not own.
 template <typename T>
 class BorrowedStorage {
@@ -59,6 +42,9 @@ class BorrowedStorage {
     BorrowedStorage() = default;
     BorrowedStorage(T* values, std::size_t capacity)
         : values_(values), capacity_(capacity) {}
+
+    BorrowedStorage(std::ranges::contiguous_range auto& slab)
+        : BorrowedStorage(slab.data(), slab.size()) {}
 
     std::size_t capacity() const { return capacity_; }
     void store(std::size_t index, T value) { values_[index] = value; }
@@ -89,7 +75,7 @@ class BorrowedStorage {
 // push_front(). A FIFO is push_back + pop_front; a stack is push_back +
 // pop_back (= push to the deck, pop from its flip). Frontiers mask by capacity
 // and never reset; a zero-capacity deck accepts nothing.
-template <typename T, typename Storage = OwnedStorage<T>>
+template <typename T, typename Storage = BorrowedStorage<T>>
     requires DeckStorage<Storage, T>
 class Deck {
     static_assert(std::is_trivially_copyable_v<T>,
@@ -116,9 +102,6 @@ class Deck {
 
     Deck() = default;
     explicit Deck(Storage storage) : storage_(std::move(storage)) {}
-    explicit Deck(std::size_t capacity)
-        requires std::constructible_from<Storage, std::size_t>
-        : storage_(capacity) {}
 
     std::size_t capacity() const { return storage_.capacity(); }
     std::size_t size() const { return static_cast<std::size_t>(hi_ - lo_); }
@@ -216,7 +199,7 @@ class Deck {
 // front, nothing else. Restricting the deck to a single polarity is the monoid
 // shadow of the group — see pacioli/src/Pacioli.agda. Owns its deck; used by
 // stream buffers, which genuinely are FIFOs.
-template <typename T, typename Storage = OwnedStorage<T>>
+template <typename T, typename Storage = BorrowedStorage<T>>
 class Ring : private Deck<T, Storage> {
     using Base = Deck<T, Storage>;
 
