@@ -30,6 +30,8 @@ struct TranscriptGlkHost {
         GlkTextData text;
     };
 
+    using Registry = GlkRegistry<TranscriptGlkHost>;
+
     std::deque<GlkInputText> input_lines;
     std::vector<Write> writes;
     std::string text;
@@ -54,7 +56,6 @@ struct TranscriptGlkHost {
         }
     }
 
-    template <typename Registry>
     GlkWindowHandle window_open(Registry& registry,
                                 GlkWindowHandle,
                                 u32,
@@ -73,28 +74,23 @@ struct TranscriptGlkHost {
         return window;
     }
 
-    template <typename Registry>
     GlkWindowHandle window_get_root(Registry&) {
         return root_window;
     }
 
-    template <typename Registry>
     u32 window_get_rock(Registry& registry, GlkWindowHandle window) {
         return registry.require_window(window).rock;
     }
 
-    template <typename Registry>
     GlkStreamHandle window_get_stream(Registry& registry,
                                       GlkWindowHandle window) {
         return registry.require_window(window).stream;
     }
 
-    template <typename Registry>
     u32 stream_get_rock(Registry& registry, GlkStreamHandle stream) {
         return registry.require_stream(stream).rock;
     }
 
-    template <typename Registry>
     GlkCallResult write(Registry& registry,
                         GlkStreamHandle stream,
                         const GlkTextData& data) {
@@ -105,7 +101,6 @@ struct TranscriptGlkHost {
         return glk_returned();
     }
 
-    template <typename Registry>
     GlkEventResult select(Registry& registry, GlkEventRequest request) {
         (void) registry;
         for (const auto& interest : request.interests) {
@@ -150,10 +145,6 @@ struct TranscriptGlkHost {
     }
 };
 
-static_assert(SemanticGlkHost<
-              TranscriptGlkHost,
-              GlkObjectRegistry<TranscriptGlkHost::Window,
-                                TranscriptGlkHost::Stream,
-                                TranscriptGlkHost::FileRef>>);
+static_assert(SemanticGlkHost<TranscriptGlkHost>);
 
 }  // namespace glupsk

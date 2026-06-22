@@ -22,6 +22,8 @@ struct StdioGlkHost {
         u32 rock = 0;
     };
 
+    using Registry = GlkRegistry<StdioGlkHost>;
+
     std::istream* input = &std::cin;
     std::ostream* output = &std::cout;
     GlkWindowHandle root_window = {};
@@ -41,7 +43,6 @@ struct StdioGlkHost {
         }
     }
 
-    template <typename Registry>
     GlkWindowHandle window_open(Registry& registry,
                                 GlkWindowHandle,
                                 u32,
@@ -59,28 +60,23 @@ struct StdioGlkHost {
         return window;
     }
 
-    template <typename Registry>
     GlkWindowHandle window_get_root(Registry&) {
         return root_window;
     }
 
-    template <typename Registry>
     u32 window_get_rock(Registry& registry, GlkWindowHandle window) {
         return registry.require_window(window).rock;
     }
 
-    template <typename Registry>
     GlkStreamHandle window_get_stream(Registry& registry,
                                       GlkWindowHandle window) {
         return registry.require_window(window).stream;
     }
 
-    template <typename Registry>
     u32 stream_get_rock(Registry& registry, GlkStreamHandle stream) {
         return registry.require_stream(stream).rock;
     }
 
-    template <typename Registry>
     GlkCallResult write(Registry& registry,
                         GlkStreamHandle stream,
                         const GlkTextData& text) {
@@ -90,7 +86,6 @@ struct StdioGlkHost {
         return glk_returned();
     }
 
-    template <typename Registry>
     GlkEventResult select(Registry& registry,
                           GlkEventRequest request) {
         (void) registry;
@@ -131,9 +126,6 @@ struct StdioGlkHost {
     }
 };
 
-static_assert(SemanticGlkHost<
-              StdioGlkHost,
-              GlkObjectRegistry<StdioGlkHost::Window, StdioGlkHost::Stream,
-                                StdioGlkHost::FileRef>>);
+static_assert(SemanticGlkHost<StdioGlkHost>);
 
 }  // namespace glupsk

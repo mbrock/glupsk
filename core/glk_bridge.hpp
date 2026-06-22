@@ -12,12 +12,12 @@
 
 namespace glupsk {
 
-template <typename WindowT, typename StreamT, typename FileRefT>
-class GlkObjectRegistry {
+template <typename Host>
+class GlkRegistry {
   public:
-    using Window = WindowT;
-    using Stream = StreamT;
-    using FileRef = FileRefT;
+    using Window = typename Host::Window;
+    using Stream = typename Host::Stream;
+    using FileRef = typename Host::FileRef;
 
     GlkWindowHandle add_window(Window window) {
         windows_.push_back(std::make_unique<Window>(std::move(window)));
@@ -89,9 +89,7 @@ class GlkObjectRegistry {
 template <typename Host>
 class GlkBridge {
   public:
-    using Registry =
-        GlkObjectRegistry<typename Host::Window, typename Host::Stream,
-                          typename Host::FileRef>;
+    using Registry = typename Host::Registry;
 
     explicit GlkBridge(Host host = {}) : host_(std::move(host)) {}
 

@@ -225,11 +225,12 @@ concept GlkHandleRegistry = requires(Registry registry,
     { registry.intern_fileref(native_fileref) } -> std::same_as<GlkFileRefHandle>;
 };
 
-template <typename Host, typename Registry>
+template <typename Host>
 concept SemanticGlkHost =
-    GlkHandleRegistry<Registry> &&
+    requires { typename Host::Registry; } &&
+    GlkHandleRegistry<typename Host::Registry> &&
     requires(Host host,
-             Registry& registry,
+             typename Host::Registry& registry,
              Machine& machine,
              GlkWindowHandle window,
              GlkStreamHandle stream,
