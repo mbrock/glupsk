@@ -158,7 +158,7 @@ and select-blocking state.
 The host should receive semantic wait requests; bridge bookkeeping should stay
 in common runtime code.
 
-** TODO Separate Glk text materialization
+** DONE Separate Glk text materialization
 :PROPERTIES:
 :Suggested_File: core/glk_text.hpp
 :END:
@@ -168,6 +168,9 @@ over text for host writes.
 
 Hosts should not need to understand raw VM memory encodings just to display
 text.
+
+Implemented in ~core/glk_text.hpp~ and ~core/glk_text.cpp~. This includes text
+materialization, text length, and Unicode case-buffer helpers.
 
 ** TODO Separate raw Glk selector dispatch
 :PROPERTIES:
