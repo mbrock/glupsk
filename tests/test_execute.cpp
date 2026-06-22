@@ -1,6 +1,7 @@
 #include "core/bytes.hpp"
 #include "core/decode.hpp"
 #include "core/execute.hpp"
+#include "core/glk_transcript.hpp"
 #include "core/story.hpp"
 
 #include "tests/test.hpp"

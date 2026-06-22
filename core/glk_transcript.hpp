@@ -1,108 +1,63 @@
 #pragma once
 
-#include "core/glk_bridge.hpp"
+#include "core/glk_runtime.hpp"
 
 #include <deque>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 namespace glupsk {
 
 struct TranscriptGlkHost {
-    struct Window {
-        u32 rock = 0;
-        u32 type = 0;
-        GlkStreamHandle stream = {};
-    };
+    struct Window {};
 
     struct Stream {
-        u32 rock = 0;
         std::string text;
     };
 
-    struct FileRef {
-        u32 rock = 0;
-    };
+    struct FileRef {};
 
     struct Write {
-        GlkStreamHandle stream = {};
         GlkTextData text;
     };
-
-    using Registry = GlkRegistry<TranscriptGlkHost>;
 
     std::deque<GlkInputText> input_lines;
     std::vector<Write> writes;
     std::string text;
-    GlkWindowHandle root_window = {};
 
     void add_input_line(std::string line) {
         input_lines.push_back(std::move(line));
     }
 
     u32 gestalt(GlkGestaltQuery query) {
-        switch (query.selector) {
-            case GlkGestaltSelector::version:
-                return 0x00000706;
-            case GlkGestaltSelector::char_output:
-                return 2;
-            case GlkGestaltSelector::unicode:
-                return 1;
-            case GlkGestaltSelector::unicode_norm:
-                return 0;
-            default:
-                return 0;
-        }
+        return glk_default_gestalt(query);
     }
 
-    GlkWindowHandle window_open(Registry& registry,
-                                GlkWindowHandle,
-                                u32,
-                                u32,
-                                u32 type,
-                                u32 rock) {
-        const auto stream = registry.add_stream(Stream{});
-        const auto window = registry.add_window(Window{
-            .rock = rock,
-            .type = type,
-            .stream = stream,
-        });
-        if (root_window.id == 0) {
-            root_window = window;
-        }
-        return window;
+    GlkOpenedWindow<TranscriptGlkHost> open_window(GlkWindowSpec) {
+        return {
+            .window = Window{},
+            .stream = Stream{},
+        };
     }
 
-    GlkWindowHandle window_get_root(Registry&) {
-        return root_window;
+    GlkWindowSize window_size(Window&) {
+        return {};
     }
 
-    u32 window_get_rock(Registry& registry, GlkWindowHandle window) {
-        return registry.require_window(window).rock;
-    }
+    void window_clear(Window&) {}
 
-    GlkStreamHandle window_get_stream(Registry& registry,
-                                      GlkWindowHandle window) {
-        return registry.require_window(window).stream;
-    }
+    void window_move_cursor(Window&, u32, u32) {}
 
-    u32 stream_get_rock(Registry& registry, GlkStreamHandle stream) {
-        return registry.require_stream(stream).rock;
-    }
-
-    GlkCallResult write(Registry& registry,
-                        GlkStreamHandle stream,
-                        const GlkTextData& data) {
-        auto& native_stream = registry.require_stream(stream);
-        append(native_stream.text, data);
+    GlkCallResult write(Stream& stream, const GlkTextData& data) {
+        append(stream.text, data);
         append(text, data);
-        writes.push_back(Write{.stream = stream, .text = data});
+        writes.push_back(Write{.text = data});
         return glk_returned();
     }
 
-    GlkEventResult select(Registry& registry, GlkEventRequest request) {
-        (void) registry;
+    GlkEventResult select(GlkEventRequest request) {
         for (const auto& interest : request.interests) {
             if (const auto* line =
                     std::get_if<GlkLineInputRequest>(&interest)) {
@@ -145,6 +100,17 @@ struct TranscriptGlkHost {
     }
 };
 
-static_assert(SemanticGlkHost<TranscriptGlkHost>);
+static_assert(GlkHost<TranscriptGlkHost>);
+
+class TranscriptGlk : public GlkSession<TranscriptGlkHost> {
+  public:
+    TranscriptGlk() : GlkSession<TranscriptGlkHost>{}, transcript(host().text) {}
+
+    void add_input_line(std::string line) {
+        host().add_input_line(std::move(line));
+    }
+
+    std::string& transcript;
+};
 
 }  // namespace glupsk

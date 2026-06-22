@@ -1,5 +1,4 @@
 #include "core/bytes.hpp"
-#include "core/glk_bridge.hpp"
 #include "core/glk_stdio.hpp"
 #include "core/glk_transcript.hpp"
 #include "core/machine.hpp"
@@ -238,77 +237,72 @@ static suite machine_tests{"Machine", [] {
         expect(machine.stack.pop32() == 0);
     };
 
-    "bridges typed handles for stdio Glk hosts"_test = [] {
+    "runs stdio Glk through the common runtime"_test = [] {
         const auto story =
             glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
         auto machine = glupsk::Machine::from_story(story);
         auto input = std::istringstream{"look\n"};
         auto output = std::ostringstream{};
-        auto bridge = glupsk::GlkBridge<glupsk::StdioGlkHost>{
+        auto glk = glupsk::StdioGlk{
             glupsk::StdioGlkHost{.input = &input, .output = &output},
         };
 
-        const auto root = bridge.window_open({}, 0, 0, 0, 77);
-        expect(root.id != 0);
-        expect(bridge.window_get_rock(root) == 77);
+        const auto root = glk.call_returned(
+            machine, 0x23, std::array<glupsk::u32, 5>{0, 0, 0, 0, 77});
+        expect(root != 0);
+        expect(glk.call_returned(machine, 0x21,
+                                 std::array<glupsk::u32, 1>{root}) == 77);
 
-        const auto stream = bridge.window_get_stream(root);
-        expect(stream.id != 0);
-        bridge.set_current_stream(stream);
+        const auto stream =
+            glk.call_returned(machine, 0x2c, std::array<glupsk::u32, 1>{root});
+        expect(stream != 0);
+        glk.call_returned(machine, 0x47, std::array<glupsk::u32, 1>{stream});
 
         const auto text = machine.memory.ramstart;
         machine.memory.write8(text, 'O');
         machine.memory.write8(text + 1, 'K');
-        auto result = bridge.write(
-            machine, glupsk::GlkTextBuffer{
-                         .address = text,
-                         .length = 2,
-                         .encoding = glupsk::GlkTextEncoding::latin1,
-                     });
+        auto result =
+            glk.call(machine, 0x84, std::array<glupsk::u32, 2>{text, 2});
         expect(std::holds_alternative<glupsk::GlkReturned>(result));
         expect(output.str() == "OK");
 
         const auto line_buffer = machine.memory.ramstart + 16;
         const auto event = machine.memory.ramstart + 32;
-        bridge.request_line_event(machine, root, line_buffer, 8, 0,
-                                  glupsk::GlkTextEncoding::latin1);
-        result = bridge.select(machine, event);
+        glk.call_returned(
+            machine, 0xd0,
+            std::array<glupsk::u32, 4>{root, line_buffer, 8, 0});
+        result = glk.call(machine, 0xc0, std::array<glupsk::u32, 1>{event});
         expect(std::holds_alternative<glupsk::GlkReturned>(result));
         expect(machine.memory.read32(event) == 3);
-        expect(machine.memory.read32(event + 4) == root.id);
+        expect(machine.memory.read32(event + 4) == root);
         expect(machine.memory.read32(event + 8) == 4);
         expect(machine.memory.read8(line_buffer) == 'l');
         expect(machine.memory.read8(line_buffer + 1) == 'o');
         expect(machine.memory.read8(line_buffer + 2) == 'o');
         expect(machine.memory.read8(line_buffer + 3) == 'k');
+        expect(output.str() == "OKlook\n");
     };
 
-    "records bridge transcript writes as materialized text"_test = [] {
+    "records transcript runtime writes as materialized text"_test = [] {
         const auto story =
             glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
         auto machine = glupsk::Machine::from_story(story);
-        auto bridge = glupsk::GlkBridge<glupsk::TranscriptGlkHost>{};
+        auto glk = glupsk::TranscriptGlk{};
 
-        const auto root = bridge.window_open({}, 0, 0, 0, 9);
-        const auto stream = bridge.window_get_stream(root);
-        bridge.set_current_stream(stream);
+        const auto root = glk.call_returned(
+            machine, 0x23, std::array<glupsk::u32, 5>{0, 0, 0, 0, 9});
+        glk.call_returned(machine, 0x2f, std::array<glupsk::u32, 1>{root});
 
         const auto text = machine.memory.ramstart;
         machine.memory.write8(text, 'H');
         machine.memory.write8(text + 1, 'i');
-        machine.memory.write8(text + 2, 0);
 
-        auto result = bridge.write(
-            machine, glupsk::GlkTextString{
-                         .address = text,
-                         .encoding = glupsk::GlkTextEncoding::latin1,
-                     });
+        auto result =
+            glk.call(machine, 0x84, std::array<glupsk::u32, 2>{text, 2});
         expect(std::holds_alternative<glupsk::GlkReturned>(result));
-        expect(bridge.host().text == "Hi");
-        expect(bridge.host().writes.size() == 1);
-        expect(bridge.host().writes.front().stream.id == stream.id);
-        expect(std::get<std::string>(bridge.host().writes.front().text) == "Hi");
-        expect(bridge.registry().require_stream(stream).text == "Hi");
+        expect(glk.transcript == "Hi");
+        expect(glk.host().writes.size() == 1);
+        expect(std::get<std::string>(glk.host().writes.front().text) == "Hi");
     };
 
     "handles Glk Unicode buffer case selectors"_test = [] {
@@ -331,6 +325,9 @@ static suite machine_tests{"Machine", [] {
         expect(machine.memory.read32(text + 8) == 'o');
         expect(machine.memory.read32(text + 12) == 'k');
 
+        const auto root = glk.call_returned(
+            machine, 0x23, std::array<glupsk::u32, 5>{0, 0, 0, 0, 0});
+        glk.call_returned(machine, 0x2f, std::array<glupsk::u32, 1>{root});
         glk.call_returned(machine, 0x0128, std::array<glupsk::u32, 1>{'x'});
         expect(glk.transcript == "x");
     };

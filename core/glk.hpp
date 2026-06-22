@@ -2,9 +2,6 @@
 
 #include "core/types.hpp"
 
-#include <array>
-#include <concepts>
-#include <deque>
 #include <string>
 #include <utility>
 #include <variant>
@@ -84,6 +81,21 @@ struct GlkGestaltQuery {
     GlkGestaltSelector selector = GlkGestaltSelector::version;
     u32 value = 0;
 };
+
+inline u32 glk_default_gestalt(GlkGestaltQuery query) {
+    switch (query.selector) {
+        case GlkGestaltSelector::version:
+            return 0x00000706;
+        case GlkGestaltSelector::char_output:
+            return 2;
+        case GlkGestaltSelector::unicode:
+            return 1;
+        case GlkGestaltSelector::unicode_norm:
+            return 0;
+        default:
+            return 0;
+    }
+}
 
 enum class GlkTextEncoding : u8 {
     latin1,
@@ -198,158 +210,23 @@ inline GlkCallResult glk_fatal(std::string message) {
     return GlkFatal{.message = std::move(message)};
 }
 
-struct GlkWindowStream {};
-
-struct GlkMemoryStream {
-    u32 address = 0;
-    u32 len = 0;
-    u32 mode = 0;
+struct GlkWindowSpec {
+    GlkWindowHandle split = {};
+    u32 method = 0;
+    u32 size = 0;
+    u32 type = 0;
+    u32 rock = 0;
 };
 
-struct GlkUnicodeMemoryStream {
-    u32 address = 0;
-    u32 len = 0;
-    u32 mode = 0;
-};
-
-using GlkStreamBacking =
-    std::variant<std::monostate, GlkWindowStream, GlkMemoryStream,
-                 GlkUnicodeMemoryStream>;
-
-template <typename Registry>
-concept GlkHandleRegistry = requires(Registry registry,
-                                     GlkWindowHandle window,
-                                     GlkStreamHandle stream,
-                                     GlkFileRefHandle fileref,
-                                     typename Registry::Window& native_window,
-                                     typename Registry::Stream& native_stream,
-                                     typename Registry::FileRef& native_fileref) {
-    // Native object types belong behind a registry. A bridge or host can use
-    // this to resolve stable Glulx handles into platform/native objects.
-    typename Registry::Window;
-    typename Registry::Stream;
-    typename Registry::FileRef;
-
-    { registry.require_window(window) } -> std::same_as<typename Registry::Window&>;
-    { registry.require_stream(stream) } -> std::same_as<typename Registry::Stream&>;
-    { registry.require_fileref(fileref) } -> std::same_as<typename Registry::FileRef&>;
-
-    { registry.intern_window(native_window) } -> std::same_as<GlkWindowHandle>;
-    { registry.intern_stream(native_stream) } -> std::same_as<GlkStreamHandle>;
-    { registry.intern_fileref(native_fileref) } -> std::same_as<GlkFileRefHandle>;
+struct GlkWindowSize {
+    u32 width = 80;
+    u32 height = 24;
 };
 
 template <typename Host>
-concept SemanticGlkHost =
-    requires { typename Host::Registry; } &&
-    GlkHandleRegistry<typename Host::Registry> &&
-    requires(Host host,
-             typename Host::Registry& registry,
-             Machine& machine,
-             GlkWindowHandle window,
-             GlkStreamHandle stream,
-             u32 rock,
-             u32 value,
-             GlkTextData text,
-             GlkEventRequest event_request) {
-        // The semantic boundary uses typed, serializable Glulx handles. The
-        // registry resolves those handles to host/native objects when needed.
-
-        // Unknown gestalt selectors return 0.
-        { host.gestalt(GlkGestaltQuery{.selector = GlkGestaltSelector::version,
-                                       .value = value}) } -> std::same_as<u32>;
-
-        // Create and query display surfaces. The rock is caller-owned metadata
-        // that Glk stores and returns but never interprets.
-        { host.window_open(registry, window, value, value, value, rock) }
-            -> std::same_as<GlkWindowHandle>;
-        { host.window_get_root(registry) } -> std::same_as<GlkWindowHandle>;
-        { host.window_get_rock(registry, window) } -> std::same_as<u32>;
-        { host.window_get_stream(registry, window) }
-            -> std::same_as<GlkStreamHandle>;
-
-        // Current-stream state is part of the Glk dispatch/session adapter, not a
-        // backend policy decision. The semantic host writes to explicit streams.
-        { host.stream_get_rock(registry, stream) } -> std::same_as<u32>;
-
-        // Write already-materialized text to an explicit stream. The bridge
-        // owns decoding borrowed VM text into this representation.
-        { host.write(registry, stream, text) } -> std::same_as<GlkCallResult>;
-
-        // The bridge accumulates pending Glk requests and asks the host for the
-        // next matching event. The bridge owns mapping host events back into
-        // Glulx event_t structs and VM input buffers.
-        { host.select(registry, event_request) } -> std::same_as<GlkEventResult>;
-    };
-
-struct TranscriptStream {
-    GlkStreamBacking backing = {};
-    u32 id = 0;
-    u32 pos = 0;
-    u32 read_count = 0;
-    u32 write_count = 0;
-    u32 rock = 0;
-
-    bool allocated() const {
-        return !std::holds_alternative<std::monostate>(backing);
-    }
+struct GlkOpenedWindow {
+    typename Host::Window window;
+    typename Host::Stream stream;
 };
-
-struct TranscriptWindow {
-    u32 id = 0;
-    u32 rock = 0;
-    u32 stream_id = 0;
-    u32 type = 0;
-};
-
-struct TranscriptFileRef {
-    u32 id = 0;
-    u32 rock = 0;
-};
-
-struct TranscriptGlk : GlkRuntime {
-    using Window = TranscriptWindow;
-    using Stream = TranscriptStream;
-    using FileRef = TranscriptFileRef;
-    using Rock = u32;
-
-    // Linear log of text written to window streams or to no current stream.
-    std::string transcript;
-
-    // Scripted line input consumed by glk_select after request_line_event.
-    std::deque<std::string> input_lines;
-
-    // Fixed-size object tables keep this test host pointerless and simple.
-    std::array<TranscriptWindow, 16> windows = {};
-    std::array<TranscriptStream, 64> streams = {};
-    std::array<TranscriptFileRef, 16> filerefs = {};
-    u32 root_window = 0;
-    u32 next_window_id = 1;
-    u32 next_stream_id = 1;
-
-    // Temporary dispatch/session state. A future bridge should own this and
-    // call a semantic host write(machine, stream, text) operation instead.
-    u32 current_stream = 0;
-
-    bool line_pending = false;
-    bool line_unicode = false;
-    u32 line_window = 0;
-    u32 line_buffer = 0;
-    u32 line_maxlen = 0;
-    u32 line_initial_len = 0;
-
-    void add_input_line(std::string line);
-    TranscriptWindow& require_window(GlkWindowHandle window);
-    TranscriptStream& require_stream(GlkStreamHandle stream);
-    TranscriptFileRef& require_fileref(GlkFileRefHandle fileref);
-    GlkWindowHandle intern_window(TranscriptWindow& window);
-    GlkStreamHandle intern_stream(TranscriptStream& stream);
-    GlkFileRefHandle intern_fileref(TranscriptFileRef& fileref);
-    GlkCallResult call(Machine& machine, u32 selector, span<const u32> args) override;
-    u32 call_returned(Machine& machine, u32 selector, span<const u32> args);
-    void put_char(Machine& machine, u32 ch) override;
-};
-
-static_assert(GlkHandleRegistry<TranscriptGlk>);
 
 }  // namespace glupsk
