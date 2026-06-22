@@ -177,6 +177,14 @@ struct GlkFatal {
 using GlkCallResult = std::variant<GlkReturned, GlkBlocked, GlkFatal>;
 using GlkEventResult = std::variant<GlkHostEvent, GlkBlocked, GlkFatal>;
 
+struct GlkRuntime {
+    virtual ~GlkRuntime() = default;
+
+    virtual bool select_would_block() const = 0;
+    virtual u32 call(Machine& machine, u32 selector, span<const u32> args) = 0;
+    virtual void put_char(Machine& machine, u32 ch) = 0;
+};
+
 inline GlkCallResult glk_returned(u32 value = 0) {
     return GlkReturned{.value = value};
 }
@@ -298,7 +306,7 @@ struct TranscriptFileRef {
     u32 rock = 0;
 };
 
-struct TranscriptGlk {
+struct TranscriptGlk : GlkRuntime {
     using Window = TranscriptWindow;
     using Stream = TranscriptStream;
     using FileRef = TranscriptFileRef;
@@ -336,9 +344,9 @@ struct TranscriptGlk {
     GlkWindowHandle intern_window(TranscriptWindow& window);
     GlkStreamHandle intern_stream(TranscriptStream& stream);
     GlkFileRefHandle intern_fileref(TranscriptFileRef& fileref);
-    bool select_would_block() const;
-    u32 call(Machine& machine, u32 selector, span<const u32> args);
-    void put_char(Machine& machine, u32 ch);
+    bool select_would_block() const override;
+    u32 call(Machine& machine, u32 selector, span<const u32> args) override;
+    void put_char(Machine& machine, u32 ch) override;
 };
 
 static_assert(GlkHandleRegistry<TranscriptGlk>);

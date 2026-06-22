@@ -65,7 +65,7 @@ struct Machine {
     bool running = false;
     bool blocked = false;
     bool halted = false;
-    TranscriptGlk* glk = nullptr;
+    GlkRuntime* glk = nullptr;
 
     static Machine from_story(const Story& story);
 };
