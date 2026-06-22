@@ -56,7 +56,7 @@ WASM_EXPORTS := \
 	-Wl,--export=vm_snapshot_read \
 	-Wl,--export=vm_destroy
 
-.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands info meson meson-setup meson-test play test tiny-i7 trace wasm
+.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play test tiny-i7 trace wasm
 
 all: meson
 
@@ -83,19 +83,21 @@ meson-setup: $(MESON_BUILD_FILE)
 meson: meson-setup
 	$(MESON) compile -C "$(MESON_BUILD_DIR)"
 
-$(GLUPSK_WASM): $(WASM_SOURCES) hosts/wasm/allowed-undefined.txt
+$(GLUPSK_WASM): $(WASM_SOURCES) hosts/wasm/allowed-undefined.txt Makefile
 	mkdir -p "$(WASM_BUILD_DIR)"
 	$(WASM_CXX) --target=wasm32-wasi -std=c++23 -O2 -g0 -I. \
 		-DGLUPSK_ENABLE_FILESYSTEM=0 -DGLUPSK_NO_EXCEPTIONS \
-		-fno-exceptions -nostartfiles \
+		-fno-exceptions -fno-use-cxa-atexit -mexec-model=reactor \
 		$(WASM_SOURCES) \
-		-Wl,--no-entry \
 		-Wl,--allow-undefined-file=hosts/wasm/allowed-undefined.txt \
 		$(WASM_EXPORTS) \
 		-lc++abi -lc++ -lc \
 		-o "$@"
 
 wasm: $(GLUPSK_WASM)
+
+deno-play: wasm
+	/home/mbrock/.deno/bin/deno run --allow-read tools/glupsk-play-deno.ts $(TINY_I7_STORY)
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"

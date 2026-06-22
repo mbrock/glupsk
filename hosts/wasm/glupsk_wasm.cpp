@@ -1,6 +1,7 @@
 #include "core/execute.hpp"
 #include "core/error.hpp"
 #include "core/glk.hpp"
+#include "core/glk_runtime.hpp"
 #include "core/machine.hpp"
 #include "core/story.hpp"
 #include "core/types.hpp"
@@ -15,12 +16,20 @@
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
+#include <vector>
 
-extern "C" std::uint32_t glupsk_host_glk_call(std::uint32_t selector,
-                                               std::uint32_t argc,
-                                               const std::uint32_t* args,
-                                               std::uint32_t* value);
-extern "C" std::uint32_t glupsk_host_glk_put_char(std::uint32_t value);
+extern "C" void glupsk_host_write_latin1(const std::uint8_t* bytes,
+                                          std::uint32_t length);
+extern "C" void glupsk_host_write_unicode(const std::uint32_t* codepoints,
+                                           std::uint32_t length);
+extern "C" std::uint32_t glupsk_host_read_line_latin1(std::uint32_t window,
+                                                       std::uint8_t* bytes,
+                                                       std::uint32_t max_length);
+extern "C" std::uint32_t glupsk_host_read_line_unicode(
+    std::uint32_t window,
+    std::uint32_t* codepoints,
+    std::uint32_t max_length);
 
 namespace {
 
@@ -33,50 +42,92 @@ enum WasmStatus : std::uint32_t {
     VM_UNSUPPORTED = 5,
 };
 
-enum HostResult : std::uint32_t {
-    HOST_RETURNED = 0,
-    HOST_BLOCKED = 1,
-    HOST_FATAL = 2,
-};
+struct DenoTerminalHost {
+    struct Window {
+        glupsk::u32 id = 0;
+    };
+    struct Stream {
+        glupsk::u32 id = 0;
+    };
+    struct FileRef {};
 
-class WasmGlkRuntime final : public glupsk::GlkRuntime {
-  public:
-    glupsk::GlkCallResult call(glupsk::Machine&,
-                               glupsk::u32 selector,
-                               glupsk::span<const glupsk::u32> args) override {
-        auto value = glupsk::u32{0};
-        const auto kind = glupsk_host_glk_call(selector,
-                                              static_cast<glupsk::u32>(args.size()),
-                                              args.data(),
-                                              &value);
-        switch (kind) {
-            case HOST_RETURNED:
-                return glupsk::glk_returned(value);
-            case HOST_BLOCKED:
-                return glupsk::glk_blocked();
-            case HOST_FATAL:
-                return glupsk::glk_fatal("Glk host reported a fatal call error");
-            default:
-                return glupsk::glk_fatal("Glk host returned an invalid call status");
-        }
+    glupsk::u32 next_window = 1;
+    glupsk::u32 next_stream = 1;
+
+    glupsk::u32 gestalt(glupsk::GlkGestaltQuery query) {
+        return glupsk::glk_default_gestalt(query);
     }
 
-    void put_char(glupsk::Machine&, glupsk::u32 ch) override {
-        const auto kind = glupsk_host_glk_put_char(ch);
-        if (kind == HOST_RETURNED) {
-            return;
+    glupsk::GlkOpenedWindow<DenoTerminalHost> open_window(glupsk::GlkWindowSpec) {
+        return {
+            .window = Window{.id = next_window++},
+            .stream = Stream{.id = next_stream++},
+        };
+    }
+
+    glupsk::GlkWindowSize window_size(Window&) {
+        return {.width = 80, .height = 24};
+    }
+
+    void window_clear(Window&) {}
+
+    void window_move_cursor(Window&, glupsk::u32, glupsk::u32) {}
+
+    glupsk::GlkCallResult write(Stream&, glupsk::GlkTextData text) {
+        if (const auto* bytes = std::get_if<std::string>(&text)) {
+            glupsk_host_write_latin1(
+                reinterpret_cast<const std::uint8_t*>(bytes->data()),
+                static_cast<std::uint32_t>(bytes->size()));
+            return glupsk::glk_returned();
         }
-        if (kind == HOST_BLOCKED) {
-            glupsk::fail("Glk host blocked while writing a character");
+
+        const auto& codepoints = std::get<std::vector<glupsk::u32>>(text);
+        glupsk_host_write_unicode(codepoints.data(),
+                                  static_cast<std::uint32_t>(codepoints.size()));
+        return glupsk::glk_returned();
+    }
+
+    glupsk::GlkEventResult select(glupsk::GlkEventRequest request) {
+        for (const auto& interest : request.interests) {
+            if (const auto* line =
+                    std::get_if<glupsk::GlkLineInputRequest>(&interest)) {
+                if (line->encoding == glupsk::GlkTextEncoding::unicode) {
+                    auto codepoints = std::vector<glupsk::u32>(line->max_length);
+                    const auto count = glupsk_host_read_line_unicode(
+                        line->window.id, codepoints.data(), line->max_length);
+                    codepoints.resize(count);
+                    return glupsk::GlkLineInputEvent{
+                        .window = line->window,
+                        .text = std::move(codepoints),
+                    };
+                }
+
+                auto bytes = std::string(line->max_length, '\0');
+                const auto count = glupsk_host_read_line_latin1(
+                    line->window.id,
+                    reinterpret_cast<std::uint8_t*>(bytes.data()),
+                    line->max_length);
+                bytes.resize(count);
+                return glupsk::GlkLineInputEvent{
+                    .window = line->window,
+                    .text = std::move(bytes),
+                };
+            }
         }
-        glupsk::fail("Glk host reported a fatal character output error");
+        return glupsk::GlkTimerEvent{};
+    }
+
+    bool echo_line_input() {
+        return false;
     }
 };
 
 struct WasmVm {
-    WasmGlkRuntime glk;
+    glupsk::GlkSession<DenoTerminalHost> glk;
     std::unique_ptr<glupsk::Machine> machine;
     std::string last_error;
+
+    WasmVm() : glk(DenoTerminalHost{}) {}
 
     WasmStatus status() const {
         if (!machine) {

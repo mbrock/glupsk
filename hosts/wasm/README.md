@@ -30,21 +30,27 @@ The resulting module exports:
   `vm_snapshot_read(vm, ptr, size)`, which currently return `VM_UNSUPPORTED`
   until the save layer exists.
 
-The Glk-like host surface is:
+The terminal host surface is intentionally small and semantic:
 
 ```c
-uint32_t glupsk_host_glk_call(
-    uint32_t selector,
-    uint32_t argc,
-    const uint32_t* args,
-    uint32_t* value);
+void glupsk_host_write_latin1(const uint8_t* bytes, uint32_t length);
+void glupsk_host_write_unicode(const uint32_t* codepoints, uint32_t length);
 
-uint32_t glupsk_host_glk_put_char(uint32_t value);
+uint32_t glupsk_host_read_line_latin1(
+    uint32_t window,
+    uint8_t* bytes,
+    uint32_t max_length);
+
+uint32_t glupsk_host_read_line_unicode(
+    uint32_t window,
+    uint32_t* codepoints,
+    uint32_t max_length);
 ```
 
-Both imports return `0` for returned, `1` for blocked, and `2` for fatal. For
-`glupsk_host_glk_call`, returned calls write the Glk return value through
-`value`.
+The C++ wasm wrapper owns the lightweight Glk session, window/stream registry,
+memory streams, event structs, and text decoding. The embedding host only writes
+terminal output and fills line-input buffers. See `tools/glupsk-play-deno.ts`
+for a minimal Deno runner.
 
 The wasm build uses `-fno-exceptions`. Core failure paths that throw in native
 builds trap in wasm instead. Tiny internal `__cxa_*` trap shims catch any

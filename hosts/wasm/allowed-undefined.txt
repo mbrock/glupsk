@@ -1,2 +1,4 @@
-glupsk_host_glk_call
-glupsk_host_glk_put_char
+glupsk_host_write_latin1
+glupsk_host_write_unicode
+glupsk_host_read_line_latin1
+glupsk_host_read_line_unicode
