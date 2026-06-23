@@ -4,6 +4,8 @@ WASM_CXX ?= clang++
 
 AA_SOURCE := refdata/aa/aa.ni
 AA_STORY := refdata/aa.ulx
+AA_RELEASE := 14
+AA_WEB_STORY := www/aa-$(AA_RELEASE).ulx
 TINY_I7_SOURCE := refdata/tiny-i7/apple.ni
 TINY_I7_STORY := refdata/tiny-i7/apple.ulx
 I7_FLAKE := ./tools/inform7-nix
@@ -102,13 +104,16 @@ deno-play: wasm
 
 web-assets: wasm $(AA_STORY)
 	cp "$(GLUPSK_WASM)" www/glupsk.wasm
+	cp "$(AA_STORY)" "$(AA_WEB_STORY)"
 	cp "$(AA_STORY)" www/aa.ulx
-	chmod 644 www/glupsk.wasm www/aa.ulx
+	chmod 644 www/glupsk.wasm "$(AA_WEB_STORY)" www/aa.ulx
 	zstd -q -f -19 www/glupsk.wasm -o www/glupsk.wasm.zst
+	zstd -q -f -19 "$(AA_WEB_STORY)" -o "$(AA_WEB_STORY).zst"
 	zstd -q -f -19 www/aa.ulx -o www/aa.ulx.zst
 	gzip -9 -k -f www/glupsk.wasm
+	gzip -9 -k -f "$(AA_WEB_STORY)"
 	gzip -9 -k -f www/aa.ulx
-	chmod 644 www/glupsk.wasm.zst www/aa.ulx.zst www/glupsk.wasm.gz www/aa.ulx.gz
+	chmod 644 www/glupsk.wasm.zst "$(AA_WEB_STORY).zst" www/aa.ulx.zst www/glupsk.wasm.gz "$(AA_WEB_STORY).gz" www/aa.ulx.gz
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"

@@ -3,6 +3,9 @@ compile_commands.json
 www/aa.ulx
 www/aa.ulx.gz
 www/aa.ulx.zst
+www/aa-*.ulx
+www/aa-*.ulx.gz
+www/aa-*.ulx.zst
 www/glupsk.wasm
 www/glupsk.wasm.gz
 www/glupsk.wasm.zst

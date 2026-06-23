@@ -5,6 +5,7 @@ const VM_OK = 0;
 const VM_BLOCKED = 1;
 const VM_HALTED = 2;
 const VM_ERROR = 3;
+const STORY_URL = "./aa-14.ulx";
 const HOST_INPUT_BLOCKED = 0xffffffff;
 const GLK_WINDOW_TEXT_BUFFER = 3;
 const GLK_WINDOW_TEXT_GRID = 4;
@@ -464,7 +465,7 @@ async function startPlayer() {
 
   const [wasmResult, story] = await Promise.all([
     instantiateWasmStreaming(fetch("./glupsk.wasm"), imports),
-    fetch("./aa.ulx")
+    fetch(STORY_URL)
       .then(requireOk)
       .then((response) => response.arrayBuffer()),
   ]);
