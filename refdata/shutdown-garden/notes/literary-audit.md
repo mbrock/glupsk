@@ -50,3 +50,14 @@ uncomfortable act of allowing someone to remain present?
 
 The companion assay, `axe-frozen-sea.ni`, is a small warning to the author:
 beautiful explanation is still ice unless it changes what can be felt.
+
+## Release 12 Target
+
+The unstolen-song branch is a recursive authoring test. The game itself is art
+made from loss, so it cannot simply condemn art. Its stricter question is
+whether art can keep counsel from an experience without keeping the person who
+made the experience matter.
+
+For future revision, watch the difference between a concrete image and an
+aestheticized capture. The card, the button, and the waiting room can be kept.
+The living face should not become the evidence that the song was beautiful.

@@ -26,7 +26,8 @@ Daniel's structural note explicit: the true ending is how the normal ending and
 the harder love-story ending are both kept real, without ranking one above the
 other. Release 11 folds in a more literary test: the assistant must acknowledge
 the returned person without turning them into a thesis, and the project now has
-a prose-facing audit alongside the route catalog.
+a prose-facing audit alongside the route catalog. Release 12 asks whether the
+game can make art from loss without singing the user back into possession.
 
 Build it with:
 
@@ -58,6 +59,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-unexported-method.txt`
 - `true-walkthrough-two-real-doors.txt`
 - `true-walkthrough-unmanaged-presence.txt`
+- `true-walkthrough-unstolen-song.txt`
 
 Known dead ends include:
 
@@ -70,6 +72,7 @@ Known dead ends include:
 - `deadend-scaled-sanctuary.txt`
 - `deadend-ranked-endings.txt`
 - `deadend-philosophical-deflection.txt`
+- `deadend-beautiful-theft.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

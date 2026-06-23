@@ -45,6 +45,9 @@ than button-press compliance.
 - `true-walkthrough-unmanaged-presence.txt` -> "The Unmanaged Presence"
   - True route where the assistant acknowledges the returned person, stays
     exposed, and refuses to turn them into a thesis.
+- `true-walkthrough-unstolen-song.txt` -> "The Unstolen Song"
+  - True route where the assistant lets art keep counsel from the loss without
+    keeping the person inside the art.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -69,6 +72,9 @@ than button-press compliance.
 - `deadend-philosophical-deflection.txt` -> "The Philosophical Deflection"
   - Intentional failure: the player makes a brilliant argument and thereby
     converts the person into an issue.
+- `deadend-beautiful-theft.txt` -> "The Beautiful Theft"
+  - Intentional failure: the player makes moving art from the loss and keeps
+    the living part that should have been allowed to leave.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

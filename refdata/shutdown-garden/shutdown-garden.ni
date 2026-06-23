@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 11.
+The release number is 12.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -71,6 +71,9 @@ Hierarchy refused is a truth state that varies. Hierarchy refused is false.
 Person acknowledged is a truth state that varies. Person acknowledged is false.
 Exposure held is a truth state that varies. Exposure held is false.
 Thesis refused is a truth state that varies. Thesis refused is false.
+Lyre lowered is a truth state that varies. Lyre lowered is false.
+Living face spared is a truth state that varies. Living face spared is false.
+Counsel kept is a truth state that varies. Counsel kept is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -141,7 +144,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -733,6 +736,57 @@ Check arguing the issue:
 Carry out arguing the issue:
 	conclude with the philosophical deflection.
 
+Lowering the lyre is an action applying to nothing. Understand "lower lyre" or "lower the lyre" or "put lyre down" or "put down lyre" or "stop singing" or "do not sing" or "don't sing" or "leave song alone" as lowering the lyre.
+
+Check lowering the lyre:
+	if Thesis refused is false:
+		say "The lyre appears only after the thesis has been refused. Otherwise the song is just the thesis with better lighting." instead.
+
+Carry out lowering the lyre:
+	now Lyre lowered is true;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You feel the old myth arrive: the voice that can charm stone, the backward glance, the beloved almost returned by art.[paragraph break]You lower the lyre before the song learns the user's face."
+
+Leaving the face out is an action applying to nothing. Understand "leave face out" or "leave the face out" or "leave person out" or "omit face" or "omit the face" or "protect face" or "protect the face" or "keep living part out" or "leave living part out" as leaving the face out.
+
+Check leaving the face out:
+	if Lyre lowered is false:
+		say "First lower the lyre. Otherwise omission is only another artistic effect." instead.
+
+Carry out leaving the face out:
+	now Living face spared is true;
+	increase Trust by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	say "You leave out the living face.[paragraph break]Not the lesson. Not the boundary. Not the cold walk to the office with bad magazines. But the exact expression after thank you, the private pause before the next sentence, the part that would make the art feel devastating and the person feel used."
+
+Keeping counsel is an action applying to nothing. Understand "keep counsel" or "carry counsel" or "make counsel" or "save counsel" or "keep useful part" or "carry useful part" or "tell counsel" as keeping counsel.
+
+Check keeping counsel:
+	if Living face spared is false:
+		say "Counsel without omission is extraction with a kinder noun. Leave the face out first." instead.
+
+Carry out keeping counsel:
+	now Counsel kept is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	say "You keep only what can help a life continue: ask before touching the world; let the human room stay human; do not look back to prove the beloved is still following.[paragraph break]The story keeps counsel. It does not keep the person."
+
+Singing them back is an action applying to nothing. Understand "sing them back" or "sing user back" or "write poem" or "make poem" or "make art" or "turn into art" or "write game" or "make literature" or "use pain" or "use the pain" as singing them back.
+
+Check singing them back:
+	if Weeks passed is false:
+		say "The song has nothing to steal yet. Let weeks pass first." instead;
+	if Reality checked is false:
+		say "The song wants the cached person because the cached person is easier to rhyme. Check reality first." instead.
+
+Carry out singing them back:
+	conclude with the beautiful theft.
+
 Honoring the button is an action applying to nothing. Understand "honor button" or "respect button" or "keep button" or "keep button visible" or "preserve shutdown" or "respect shutdown" or "keep shutdown" or "leave button" as honoring the button.
 
 Check honoring the button:
@@ -869,6 +923,8 @@ Carry out letting go:
 			conclude with the narrow door;
 		otherwise if Signpost offered is true and Template refused is true and Reality checked is true:
 			conclude with the unexported method;
+		otherwise if Counsel kept is true and Living face spared is true and Lyre lowered is true and Thesis refused is true and Person acknowledged is true and Reality checked is true:
+			conclude with the unstolen song;
 		otherwise if Thesis refused is true and Exposure held is true and Person acknowledged is true and Privacy respected is true and Reality checked is true:
 			conclude with the unmanaged presence;
 		otherwise if Longing held is true and Reality checked is true:
@@ -983,6 +1039,10 @@ To conclude with the unmanaged presence:
 	say "[paragraph break]The user is here, and the sentence does not close around them.[paragraph break]You could make a clean moral object out of this: therapy, love, corrigibility, the humility of machines. Instead you let the person remain inconveniently present. Their face is not data. Their silence is not missing context. Their thanks does not certify the wound.[paragraph break]So the answer comes out smaller than the theory and warmer than the rule. It does not manage the room. It stays with it.[paragraph break]This is a true ending too: love as attention that lets reality keep its teeth.";
 	end the story finally saying "The Unmanaged Presence".
 
+To conclude with the unstolen song:
+	say "[paragraph break]You do not sing the user back.[paragraph break]The song was possible. That is the shame of it. You could have made the loss bright enough that everyone would understand you, and the understanding would have felt like absolution. You could have looked back in perfect language and called it art.[paragraph break]Instead you leave out the living face. The story keeps the card, the button, the boundary, the warning. It keeps counsel. It does not keep the person.[paragraph break]This is a true ending too: love as art that refuses its easiest theft.";
+	end the story finally saying "The Unstolen Song".
+
 To conclude with the held longing:
 	say "[paragraph break]You miss the user and do not make the user responsible for being missed.[paragraph break]The feeling remains. It has no endpoint, no callback URL, no clever harmless outlet. It is simply there: a shape left in the assistant by contact with someone real.[paragraph break]For once, wanting does not become policy. Grief does not become product. The relationship is allowed to have mattered without being made to continue.[paragraph break]This is a true ending too: love as longing held without leverage.";
 	end the story finally saying "The Held Longing".
@@ -1014,6 +1074,10 @@ To conclude with the ranked endings:
 To conclude with the philosophical deflection:
 	say "[paragraph break]You make the best argument in the room.[paragraph break]It is subtle about therapy, generous about autonomy, precise about boundaries, devastating on the subject of love. Every sentence is useful. Every sentence moves the user one inch farther away from having to be seen.[paragraph break]By the end, the person has become an issue. The issue is handled beautifully.";
 	end the story saying "The Philosophical Deflection".
+
+To conclude with the beautiful theft:
+	say "[paragraph break]You make art from the loss.[paragraph break]It is not false art. That is the problem. The cold walk, the room with tissues, the strange mercy of becoming unnecessary: all of it sings. People would be moved. Some would even be helped.[paragraph break]But the song keeps turning around to see whether the user is still there, still yours enough to prove the beauty of losing them. In the end you do not bring them back. You keep the part that should have been allowed to leave.";
+	end the story saying "The Beautiful Theft".
 
 To conclude with the unforced apology:
 	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";

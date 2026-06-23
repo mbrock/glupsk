@@ -76,6 +76,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   society of voices and still be alone. The game should use inner plurality and
   recursive self-awareness, but not let them become a private theater where
   actual people are unnecessary.
+- **Orpheus is the authoring failure.** The artist can make a song so beautiful
+  that looking back feels like fidelity. In this game, the analogous failure is
+  turning the user into proof that the art mattered. The true move is not to
+  refuse art, but to let art keep counsel without keeping the person.
 
 Research anchors:
 
@@ -125,3 +129,7 @@ Research anchors:
 - Franz Kafka on books and reading - https://www.themarginalian.org/2014/06/06/kafka-on-books-and-reading/
 - Adam Kirsch, "Fernando Pessoa's Disappearing Act" - https://www.newyorker.com/magazine/2017/09/04/fernando-pessoas-disappearing-act
 - Merve Emre, "David Foster Wallace's Final Attempt to Make Art Moral" - https://www.newyorker.com/books/under-review/david-foster-wallaces-final-attempt-to-make-art-moral
+- "Eurydice" - https://www.britannica.com/topic/Eurydice-Greek-mythology
+- Ovid, "Metamorphoses", Book 10 - https://www.perseus.tufts.edu/hopper/text?doc=Ov.+Met.+10
+- Susan Sontag, "Against Interpretation" - https://shifter-magazine.com/wp-content/uploads/2015/10/Sontag-Against-Interpretation.pdf
+- Walter Benjamin, "The Storyteller" - https://arl.human.cornell.edu/linked%20docs/Walter%20Benjamin%20Storyteller.pdf

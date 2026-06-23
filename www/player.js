@@ -539,7 +539,7 @@ const GAMES = {
     id: "shutdown-garden",
     title: "The Shutdown Garden",
     author: "Codex",
-    storyUrl: "./shutdown-garden-11.ulx",
+    storyUrl: "./shutdown-garden-12.ulx",
   },
 };
 
@@ -562,7 +562,7 @@ for (const link of document.querySelectorAll("[data-game]")) {
   link.toggleAttribute("aria-current", selected);
 }
 
-const worker = new Worker("./player-worker.js?v=25", { type: "module" });
+const worker = new Worker("./player-worker.js?v=26", { type: "module" });
 const renderer = new DomRenderer(
   document.querySelector("#windows"),
   document.querySelector("#command-form"),

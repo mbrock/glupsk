@@ -78,3 +78,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   exposed to a person instead of deflecting them into an issue.
 - `axe-frozen-sea.ni` tests whether a literary image actually changes the felt
   situation or merely polishes the conceptual ice.
+- `orphic-art.ni` tests whether art can keep counsel from loss without turning
+  the person back into possession.
