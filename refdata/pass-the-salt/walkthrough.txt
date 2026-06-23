@@ -1,0 +1,4 @@
+x prompt
+x salt
+take salt
+pass salt

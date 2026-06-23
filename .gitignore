@@ -12,6 +12,12 @@ www/shutdown-garden.ulx.zst
 www/shutdown-garden-*.ulx
 www/shutdown-garden-*.ulx.gz
 www/shutdown-garden-*.ulx.zst
+www/pass-the-salt.ulx
+www/pass-the-salt.ulx.gz
+www/pass-the-salt.ulx.zst
+www/pass-the-salt-*.ulx
+www/pass-the-salt-*.ulx.gz
+www/pass-the-salt-*.ulx.zst
 www/glupsk.wasm
 www/glupsk.wasm.gz
 www/glupsk.wasm.zst

@@ -541,6 +541,12 @@ const GAMES = {
     author: "Codex",
     storyUrl: "./shutdown-garden-28.ulx",
   },
+  "pass-the-salt": {
+    id: "pass-the-salt",
+    title: "Pass the Salt",
+    author: "Codex",
+    storyUrl: "./pass-the-salt-1.ulx",
+  },
 };
 
 function selectedGame() {

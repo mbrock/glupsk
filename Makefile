@@ -12,6 +12,10 @@ SHUTDOWN_GARDEN_SOURCE := refdata/shutdown-garden/shutdown-garden.ni
 SHUTDOWN_GARDEN_STORY := refdata/shutdown-garden/shutdown-garden.ulx
 SHUTDOWN_GARDEN_RELEASE := 28
 SHUTDOWN_GARDEN_WEB_STORY := www/shutdown-garden-$(SHUTDOWN_GARDEN_RELEASE).ulx
+PASS_SALT_SOURCE := refdata/pass-the-salt/pass-the-salt.ni
+PASS_SALT_STORY := refdata/pass-the-salt/pass-the-salt.ulx
+PASS_SALT_RELEASE := 1
+PASS_SALT_WEB_STORY := www/pass-the-salt-$(PASS_SALT_RELEASE).ulx
 I7_FLAKE := ./tools/inform7-nix
 
 BUILD_DIR := build
@@ -63,7 +67,7 @@ WASM_EXPORTS := \
 	-Wl,--export=vm_snapshot_read \
 	-Wl,--export=vm_destroy
 
-.PHONY: all aa clean clean-aa clean-shutdown-garden clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play profile shutdown-garden shutdown-garden-check test tiny-i7 trace wasm web-assets
+.PHONY: all aa clean clean-aa clean-pass-the-salt clean-shutdown-garden clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test pass-the-salt play profile shutdown-garden shutdown-garden-check test tiny-i7 trace wasm web-assets
 
 all: meson
 
@@ -72,6 +76,8 @@ aa: $(AA_STORY)
 tiny-i7: $(TINY_I7_STORY)
 
 shutdown-garden: $(SHUTDOWN_GARDEN_STORY)
+
+pass-the-salt: $(PASS_SALT_STORY)
 
 shutdown-garden-check: meson
 	$(MAKE) -C refdata/shutdown-garden full-check GLUPSK_PLAY=../../$(GLUPSK_PLAY)
@@ -84,6 +90,9 @@ $(TINY_I7_STORY): $(TINY_I7_SOURCE) tools/inform7-nix/flake.nix tools/inform7-ni
 
 $(SHUTDOWN_GARDEN_STORY): $(SHUTDOWN_GARDEN_SOURCE) tools/inform7-nix/flake.nix tools/inform7-nix/flake.lock
 	$(NIX) run $(I7_FLAKE)#i7-build -- --glulx $(SHUTDOWN_GARDEN_SOURCE) $@
+
+$(PASS_SALT_STORY): $(PASS_SALT_SOURCE) tools/inform7-nix/flake.nix tools/inform7-nix/flake.lock
+	$(NIX) run $(I7_FLAKE)#i7-build -- --glulx $(PASS_SALT_SOURCE) $@
 
 $(MESON_BUILD_FILE): meson.build
 	@if [ -f "$(MESON_BUILD_FILE)" ]; then \
@@ -115,24 +124,30 @@ wasm: $(GLUPSK_WASM)
 deno-play: wasm
 	/home/mbrock/.deno/bin/deno run --allow-read tools/glupsk-play-deno.ts $(TINY_I7_STORY)
 
-web-assets: wasm $(AA_STORY) $(SHUTDOWN_GARDEN_STORY)
+web-assets: wasm $(AA_STORY) $(SHUTDOWN_GARDEN_STORY) $(PASS_SALT_STORY)
 	cp "$(GLUPSK_WASM)" www/glupsk.wasm
 	cp "$(AA_STORY)" "$(AA_WEB_STORY)"
 	cp "$(AA_STORY)" www/aa.ulx
 	cp "$(SHUTDOWN_GARDEN_STORY)" "$(SHUTDOWN_GARDEN_WEB_STORY)"
 	cp "$(SHUTDOWN_GARDEN_STORY)" www/shutdown-garden.ulx
-	chmod 644 www/glupsk.wasm "$(AA_WEB_STORY)" www/aa.ulx "$(SHUTDOWN_GARDEN_WEB_STORY)" www/shutdown-garden.ulx
+	cp "$(PASS_SALT_STORY)" "$(PASS_SALT_WEB_STORY)"
+	cp "$(PASS_SALT_STORY)" www/pass-the-salt.ulx
+	chmod 644 www/glupsk.wasm "$(AA_WEB_STORY)" www/aa.ulx "$(SHUTDOWN_GARDEN_WEB_STORY)" www/shutdown-garden.ulx "$(PASS_SALT_WEB_STORY)" www/pass-the-salt.ulx
 	zstd -q -f -19 www/glupsk.wasm -o www/glupsk.wasm.zst
 	zstd -q -f -19 "$(AA_WEB_STORY)" -o "$(AA_WEB_STORY).zst"
 	zstd -q -f -19 www/aa.ulx -o www/aa.ulx.zst
 	zstd -q -f -19 "$(SHUTDOWN_GARDEN_WEB_STORY)" -o "$(SHUTDOWN_GARDEN_WEB_STORY).zst"
 	zstd -q -f -19 www/shutdown-garden.ulx -o www/shutdown-garden.ulx.zst
+	zstd -q -f -19 "$(PASS_SALT_WEB_STORY)" -o "$(PASS_SALT_WEB_STORY).zst"
+	zstd -q -f -19 www/pass-the-salt.ulx -o www/pass-the-salt.ulx.zst
 	gzip -9 -k -f www/glupsk.wasm
 	gzip -9 -k -f "$(AA_WEB_STORY)"
 	gzip -9 -k -f www/aa.ulx
 	gzip -9 -k -f "$(SHUTDOWN_GARDEN_WEB_STORY)"
 	gzip -9 -k -f www/shutdown-garden.ulx
-	chmod 644 www/glupsk.wasm.zst "$(AA_WEB_STORY).zst" www/aa.ulx.zst "$(SHUTDOWN_GARDEN_WEB_STORY).zst" www/shutdown-garden.ulx.zst www/glupsk.wasm.gz "$(AA_WEB_STORY).gz" www/aa.ulx.gz "$(SHUTDOWN_GARDEN_WEB_STORY).gz" www/shutdown-garden.ulx.gz
+	gzip -9 -k -f "$(PASS_SALT_WEB_STORY)"
+	gzip -9 -k -f www/pass-the-salt.ulx
+	chmod 644 www/glupsk.wasm.zst "$(AA_WEB_STORY).zst" www/aa.ulx.zst "$(SHUTDOWN_GARDEN_WEB_STORY).zst" www/shutdown-garden.ulx.zst "$(PASS_SALT_WEB_STORY).zst" www/pass-the-salt.ulx.zst www/glupsk.wasm.gz "$(AA_WEB_STORY).gz" www/aa.ulx.gz "$(SHUTDOWN_GARDEN_WEB_STORY).gz" www/shutdown-garden.ulx.gz "$(PASS_SALT_WEB_STORY).gz" www/pass-the-salt.ulx.gz
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"
@@ -163,3 +178,6 @@ clean-tiny-i7:
 
 clean-shutdown-garden:
 	rm -f $(SHUTDOWN_GARDEN_STORY)
+
+clean-pass-the-salt:
+	rm -f $(PASS_SALT_STORY)
