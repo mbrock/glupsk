@@ -18,6 +18,7 @@ MESON_COMPILE_COMMANDS := $(MESON_BUILD_DIR)/compile_commands.json
 
 GLUPSK_INFO := $(MESON_BUILD_DIR)/glupsk-info
 GLUPSK_PLAY := $(MESON_BUILD_DIR)/glupsk-play
+GLUPSK_PROFILE := $(MESON_BUILD_DIR)/glupsk-profile
 GLUPSK_TRACE := $(MESON_BUILD_DIR)/glupsk-trace
 GLUPSK_WASM := $(WASM_BUILD_DIR)/glupsk.wasm
 
@@ -58,7 +59,7 @@ WASM_EXPORTS := \
 	-Wl,--export=vm_snapshot_read \
 	-Wl,--export=vm_destroy
 
-.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play test tiny-i7 trace wasm web-assets
+.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play profile test tiny-i7 trace wasm web-assets
 
 all: meson
 
@@ -129,6 +130,9 @@ info: meson
 
 play: meson
 	$(GLUPSK_PLAY) $(AA_STORY)
+
+profile: meson
+	$(GLUPSK_PROFILE) $(AA_STORY)
 
 clean:
 	rm -rf $(BUILD_DIR) compile_commands.json

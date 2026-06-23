@@ -52,6 +52,13 @@ glupsk_play = executable(
   link_with: core_lib,
 )
 
+glupsk_profile = executable(
+  'glupsk-profile',
+  files('tools/glupsk-profile.cpp'),
+  include_directories: root_inc,
+  link_with: core_lib,
+)
+
 test_story = executable(
   'test_story',
   files(
