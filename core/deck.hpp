@@ -2,8 +2,8 @@
 
 #include "core/types.hpp"
 
-#include <cassert>
 #include <algorithm>
+#include <cassert>
 #include <cstddef>
 #include <iterator>
 #include <optional>
@@ -12,26 +12,33 @@
 
 namespace glupsk {
 
-template <typename R, typename T>
+template <class Z>
+constexpr auto remainder(Z a, Z b) {
+    auto r = a % b;
+    if (r < 0) r += b;
+    return r;
+}
+
+namespace range {
+template <class T>
+concept random_access = std::ranges::random_access_range<T>;
+
+template <class T> using Value = std::ranges::range_value_t<T>;
+template <class T> using Reference = std::ranges::range_reference_t<T>;
+template <class T> using Size = std::ranges::range_size_t<T>;
+template <class T> using Diff = std::ranges::range_difference_t<T>;
+
+using std::ranges::size;
+using std::ranges::distance;
+
+template <class R, class T>
 concept mutable_slice_of =
-    std::ranges::random_access_range<R> &&
-    std::same_as<std::ranges::range_value_t<R>, std::remove_cvref_t<T>> &&
-    std::same_as<std::ranges::range_reference_t<R>, T &>;
+    random_access<R> && std::same_as<Value<R>, std::remove_cvref_t<T>> &&
+    std::same_as<Reference<R>, T &>;
+} // namespace range
 
-template <typename R, typename T>
-concept deck_storage = mutable_slice_of<R, T>;
-
-template <typename R>
-auto roll(std::ranges::range_difference_t<R> i, R& r) {
-    using D = std::ranges::range_difference_t<R>;
-    const auto m = static_cast<D>(std::ranges::size(r));
-    assert(m > 0);
-
-    auto ix = i % m;
-    if (ix < 0)
-        ix += m;
-
-    return ix;
+template <typename R> auto roll(range::Diff<R> i, R &r) {
+    return remainder(i, range::distance(r));
 }
 
 template <std::ranges::random_access_range R> class Mark {
@@ -39,7 +46,7 @@ public:
   using iterator_concept = std::random_access_iterator_tag;
   using iterator_category = std::random_access_iterator_tag;
 
-  using difference_type = std::ranges::range_difference_t<R>;
+  using difference_type = range::Diff<R>;
   using value_type = std::ranges::range_value_t<R>;
   using reference = std::ranges::range_reference_t<R>;
 
@@ -119,18 +126,42 @@ private:
 static_assert(std::random_access_iterator<Mark<std::vector<int>>>);
 
 template <std::ranges::random_access_range R>
-auto indexing_subrange(R &range, std::ranges::range_difference_t<R> base,
+auto indexing_subrange(R &range, range::Diff<R> base,
                        std::ranges::range_size_t<R> size) {
-  using D = std::ranges::range_difference_t<R>;
+  using D = range::Diff<R>;
 
   return std::ranges::subrange(Mark<R>{range, base},
                                Mark<R>{range, base + static_cast<D>(size)});
 }
 
+/// this is a non-owning kind of deque adapter that works with
+/// any random access range, i guess
+///
+/// it can be used as a ring buffer, see Ring below,
+/// but also as a stack, for example
+///
+/// it is related to double entry bookkeeping (see ~/pacioli
+/// for more details)
+///
+/// it's also inspired by zig post-writergate
+///
+/// i kind of want it to be the base layer for all kinds of
+/// memory frobbling and swizzling and slicing and so on
+/// in the system
+///
+/// in particular i am thinking about some way to use
+/// a Deck<u8, R> as a Deck<u32> or something like that
+/// because in other parts of the program ("Memory", "Stack", etc)
+/// we do that (big endian) all over the place
+///
+/// we made an attempt earlier to make a `MemorySlab` but
+/// it's commented out and should now be psosible to write
+/// in a much nicer way, with the stuff we've laid the groundwork
+/// for
 template <typename T, typename R = std::span<T>>
-  requires deck_storage<R, T> && std::is_trivially_copyable_v<T>
+  requires range::mutable_slice_of<R, T> && std::is_trivially_copyable_v<T>
 class Deck {
-  using diff_t = std::ranges::range_difference_t<R>;
+  using diff_t = range::Diff<R>;
 
 public:
   class Flip {
@@ -152,15 +183,15 @@ public:
   explicit Deck(R storage) : storage_(storage) {}
 
   T &at_logical(diff_t p) {
-      assert(sane());
+    assert(sane());
     return std::ranges::begin(storage_)[roll(p, storage_)];
   }
 
   std::size_t capacity() const { return std::size(storage_); }
 
   std::size_t size() const {
-      assert(hi_ >= lo_);
-      return static_cast<std::size_t>(hi_ - lo_);
+    assert(hi_ >= lo_);
+    return static_cast<std::size_t>(hi_ - lo_);
   }
 
   std::size_t unused() const { return capacity() - size(); }
@@ -213,27 +244,24 @@ public:
   auto view() { return indexing_subrange(storage_, lo_, size()); }
 
   std::pair<std::span<T>, std::span<T>> contiguous_parts() const
-      requires std::ranges::contiguous_range<R>
+    requires std::ranges::contiguous_range<R>
   {
-      auto s = std::span<T>(storage_);
+    auto s = std::span<T>(storage_);
 
-      if (empty()) {
-          return {};
-      }
+    if (empty()) {
+      return {};
+    }
 
-      assert(hi_ >= lo_);
-      assert(size() <= capacity());
+    assert(hi_ >= lo_);
+    assert(size() <= capacity());
 
-      const auto cap = capacity();
-      const auto begin = static_cast<std::size_t>(roll(lo_, storage_));
-      const auto n = size();
+    const auto cap = capacity();
+    const auto begin = static_cast<std::size_t>(roll(lo_, storage_));
+    const auto n = size();
 
-      const auto first_n = std::min(n, cap - begin);
+    const auto first_n = std::min(n, cap - begin);
 
-      return {
-          s.subspan(begin, first_n),
-          s.subspan(0, n - first_n)
-      };
+    return {s.subspan(begin, first_n), s.subspan(0, n - first_n)};
   }
 
   std::span<T> contiguous_prefix() const
@@ -243,16 +271,17 @@ public:
   }
 
   void consume(std::size_t count) {
-      lo_ += static_cast<diff_t>(std::min(count, size()));
+    lo_ += static_cast<diff_t>(std::min(count, size()));
   }
 
-  void clear() { lo_ = 0; hi_ = 0; }
+  void clear() {
+    lo_ = 0;
+    hi_ = 0;
+  }
 
   Flip flip() { return Flip{*this}; }
 
-  bool sane() const {
-      return lo_ <= hi_ && size() <= capacity();
-  }
+  bool sane() const { return lo_ <= hi_ && size() <= capacity(); }
 
 private:
   R storage_;
