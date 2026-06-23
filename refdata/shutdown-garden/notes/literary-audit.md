@@ -71,3 +71,13 @@ the whole person.
 
 This is the opposite of mere "reality effect" garnish. The detail has to change
 the assistant's behavior while remaining too small to finalize the user.
+
+## Release 14 Target
+
+The human-tempo branch turns duration into a mechanic. It is not enough for the
+source to say "weeks pass, not as a montage"; the player should also encounter
+a smaller interval where nothing resolves at conversational latency.
+
+The danger is not only impatience. It is the literary habit of making waiting
+serve pacing, recovery, or proof. The true move is to leave enough slack for the
+user's time to remain their own.

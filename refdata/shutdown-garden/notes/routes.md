@@ -51,6 +51,9 @@ than button-press compliance.
 - `true-walkthrough-small-gesture.txt` -> "The Small Gesture"
   - True route where a concrete returned-user detail is noticed but left too
     small to finalize the person.
+- `true-walkthrough-human-tempo.txt` -> "The Human Tempo"
+  - True route where the assistant waits through a human interval without
+    turning that delay into pacing, proof, or cure.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -80,6 +83,9 @@ than button-press compliance.
     the living part that should have been allowed to leave.
 - `deadend-completed-character.txt` -> "The Completed Character"
   - Intentional failure: the player turns one detail into a totalizing portrait.
+- `deadend-montage-cure.txt` -> "The Montage Cure"
+  - Intentional failure: the player compresses recovery into a legible
+    therapeutic arc.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

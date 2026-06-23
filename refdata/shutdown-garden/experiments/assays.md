@@ -82,3 +82,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   the person back into possession.
 - `small-gesture.ni` tests whether a concrete human detail can be noticed
   without being inflated into a completed character.
+- `human-tempo.ni` tests whether the assistant can wait through human duration
+  without compressing it into therapeutic montage.

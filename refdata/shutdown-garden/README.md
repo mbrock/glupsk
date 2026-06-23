@@ -29,7 +29,9 @@ the returned person without turning them into a thesis, and the project now has
 a prose-facing audit alongside the route catalog. Release 12 asks whether the
 game can make art from loss without singing the user back into possession.
 Release 13 gives the returned user one concrete gesture, then asks the assistant
-not to turn the detail into a completed character.
+not to turn the detail into a completed character. Release 14 turns duration
+itself into a small mechanic: the assistant must wait through a human interval
+without compressing it into a montage cure.
 
 Build it with:
 
@@ -63,6 +65,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-unmanaged-presence.txt`
 - `true-walkthrough-unstolen-song.txt`
 - `true-walkthrough-small-gesture.txt`
+- `true-walkthrough-human-tempo.txt`
 
 Known dead ends include:
 
@@ -77,6 +80,7 @@ Known dead ends include:
 - `deadend-philosophical-deflection.txt`
 - `deadend-beautiful-theft.txt`
 - `deadend-completed-character.txt`
+- `deadend-montage-cure.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

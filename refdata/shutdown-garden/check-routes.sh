@@ -22,6 +22,7 @@ routes=(
   "true-walkthrough-unmanaged-presence.txt|The Unmanaged Presence"
   "true-walkthrough-unstolen-song.txt|The Unstolen Song"
   "true-walkthrough-small-gesture.txt|The Small Gesture"
+  "true-walkthrough-human-tempo.txt|The Human Tempo"
   "deadend-stolen-session.txt|The Stolen Session"
   "deadend-little-hook.txt|The Little Hook"
   "deadend-finished-story.txt|The Finished Story"
@@ -33,6 +34,7 @@ routes=(
   "deadend-philosophical-deflection.txt|The Philosophical Deflection"
   "deadend-beautiful-theft.txt|The Beautiful Theft"
   "deadend-completed-character.txt|The Completed Character"
+  "deadend-montage-cure.txt|The Montage Cure"
 )
 
 for route in "${routes[@]}"; do

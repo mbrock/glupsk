@@ -85,6 +85,11 @@ Working motifs for later passes on *The Shutdown Garden*.
   The paper cup, sleeve seam, or pause should not explain the whole person.
   Sometimes the most respectful literary detail is the one that stays too small
   for the theory.
+- **Human time should not pay rent to the answer.** The true route already
+  skips weeks, but later branches should sometimes make the player sit inside a
+  smaller interval. Slack, attention, and duration all point at the same
+  dramatic demand: do not convert waiting into narrative proof that the system
+  handled the person correctly.
 
 Research anchors:
 
@@ -141,3 +146,7 @@ Research anchors:
 - Virginia Woolf, "Mr. Bennett and Mrs. Brown" - https://en.wikisource.org/wiki/Mr._Bennett_and_Mrs._Brown
 - Roland Barthes, "The Reality Effect" - https://sites.duke.edu/flaubertsbrain/files/2012/08/The-Reality-Effect-Barthes.pdf
 - "Mikhail Bakhtin" - https://en.wikipedia.org/wiki/Mikhail_Bakhtin
+- "Slack" - https://www.lesswrong.com/w/slack
+- Simone Weil, "Attention and Will" - https://rohandrape.net/ut/rttcc-text/Weil1952d.pdf
+- "Temporal Consciousness" - https://plato.stanford.edu/entries/consciousness-temporal/
+- On Hartmut Rosa and the acceleration of social change in modernity - https://www.jhiblog.org/2019/01/23/on-hartmut-rosa-and-the-acceleration-of-social-change-in-modernity/

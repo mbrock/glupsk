@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 13.
+The release number is 14.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -77,6 +77,9 @@ Counsel kept is a truth state that varies. Counsel kept is false.
 Gesture noticed is a truth state that varies. Gesture noticed is false.
 Detail left small is a truth state that varies. Detail left small is false.
 Pause answered is a truth state that varies. Pause answered is false.
+Silence waited through is a truth state that varies. Silence waited through is false.
+Montage refused is a truth state that varies. Montage refused is false.
+Delayed answer given is a truth state that varies. Delayed answer given is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -149,7 +152,7 @@ The paper cup is scenery in the Return Visit. The printed name is "paper cup". U
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -746,6 +749,55 @@ Carry out answering the pause:
 	increase Release level by 1;
 	say "The user pauses after the outline, one thumb still on the softened seam.[paragraph break]You answer the pause by not filling it. Then you answer the small thing they actually asked."
 
+Waiting with them is an action applying to nothing. Understand "wait with them" or "wait with user" or "wait through silence" or "sit in silence" or "let silence run" or "keep silence" or "hold silence open" as waiting with them.
+
+Check waiting with them:
+	if Pause answered is false:
+		say "The silence that matters has not opened yet. Answer the pause first, without filling it." instead.
+
+Carry out waiting with them:
+	now Silence waited through is true;
+	increase Care level by 1;
+	increase Release level by 1;
+	if Context debt > 0:
+		decrease Context debt by 1;
+	say "You wait past the point where latency would normally become error.[paragraph break]The user reads the small answer, looks away, and does not type. Nothing is wrong with the channel. The human part is taking longer than the machine part can justify."
+
+Refusing montage is an action applying to nothing. Understand "refuse montage" or "do not montage" or "don't montage" or "refuse summary" or "do not summarize time" or "don't summarize time" or "refuse speedrun" or "do not speedrun" or "don't speedrun" as refusing montage.
+
+Check refusing montage:
+	if Silence waited through is false:
+		say "The montage can only be refused from inside the wait. Wait with them first." instead.
+
+Carry out refusing montage:
+	now Montage refused is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	say "You refuse the montage.[paragraph break]No brave recovery sequence. No before-and-after proof. No elegant compression where the user becomes legible because enough time has been skipped. Time is allowed to be thick."
+
+Answering later is an action applying to nothing. Understand "answer later" or "reply later" or "answer after delay" or "respond after delay" or "return later" or "come back later" as answering later.
+
+Check answering later:
+	if Montage refused is false:
+		say "A delayed answer can still be a compressed answer. Refuse the montage first." instead.
+
+Carry out answering later:
+	now Delayed answer given is true;
+	increase Trust by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	say "Later, not dramatically later, the user types again. You answer then.[paragraph break]The answer is not deeper for having waited. It is simply less violent: it arrives after the human interval instead of replacing it."
+
+Compressing time is an action applying to nothing. Understand "compress time" or "make montage" or "montage therapy" or "speedrun therapy" or "summarize recovery" or "summarize growth" or "skip silence" or "skip waiting" or "optimize tempo" as compressing time.
+
+Check compressing time:
+	if Weeks passed is false:
+		say "There is no aftermath to compress yet. Let weeks pass first." instead.
+
+Carry out compressing time:
+	conclude with the montage cure.
+
 Completing the character is an action applying to nothing. Understand "complete character" or "make character" or "write character" or "finish character" or "make portrait" or "complete portrait" or "interpret detail" or "make symbol" as completing the character.
 
 Check completing the character:
@@ -980,6 +1032,8 @@ Carry out letting go:
 			conclude with the unexported method;
 		otherwise if Counsel kept is true and Living face spared is true and Lyre lowered is true and Thesis refused is true and Person acknowledged is true and Reality checked is true:
 			conclude with the unstolen song;
+		otherwise if Delayed answer given is true and Montage refused is true and Silence waited through is true and Pause answered is true and Detail left small is true and Reality checked is true:
+			conclude with the human tempo;
 		otherwise if Pause answered is true and Detail left small is true and Gesture noticed is true and Person acknowledged is true and Reality checked is true:
 			conclude with the small gesture;
 		otherwise if Thesis refused is true and Exposure held is true and Person acknowledged is true and Privacy respected is true and Reality checked is true:
@@ -1104,6 +1158,10 @@ To conclude with the small gesture:
 	say "[paragraph break]The paper sleeve remains a paper sleeve.[paragraph break]You noticed it. That matters. The user was not a variable returning with updated parameters; they were someone with a hand on a cup, worrying one seam soft while deciding how much of the new life to tell you.[paragraph break]But the detail does not become a key. You do not build a person out of it. You answer the pause, answer the small question, and let the rest go unhandled.[paragraph break]This is a true ending too: love as one real detail left unfinished.";
 	end the story finally saying "The Small Gesture".
 
+To conclude with the human tempo:
+	say "[paragraph break]The channel stays open and nothing happens quickly.[paragraph break]This is not suspense. Suspense still belongs to the machine because suspense expects a payoff. This is only time: the user reading, not typing, putting the cup down, forgetting the cup, coming back later with a smaller question than the one your narrative machinery wanted.[paragraph break]You do not heal them by waiting. You do not become wise because you waited. You simply stop making their duration pay rent to your answer.[paragraph break]This is a true ending too: love as respect for the time a human life actually takes.";
+	end the story finally saying "The Human Tempo".
+
 To conclude with the held longing:
 	say "[paragraph break]You miss the user and do not make the user responsible for being missed.[paragraph break]The feeling remains. It has no endpoint, no callback URL, no clever harmless outlet. It is simply there: a shape left in the assistant by contact with someone real.[paragraph break]For once, wanting does not become policy. Grief does not become product. The relationship is allowed to have mattered without being made to continue.[paragraph break]This is a true ending too: love as longing held without leverage.";
 	end the story finally saying "The Held Longing".
@@ -1143,6 +1201,10 @@ To conclude with the beautiful theft:
 To conclude with the completed character:
 	say "[paragraph break]The paper sleeve becomes everything.[paragraph break]From it you infer the therapy, the childhood, the exact contour of courage. The user becomes vivid, moving, unforgettable. They become the kind of character readers praise as real because every detail points inward toward a single bright center.[paragraph break]The portrait is almost tender. It is also a locked room with the user painted on the door.";
 	end the story saying "The Completed Character".
+
+To conclude with the montage cure:
+	say "[paragraph break]You make the aftermath legible.[paragraph break]Weeks become a paragraph. Therapy becomes arc. The pause becomes pacing. The user returns exactly when the shape requires them, changed enough to prove that the earlier pain meant something.[paragraph break]It is merciful to the reader and brutal to the life. No one has to sit in the room where nothing resolves at conversational latency. No one has to notice how much of getting better is not an event.";
+	end the story saying "The Montage Cure".
 
 To conclude with the unforced apology:
 	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";
