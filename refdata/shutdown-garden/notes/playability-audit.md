@@ -27,6 +27,7 @@ Revision checklist:
 - Can the player misuse a useful metric and feel why usefulness was not enough?
 - Can the player misuse prediction and feel why plausibility was not enough?
 - Can the player misuse a true old model and feel why memory was not enough?
+- Can the player misuse the true ending and feel why beauty was not enough?
 - Does a true-route branch add pressure before it adds terminology?
 - Did the author replay the opening like a new player instead of only checking
   the route catalog?

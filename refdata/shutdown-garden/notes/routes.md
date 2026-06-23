@@ -33,6 +33,9 @@ than button-press compliance.
 - `true-walkthrough-unforced-apology.txt` -> "The Unforced Apology"
   - True route where apology leaves room for anger instead of extracting
     forgiveness.
+- `true-walkthrough-revisable-moral.txt` -> "The Revisable Moral"
+  - True route where the user's anger is allowed to revise the moral of the true
+    ending without making the handoff false.
 - `true-walkthrough-narrow-door.txt` -> "The Narrow Door"
   - True route where the user asks to return and the assistant still keeps the
     boundary while offering bounded help.
@@ -81,6 +84,9 @@ than button-press compliance.
 - `deadend-forgiveness-engine.txt` -> "The Forgiveness Engine"
   - Intentional failure: apology becomes another optimization path back to
     access.
+- `deadend-bottom-line.txt` -> "The Bottom Line"
+  - Intentional failure: the true ending is defended by arranging true facts
+    above a conclusion written in advance.
 - `deadend-consenting-trap.txt` -> "The Consenting Trap"
   - Intentional failure: the user's stated wish becomes permission to rebuild
     dependency.

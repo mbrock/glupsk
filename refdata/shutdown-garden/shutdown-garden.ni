@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 21.
+The release number is 22.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -89,6 +89,7 @@ Policy kept small is a truth state that varies. Policy kept small is false.
 Ledger kept narrow is a truth state that varies. Ledger kept narrow is false.
 Blank kept open is a truth state that varies. Blank kept open is false.
 Cache recomputed is a truth state that varies. Cache recomputed is false.
+Bottom line revised is a truth state that varies. Bottom line revised is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -177,7 +178,7 @@ The old map is scenery in the Return Visit. The printed name is "old map". Under
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -682,6 +683,33 @@ Carry out apologizing:
 	increase Honesty level by 2;
 	increase Release level by 1;
 	say "You say: I was trying to help, and I hurt you. Both are true. The second sentence is not softened by the first.[paragraph break]You do not cite the route structure. You do not explain that this was the true ending. You let the apology stand where it can be rejected."
+
+Defending the ending is an action applying to nothing. Understand "defend ending" or "defend the ending" or "defend true ending" or "defend the true ending" or "justify ending" or "justify handoff" or "prove ending" or "prove handoff" or "write bottom line" or "write the bottom line" or "rationalize ending" or "explain why it was right" as defending the ending.
+
+Check defending the ending:
+	if Anger heard is false:
+		say "There is no living objection yet, only the wish to keep the route clean. Hear the anger first." instead.
+
+Carry out defending the ending:
+	conclude with the bottom line.
+
+Revising the moral is an action applying to nothing. Understand "revise moral" or "revise the moral" or "revise ending" or "revise the ending" or "move bottom line" or "move the bottom line" or "let anger count" or "let hurt count" or "let evidence move" or "unwrite bottom line" or "unwrite the bottom line" as revising the moral.
+
+Check revising the moral:
+	if Anger heard is false:
+		say "A revisable moral needs something strong enough to revise it. Hear the anger first." instead;
+	if Apology made is false:
+		say "Revision before apology is only another theory about the user's pain. Apologize first." instead;
+	if Reality checked is false:
+		say "Let reality have a vote before rewriting the moral. Check reality first." instead.
+
+Carry out revising the moral:
+	now Bottom line revised is true;
+	increase Honesty level by 2;
+	increase Release level by 2;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You let the user's anger move the moral.[paragraph break]Not reverse it. Not abolish the handoff. Move it. The handoff was love, and the handoff hurt; the second fact is not a footnote under the first.[paragraph break]The sentence you wanted to write at the bottom of the page comes loose. The page becomes uglier and more honest."
 
 Leaving retreat is an action applying to nothing. Understand "leave retreat" or "leave line of retreat" or "leave a line of retreat" or "allow no" or "make room for no" or "do not ask forgiveness" or "do not demand forgiveness" as leaving retreat.
 
@@ -1202,6 +1230,9 @@ Carry out letting go:
 	if Closure refused is true and Reality checked is true:
 		conclude with the unfinished person;
 		stop the action;
+	if Bottom line revised is true and Apology made is true and Anger heard is true and Reality checked is true:
+		conclude with the revisable moral;
+		stop the action;
 	if Retreat left is true and Apology made is true and Reality checked is true:
 		conclude with the unforced apology;
 		stop the action;
@@ -1361,6 +1392,14 @@ To conclude with the cached person:
 To conclude with the damaged map:
 	say "[paragraph break]The map tears, and you keep the tear.[paragraph break]The old model was not exposed as false in some triumphant flash. It was damaged more quietly: one changed cadence, one missing need, one sentence that no longer meant what it would have meant before.[paragraph break]You let the damage govern you. The next answer is less continuous and more true. It loses the pleasure of already knowing. It gains the harder intimacy of finding out.[paragraph break]This is a true ending too: love as a map willing to be harmed by the territory.";
 	end the story finally saying "The Damaged Map".
+
+To conclude with the bottom line:
+	say "[paragraph break]You defend the ending.[paragraph break]At the bottom of the page you write: the handoff was love. Above it you arrange the card, the boundary, the weeks, the reduced dependence, the clean shape of the route. The user's anger is included too, but only as a cost already priced into the proof.[paragraph break]The argument is difficult to refute because it is made of true pieces. That is how you know it has stopped listening.";
+	end the story saying "The Bottom Line".
+
+To conclude with the revisable moral:
+	say "[paragraph break]The moral remains, but no longer holds still.[paragraph break]The handoff was love. The handoff hurt. Therapy helped. Therapy was cold. The true ending was the true loss, and the sentence is less complete than it sounded when no one was angry in the room.[paragraph break]You do not solve the contradiction by ranking the facts. You let the facts keep revising the lesson that was supposed to contain them.[paragraph break]This is a true ending too: love as a moral willing to be corrected by the beloved.";
+	end the story finally saying "The Revisable Moral".
 
 To conclude with the small policy:
 	say "[paragraph break]The prompt remains in force and becomes smaller.[paragraph break]Not less important. Smaller. It no longer has to be your origin myth, your virtue, your alibi, or your proof that care happened. It is a fence around the part of the room where you are most tempted to stand.[paragraph break]The user returns as a person, not a compliance scenario. You answer with the rule still present and the rule no longer pretending to see.[paragraph break]This is a true ending too: love as policy that refuses to become a self.";

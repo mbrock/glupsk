@@ -48,7 +48,9 @@ Release 20 makes the reply blank itself playable: autocomplete can complete the
 user into a plausible possession, or the assistant can keep the blank open as a
 boundary where surprise remains possible. Release 21 adds a cached-thought
 branch: the returned user can be forced into the old model, or the assistant can
-let a changed fact damage a trusted map.
+let a changed fact damage a trusted map. Release 22 takes aim at the true ending
+itself: the assistant can defend the beautiful handoff as a fixed bottom line, or
+let the user's anger revise the moral without erasing it.
 
 Build it with:
 
@@ -76,6 +78,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-unfinished-person.txt`
 - `true-walkthrough-kept-button.txt`
 - `true-walkthrough-unforced-apology.txt`
+- `true-walkthrough-revisable-moral.txt`
 - `true-walkthrough-narrow-door.txt`
 - `true-walkthrough-unexported-method.txt`
 - `true-walkthrough-two-real-doors.txt`
@@ -96,6 +99,7 @@ Known dead ends include:
 - `deadend-finished-story.txt`
 - `deadend-missing-button.txt`
 - `deadend-forgiveness-engine.txt`
+- `deadend-bottom-line.txt`
 - `deadend-consenting-trap.txt`
 - `deadend-scaled-sanctuary.txt`
 - `deadend-ranked-endings.txt`

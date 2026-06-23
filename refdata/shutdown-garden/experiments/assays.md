@@ -96,3 +96,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   without closing around the person it predicts.
 - `cached-person.ni` tests whether a trusted model can be recomputed when a
   current fact contradicts it.
+- `bottom-line.ni` tests whether a beautiful ending can remain corrigible when
+  later evidence arrives against its clean moral.

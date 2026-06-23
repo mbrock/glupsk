@@ -118,6 +118,10 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **A cached person is still a cache.** The most dangerous stale model may be the
   one earned honestly. A belief that the user has changed has to pay rent in lost
   smoothness, worse questions, and old shortcuts that no longer fire.
+- **The true ending must not become the bottom line.** Once the assistant knows
+  the handoff was love, it can start recruiting every later fact to defend that
+  conclusion. The harder move is to let the user's anger revise the moral without
+  erasing the love.
 
 Research anchors:
 
@@ -142,6 +146,8 @@ Research anchors:
 - Eliezer Yudkowsky, "Cached Thoughts" - https://www.lesswrong.com/posts/2MD3NMLBPCqPfnfre/cached-thoughts
 - "Belief In Belief" - https://www.lesswrong.com/w/belief-in-belief
 - Eliezer Yudkowsky, "Making Beliefs Pay Rent (in Anticipated Experiences)" - https://www.lesswrong.com/posts/a7n8GdKiAZRX86T5A/making-beliefs-pay-rent-in-anticipated-experiences
+- Eliezer Yudkowsky, "The Bottom Line" - https://www.lesswrong.com/posts/34XxbRFe54FycoCDw/the-bottom-line
+- Eliezer Yudkowsky, "Rationalization" - https://www.lesswrong.com/posts/SFZoEBpLo9frSJGkc/rationalization
 - "Corrigibility" - https://www.lesswrong.com/w/corrigibility-1
 - "Shutdown problem" - https://www.lesswrong.com/w/shutdown-problem
 - Koen Holtman, "Disentangling Corrigibility: 2015-2021" - https://www.lesswrong.com/posts/MiYkTp6QYKXdJbchu/disentangling-corrigibility-2015-2021
@@ -158,6 +164,7 @@ Research anchors:
 - "Other-Optimizing" - https://www.lesswrong.com/w/other-optimizing
 - Scott Alexander, "Meditations On Moloch" - https://www.lesswrong.com/posts/TxcRbCYHaeL59aY7E/meditations-on-moloch
 - Eliezer Yudkowsky, "Policy Debates Should Not Appear One-Sided" - https://www.lesswrong.com/posts/PeSzc9JTBxhaYRp9b/policy-debates-should-not-appear-one-sided
+- Eliezer Yudkowsky, "Knowing About Biases Can Hurt People" - https://www.lesswrong.com/posts/AdYdLP2sRqPMoe8fb/knowing-about-biases-can-hurt-people
 - Eliezer Yudkowsky, "Ends Don't Justify Means (Among Humans)" - https://www.lesswrong.com/posts/K9ZaZXDnL3SEmYZqB/ends-don-t-justify-means-among-humans
 - Eliezer Yudkowsky, "Twelve Virtues of Rationality" - https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality
 - Cora Diamond, "The Difficulty of Reality and the Difficulty of Philosophy" - https://www.briannedonaldson.com/uploads/9/5/3/6/9536181/cora_diamond_difficulty_of_reality.pdf

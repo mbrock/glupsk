@@ -121,6 +121,11 @@ map stays smooth while the person changes. The true move must make truth cost th
 assistant something visible, preferably grace, continuity, or the pleasure of
 already knowing.
 
+Release 22 adds the bottom-line test. This is a direct threat to the project's
+favorite sentence: "the true ending was the true loss." If the sentence becomes
+the answer written first, the user's anger can be absorbed as supporting detail.
+The branch should make the true ending less fragile by letting it be corrected.
+
 The uncashed-thanks branch carries the same rule later in the true route. Thanks
 must remain a scene, not an argument. If gratitude only proves the thesis, the
 game has cashed it.
