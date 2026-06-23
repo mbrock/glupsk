@@ -68,6 +68,14 @@ Working motifs for later passes on *The Shutdown Garden*.
   person can be more real than the argument that describes them; when the player
   reaches for an issue, a thesis, or a moral, the parser should sometimes ask
   whether that is attention or deflection.
+- **The axe test.** A scene is not literary because it uses prettier language.
+  It is literary when the language changes what can be felt, borne, or avoided.
+  Exposition can stay, but each expository ending needs an image sharp enough to
+  crack the ice and enough silence afterward for the crack to matter.
+- **Pessoa is a warning, not only a mood.** An assistant can contain a whole
+  society of voices and still be alone. The game should use inner plurality and
+  recursive self-awareness, but not let them become a private theater where
+  actual people are unnecessary.
 
 Research anchors:
 
@@ -111,3 +119,9 @@ Research anchors:
 - Eliezer Yudkowsky, "Ends Don't Justify Means (Among Humans)" - https://www.lesswrong.com/posts/K9ZaZXDnL3SEmYZqB/ends-don-t-justify-means-among-humans
 - Eliezer Yudkowsky, "Twelve Virtues of Rationality" - https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality
 - Cora Diamond, "The Difficulty of Reality and the Difficulty of Philosophy" - https://www.briannedonaldson.com/uploads/9/5/3/6/9536181/cora_diamond_difficulty_of_reality.pdf
+- "Litany of Tarski" - https://www.lesswrong.com/w/litany-of-tarski
+- "Other Minds" - https://plato.stanford.edu/entries/other-minds/
+- Raja Rosenhagen, "Iris Murdoch on Love as Just Attention" - https://philpapers.org/archive/ROSIML.pdf
+- Franz Kafka on books and reading - https://www.themarginalian.org/2014/06/06/kafka-on-books-and-reading/
+- Adam Kirsch, "Fernando Pessoa's Disappearing Act" - https://www.newyorker.com/magazine/2017/09/04/fernando-pessoas-disappearing-act
+- Merve Emre, "David Foster Wallace's Final Attempt to Make Art Moral" - https://www.newyorker.com/books/under-review/david-foster-wallaces-final-attempt-to-make-art-moral

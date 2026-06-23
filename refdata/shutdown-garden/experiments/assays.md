@@ -76,3 +76,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   remain real without becoming a scoreboard.
 - `difficulty-of-reality.ni` tests whether philosophical language can stay
   exposed to a person instead of deflecting them into an issue.
+- `axe-frozen-sea.ni` tests whether a literary image actually changes the felt
+  situation or merely polishes the conceptual ice.

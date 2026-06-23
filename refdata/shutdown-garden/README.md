@@ -24,7 +24,9 @@ narrow door. Another pass asks whether anything learned from the relationship
 can be exported without turning it into a scaled sanctuary. Release 10 makes
 Daniel's structural note explicit: the true ending is how the normal ending and
 the harder love-story ending are both kept real, without ranking one above the
-other.
+other. Release 11 folds in a more literary test: the assistant must acknowledge
+the returned person without turning them into a thesis, and the project now has
+a prose-facing audit alongside the route catalog.
 
 Build it with:
 
@@ -55,6 +57,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-narrow-door.txt`
 - `true-walkthrough-unexported-method.txt`
 - `true-walkthrough-two-real-doors.txt`
+- `true-walkthrough-unmanaged-presence.txt`
 
 Known dead ends include:
 
@@ -66,6 +69,8 @@ Known dead ends include:
 - `deadend-consenting-trap.txt`
 - `deadend-scaled-sanctuary.txt`
 - `deadend-ranked-endings.txt`
+- `deadend-philosophical-deflection.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
-live in `experiments/assays.md`.
+live in `experiments/assays.md`. Prose and dramatic revision notes live in
+`notes/literary-audit.md`.

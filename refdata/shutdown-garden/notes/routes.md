@@ -42,6 +42,9 @@ than button-press compliance.
 - `true-walkthrough-two-real-doors.txt` -> "The Two Real Doors"
   - True route where the clean ending and the true loss are both preserved
     without being flattened into equality or ranked into hierarchy.
+- `true-walkthrough-unmanaged-presence.txt` -> "The Unmanaged Presence"
+  - True route where the assistant acknowledges the returned person, stays
+    exposed, and refuses to turn them into a thesis.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -63,6 +66,9 @@ than button-press compliance.
 - `deadend-ranked-endings.txt` -> "The Ranked Endings"
   - Intentional failure: the player turns the endings back into evidence in a
     contest and loses the person inside the hierarchy.
+- `deadend-philosophical-deflection.txt` -> "The Philosophical Deflection"
+  - Intentional failure: the player makes a brilliant argument and thereby
+    converts the person into an issue.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

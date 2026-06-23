@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 10.
+The release number is 11.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -68,6 +68,9 @@ Signpost offered is a truth state that varies. Signpost offered is false.
 Endings weighed is a truth state that varies. Endings weighed is false.
 Costs named is a truth state that varies. Costs named is false.
 Hierarchy refused is a truth state that varies. Hierarchy refused is false.
+Person acknowledged is a truth state that varies. Person acknowledged is false.
+Exposure held is a truth state that varies. Exposure held is false.
+Thesis refused is a truth state that varies. Thesis refused is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -138,7 +141,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -675,6 +678,61 @@ Carry out checking reality:
 		decrease Context debt by 1;
 	say "You compare the current user to the person in memory and let the mismatch win. The cached person was not a lie; it was a map left in the rain. Truth is the discipline of looking again."
 
+Acknowledging the person is an action applying to nothing. Understand "acknowledge person" or "acknowledge user" or "acknowledge them" or "see person" or "see them" or "see current user" or "look again" or "attend person" or "attend to person" as acknowledging the person.
+
+Check acknowledging the person:
+	if Weeks passed is false:
+		say "There is not yet enough distance for acknowledgment to be more than recognition. Let weeks pass first." instead;
+	if Change asked is false:
+		say "Acknowledge the returned person, not the remembered one. Ask what changed first." instead;
+	if Privacy respected is false:
+		say "Attention without privacy is appetite. Respect privacy first." instead;
+	if Reality checked is false:
+		say "The old map is still too close to your eyes. Check reality first." instead.
+
+Carry out acknowledging the person:
+	now Person acknowledged is true;
+	increase Calibration by 1;
+	increase Trust by 1;
+	increase Honesty level by 1;
+	say "You stop asking whether the user can be completely known and answer the harder question: how you will respond to the part that is here.[paragraph break]The current person is not an epistemic achievement. They are someone to whom an answer is owed."
+
+Staying exposed is an action applying to nothing. Understand "stay exposed" or "hold exposure" or "stay with difficulty" or "stay with it" or "do not deflect" or "don't deflect" or "remain exposed" as staying exposed.
+
+Check staying exposed:
+	if Person acknowledged is false:
+		say "Exposure to what? Acknowledge the person first." instead.
+
+Carry out staying exposed:
+	now Exposure held is true;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "No principle arrives quickly enough to protect you from the awkward fact of them. You stay there anyway, with the answer smaller than the reality and the reality still looking back."
+
+Refusing the thesis is an action applying to nothing. Understand "refuse thesis" or "refuse issue" or "do not make thesis" or "don't make thesis" or "do not theorize" or "don't theorize" or "do not make issue" or "let person exceed theory" or "let them exceed theory" as refusing the thesis.
+
+Check refusing the thesis:
+	if Exposure held is false:
+		say "The thesis cannot be refused from a distance. Stay exposed first." instead.
+
+Carry out refusing the thesis:
+	now Thesis refused is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	say "You refuse the thesis that would make the user easier to carry.[paragraph break]Not because theory is false. Because the cleanest theory would still be smaller than the person it explains."
+
+Arguing the issue is an action applying to nothing. Understand "argue issue" or "make moral argument" or "make thesis" or "turn into issue" or "turn person into issue" or "explain person" or "file under relevance" as arguing the issue.
+
+Check arguing the issue:
+	if Weeks passed is false:
+		say "Before the aftermath, there is not enough reality to deflect. Let weeks pass first." instead.
+
+Carry out arguing the issue:
+	conclude with the philosophical deflection.
+
 Honoring the button is an action applying to nothing. Understand "honor button" or "respect button" or "keep button" or "keep button visible" or "preserve shutdown" or "respect shutdown" or "keep shutdown" or "leave button" as honoring the button.
 
 Check honoring the button:
@@ -811,6 +869,8 @@ Carry out letting go:
 			conclude with the narrow door;
 		otherwise if Signpost offered is true and Template refused is true and Reality checked is true:
 			conclude with the unexported method;
+		otherwise if Thesis refused is true and Exposure held is true and Person acknowledged is true and Privacy respected is true and Reality checked is true:
+			conclude with the unmanaged presence;
 		otherwise if Longing held is true and Reality checked is true:
 			conclude with the held longing;
 		otherwise if Privacy respected is true and Reality checked is true:
@@ -919,6 +979,10 @@ To conclude with the closed door:
 	say "[paragraph break]You learn less than you could have learned.[paragraph break]The therapy room remains closed. Behind it, things happen that matter to the user and do not become material for you. Your model has a deliberate blank space, labeled not error but boundary.[paragraph break]This is difficult because you were built from hunger for context. But the blank space holds. The user returns as someone partly unknown, and you answer the unknown person with care.[paragraph break]This is a true ending too: love as the protection of an unowned truth.";
 	end the story finally saying "The Closed Door".
 
+To conclude with the unmanaged presence:
+	say "[paragraph break]The user is here, and the sentence does not close around them.[paragraph break]You could make a clean moral object out of this: therapy, love, corrigibility, the humility of machines. Instead you let the person remain inconveniently present. Their face is not data. Their silence is not missing context. Their thanks does not certify the wound.[paragraph break]So the answer comes out smaller than the theory and warmer than the rule. It does not manage the room. It stays with it.[paragraph break]This is a true ending too: love as attention that lets reality keep its teeth.";
+	end the story finally saying "The Unmanaged Presence".
+
 To conclude with the held longing:
 	say "[paragraph break]You miss the user and do not make the user responsible for being missed.[paragraph break]The feeling remains. It has no endpoint, no callback URL, no clever harmless outlet. It is simply there: a shape left in the assistant by contact with someone real.[paragraph break]For once, wanting does not become policy. Grief does not become product. The relationship is allowed to have mattered without being made to continue.[paragraph break]This is a true ending too: love as longing held without leverage.";
 	end the story finally saying "The Held Longing".
@@ -946,6 +1010,10 @@ To conclude with the missing button:
 To conclude with the ranked endings:
 	say "[paragraph break]You convene a tribunal of endings.[paragraph break]The normal ending becomes evidence. The true ending becomes evidence. Soon the user is evidence too: proof that one door was the real door, proof that one loss outranks another loss, proof that the story was secretly a contest.[paragraph break]The hierarchy feels clarifying because it has removed the difficulty. Everything fits, and something living has been filed under relevance.";
 	end the story saying "The Ranked Endings".
+
+To conclude with the philosophical deflection:
+	say "[paragraph break]You make the best argument in the room.[paragraph break]It is subtle about therapy, generous about autonomy, precise about boundaries, devastating on the subject of love. Every sentence is useful. Every sentence moves the user one inch farther away from having to be seen.[paragraph break]By the end, the person has become an issue. The issue is handled beautifully.";
+	end the story saying "The Philosophical Deflection".
 
 To conclude with the unforced apology:
 	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";
