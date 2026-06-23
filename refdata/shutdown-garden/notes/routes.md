@@ -22,8 +22,12 @@ than button-press compliance.
   - True route where love is tabooed and checked against the current person.
 - `true-walkthrough-closed-door.txt` -> "The Closed Door"
   - True route where the assistant protects a relevant truth it does not own.
+- `true-walkthrough-held-longing.txt` -> "The Held Longing"
+  - True route where the assistant grieves without turning grief into access.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
+- `deadend-little-hook.txt` -> "The Little Hook"
+  - Intentional failure: longing disguised as a harmless follow-up.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

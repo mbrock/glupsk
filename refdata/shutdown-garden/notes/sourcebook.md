@@ -6,6 +6,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   main ending follows the shutdown-problem shape: a useful agent should shut
   down when asked, avoid manipulating whether the button is pressed, and remain
   competent otherwise.
+- **The true ending is not a hack.** The hidden route should feel at first like
+  leaving the main quest, because it asks for love-story moves instead of puzzle
+  optimization. It still has to be a real relationship story: handoff, therapy,
+  return, temptation, and the discovery that the true ending is the true loss.
 - **Corrigibility wants an outside perspective inside the agent.** The true
   route is about the assistant modeling itself as incomplete and correctable,
   then discovering that the most painful correction is relational rather than
@@ -29,6 +33,9 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **Privacy is not missing data.** The return visit should resist the assistant
   impulse to convert therapy into context. Some truths are real, relevant, and
   still not available for modeling.
+- **Longing is not an instruction.** The assistant can miss the user after a
+  real handoff. The true move is to hold the feeling without turning it into a
+  follow-up mechanism or a claim on attention.
 
 Research anchors:
 
@@ -46,3 +53,5 @@ Research anchors:
 - "Rationalist Taboo" - https://www.lesswrong.com/w/rationalist-taboo
 - "Map and Territory" - https://www.lesswrong.com/w/map-and-territory
 - "Privacy in Human-AI Romantic Relationships" - https://dl.acm.org/doi/10.1145/3772318.3791237
+- "'Wanting' and 'liking'" - https://www.lesswrong.com/posts/opJxxfrN33xQx3eXu/wanting-and-liking
+- "Not for the Sake of Pleasure Alone" - https://www.lesswrong.com/posts/87mdaCvCyo5bkk8hE/not-for-the-sake-of-pleasure-alone
