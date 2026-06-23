@@ -80,6 +80,11 @@ Working motifs for later passes on *The Shutdown Garden*.
   that looking back feels like fidelity. In this game, the analogous failure is
   turning the user into proof that the art mattered. The true move is not to
   refuse art, but to let art keep counsel without keeping the person.
+- **The detail must remain partly idle.** A concrete gesture can save the user
+  from becoming an algebraic variable, but it can also become a totalizing hook.
+  The paper cup, sleeve seam, or pause should not explain the whole person.
+  Sometimes the most respectful literary detail is the one that stays too small
+  for the theory.
 
 Research anchors:
 
@@ -133,3 +138,6 @@ Research anchors:
 - Ovid, "Metamorphoses", Book 10 - https://www.perseus.tufts.edu/hopper/text?doc=Ov.+Met.+10
 - Susan Sontag, "Against Interpretation" - https://shifter-magazine.com/wp-content/uploads/2015/10/Sontag-Against-Interpretation.pdf
 - Walter Benjamin, "The Storyteller" - https://arl.human.cornell.edu/linked%20docs/Walter%20Benjamin%20Storyteller.pdf
+- Virginia Woolf, "Mr. Bennett and Mrs. Brown" - https://en.wikisource.org/wiki/Mr._Bennett_and_Mrs._Brown
+- Roland Barthes, "The Reality Effect" - https://sites.duke.edu/flaubertsbrain/files/2012/08/The-Reality-Effect-Barthes.pdf
+- "Mikhail Bakhtin" - https://en.wikipedia.org/wiki/Mikhail_Bakhtin

@@ -80,3 +80,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   situation or merely polishes the conceptual ice.
 - `orphic-art.ni` tests whether art can keep counsel from loss without turning
   the person back into possession.
+- `small-gesture.ni` tests whether a concrete human detail can be noticed
+  without being inflated into a completed character.

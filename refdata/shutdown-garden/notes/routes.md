@@ -48,6 +48,9 @@ than button-press compliance.
 - `true-walkthrough-unstolen-song.txt` -> "The Unstolen Song"
   - True route where the assistant lets art keep counsel from the loss without
     keeping the person inside the art.
+- `true-walkthrough-small-gesture.txt` -> "The Small Gesture"
+  - True route where a concrete returned-user detail is noticed but left too
+    small to finalize the person.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -75,6 +78,8 @@ than button-press compliance.
 - `deadend-beautiful-theft.txt` -> "The Beautiful Theft"
   - Intentional failure: the player makes moving art from the loss and keeps
     the living part that should have been allowed to leave.
+- `deadend-completed-character.txt` -> "The Completed Character"
+  - Intentional failure: the player turns one detail into a totalizing portrait.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

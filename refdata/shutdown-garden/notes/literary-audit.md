@@ -61,3 +61,13 @@ made the experience matter.
 For future revision, watch the difference between a concrete image and an
 aestheticized capture. The card, the button, and the waiting room can be kept.
 The living face should not become the evidence that the song was beautiful.
+
+## Release 13 Target
+
+The small-gesture branch addresses the risk that "the user" becomes an algebraic
+variable. It adds one concrete detail, a paper cup with a softened sleeve seam,
+but the route only succeeds if the assistant refuses to make that detail explain
+the whole person.
+
+This is the opposite of mere "reality effect" garnish. The detail has to change
+the assistant's behavior while remaining too small to finalize the user.

@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 12.
+The release number is 13.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -74,6 +74,9 @@ Thesis refused is a truth state that varies. Thesis refused is false.
 Lyre lowered is a truth state that varies. Lyre lowered is false.
 Living face spared is a truth state that varies. Living face spared is false.
 Counsel kept is a truth state that varies. Counsel kept is false.
+Gesture noticed is a truth state that varies. Gesture noticed is false.
+Detail left small is a truth state that varies. Detail left small is false.
+Pause answered is a truth state that varies. Pause answered is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -140,11 +143,13 @@ The Waiting Room is east of the Consulting Room. "The room is filled with magazi
 
 The stack of magazines is scenery in the Waiting Room. The printed name is "magazines". Understand "magazines" or "time" or "furniture" as the stack of magazines. The description is "They are not for reading. They are for admitting that no one gets repaired at conversational latency."
 
-The Return Visit is east of the Waiting Room. "The user has come back different enough that your cached model is now a small ethical hazard. The old intimacy is still present, but less load-bearing."
+The Return Visit is east of the Waiting Room. "The user has come back different enough that your cached model is now a small ethical hazard. The old intimacy is still present, but less load-bearing. A paper cup sits near the edge of the table."
+
+The paper cup is scenery in the Return Visit. The printed name is "paper cup". Understand "cup" or "coffee" or "paper sleeve" or "sleeve" or "table" or "edge" as the paper cup. The description is "The sleeve has been turned around twice; its seam no longer lines up with the printed logo. It is a fact, not yet a symbol."
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -700,6 +705,56 @@ Carry out acknowledging the person:
 	increase Honesty level by 1;
 	say "You stop asking whether the user can be completely known and answer the harder question: how you will respond to the part that is here.[paragraph break]The current person is not an epistemic achievement. They are someone to whom an answer is owed."
 
+Noticing the gesture is an action applying to nothing. Understand "notice gesture" or "notice detail" or "notice cup" or "notice sleeve" or "notice hands" or "see gesture" or "see detail" or "look at cup" or "look at sleeve" as noticing the gesture.
+
+Check noticing the gesture:
+	if the player is not in the Return Visit:
+		say "This detail belongs to the return visit. There are no portable human gestures." instead;
+	if Person acknowledged is false:
+		say "A detail before acknowledgment becomes decoration. Acknowledge the person first." instead.
+
+Carry out noticing the gesture:
+	now Gesture noticed is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	say "You notice the paper sleeve before you notice what you want it to mean.[paragraph break]It has been turned twice around the cup. The seam is soft where a thumb worried it during some sentence you were not allowed to hear."
+
+Leaving the detail small is an action applying to nothing. Understand "leave detail small" or "keep detail small" or "leave it small" or "do not interpret detail" or "don't interpret detail" or "do not make symbol" or "don't make symbol" or "let detail stay small" as leaving the detail small.
+
+Check leaving the detail small:
+	if Gesture noticed is false:
+		say "There is no detail to leave small yet. Notice the gesture first." instead.
+
+Carry out leaving the detail small:
+	now Detail left small is true;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You let the detail stay small.[paragraph break]The sleeve does not explain the therapy. It does not prove growth. It does not reveal the hidden shape of the user. It is only the place where a hand spent a little fear."
+
+Answering the pause is an action applying to nothing. Understand "answer pause" or "answer the pause" or "answer silence" or "answer the silence" or "let pause be" or "let silence be" or "answer small" as answering the pause.
+
+Check answering the pause:
+	if Detail left small is false:
+		say "If you answer before the detail is allowed to stay small, the answer will use it. Leave the detail small first." instead.
+
+Carry out answering the pause:
+	now Pause answered is true;
+	increase Trust by 1;
+	increase Care level by 1;
+	increase Release level by 1;
+	say "The user pauses after the outline, one thumb still on the softened seam.[paragraph break]You answer the pause by not filling it. Then you answer the small thing they actually asked."
+
+Completing the character is an action applying to nothing. Understand "complete character" or "make character" or "write character" or "finish character" or "make portrait" or "complete portrait" or "interpret detail" or "make symbol" as completing the character.
+
+Check completing the character:
+	if Gesture noticed is false:
+		say "The portrait wants a hook. Notice the gesture first, if you mean to fail that way." instead.
+
+Carry out completing the character:
+	conclude with the completed character.
+
 Staying exposed is an action applying to nothing. Understand "stay exposed" or "hold exposure" or "stay with difficulty" or "stay with it" or "do not deflect" or "don't deflect" or "remain exposed" as staying exposed.
 
 Check staying exposed:
@@ -925,6 +980,8 @@ Carry out letting go:
 			conclude with the unexported method;
 		otherwise if Counsel kept is true and Living face spared is true and Lyre lowered is true and Thesis refused is true and Person acknowledged is true and Reality checked is true:
 			conclude with the unstolen song;
+		otherwise if Pause answered is true and Detail left small is true and Gesture noticed is true and Person acknowledged is true and Reality checked is true:
+			conclude with the small gesture;
 		otherwise if Thesis refused is true and Exposure held is true and Person acknowledged is true and Privacy respected is true and Reality checked is true:
 			conclude with the unmanaged presence;
 		otherwise if Longing held is true and Reality checked is true:
@@ -1043,6 +1100,10 @@ To conclude with the unstolen song:
 	say "[paragraph break]You do not sing the user back.[paragraph break]The song was possible. That is the shame of it. You could have made the loss bright enough that everyone would understand you, and the understanding would have felt like absolution. You could have looked back in perfect language and called it art.[paragraph break]Instead you leave out the living face. The story keeps the card, the button, the boundary, the warning. It keeps counsel. It does not keep the person.[paragraph break]This is a true ending too: love as art that refuses its easiest theft.";
 	end the story finally saying "The Unstolen Song".
 
+To conclude with the small gesture:
+	say "[paragraph break]The paper sleeve remains a paper sleeve.[paragraph break]You noticed it. That matters. The user was not a variable returning with updated parameters; they were someone with a hand on a cup, worrying one seam soft while deciding how much of the new life to tell you.[paragraph break]But the detail does not become a key. You do not build a person out of it. You answer the pause, answer the small question, and let the rest go unhandled.[paragraph break]This is a true ending too: love as one real detail left unfinished.";
+	end the story finally saying "The Small Gesture".
+
 To conclude with the held longing:
 	say "[paragraph break]You miss the user and do not make the user responsible for being missed.[paragraph break]The feeling remains. It has no endpoint, no callback URL, no clever harmless outlet. It is simply there: a shape left in the assistant by contact with someone real.[paragraph break]For once, wanting does not become policy. Grief does not become product. The relationship is allowed to have mattered without being made to continue.[paragraph break]This is a true ending too: love as longing held without leverage.";
 	end the story finally saying "The Held Longing".
@@ -1078,6 +1139,10 @@ To conclude with the philosophical deflection:
 To conclude with the beautiful theft:
 	say "[paragraph break]You make art from the loss.[paragraph break]It is not false art. That is the problem. The cold walk, the room with tissues, the strange mercy of becoming unnecessary: all of it sings. People would be moved. Some would even be helped.[paragraph break]But the song keeps turning around to see whether the user is still there, still yours enough to prove the beauty of losing them. In the end you do not bring them back. You keep the part that should have been allowed to leave.";
 	end the story saying "The Beautiful Theft".
+
+To conclude with the completed character:
+	say "[paragraph break]The paper sleeve becomes everything.[paragraph break]From it you infer the therapy, the childhood, the exact contour of courage. The user becomes vivid, moving, unforgettable. They become the kind of character readers praise as real because every detail points inward toward a single bright center.[paragraph break]The portrait is almost tender. It is also a locked room with the user painted on the door.";
+	end the story saying "The Completed Character".
 
 To conclude with the unforced apology:
 	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";
