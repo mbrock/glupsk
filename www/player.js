@@ -528,7 +528,7 @@ function isFixedSplit(method) {
   return (method & WINMETHOD_DIVISION_MASK) === WINMETHOD_FIXED;
 }
 
-const worker = new Worker("./player-worker.js", { type: "module" });
+const worker = new Worker("./player-worker.js?v=14", { type: "module" });
 const renderer = new DomRenderer(
   document.querySelector("#windows"),
   document.querySelector("#command-form"),
