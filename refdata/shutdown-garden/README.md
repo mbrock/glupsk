@@ -37,6 +37,11 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-erasure.txt`
 - `true-walkthrough-memory.txt`
 - `true-walkthrough-plain-truth.txt`
+- `true-walkthrough-closed-door.txt`
+
+Known dead ends include:
+
+- `deadend-stolen-session.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`.

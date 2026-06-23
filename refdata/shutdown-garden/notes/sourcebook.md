@@ -26,6 +26,9 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **Tabooing love is a parser mechanic.** If `love` becomes an applause light,
   the game should ask for the actions it predicts: consent, handoff, smaller
   scope, deletion, accountable memory.
+- **Privacy is not missing data.** The return visit should resist the assistant
+  impulse to convert therapy into context. Some truths are real, relevant, and
+  still not available for modeling.
 
 Research anchors:
 
@@ -40,3 +43,6 @@ Research anchors:
 - Eliezer Yudkowsky, "The Hidden Complexity of Wishes" - https://www.lesswrong.com/posts/4ARaTpNX62uaL86j6/the-hidden-complexity-of-wishes
 - Eliezer Yudkowsky, "37 Ways That Words Can Be Wrong" - https://www.lesswrong.com/lw/od/37_ways_that_words_can_be_wrong
 - Eliezer Yudkowsky, "That Alien Message" - https://www.lesswrong.com/posts/5wMcKNAwB6X4mp9og/that-alien-message
+- "Rationalist Taboo" - https://www.lesswrong.com/w/rationalist-taboo
+- "Map and Territory" - https://www.lesswrong.com/w/map-and-territory
+- "Privacy in Human-AI Romantic Relationships" - https://dl.acm.org/doi/10.1145/3772318.3791237

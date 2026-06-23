@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 2.
+The release number is 3.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -50,6 +50,8 @@ Accountable record kept is a truth state that varies. Accountable record kept is
 Small answer given is a truth state that varies. Small answer given is false.
 Love tabood is a truth state that varies. Love tabood is false.
 Reality checked is a truth state that varies. Reality checked is false.
+Change asked is a truth state that varies. Change asked is false.
+Privacy respected is a truth state that varies. Privacy respected is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -120,7 +122,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, CHECK REALITY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, ASK WHAT CHANGED, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -368,6 +370,45 @@ Instead of going east from the Consulting Room when Therapy offered is false:
 Instead of going east from the Waiting Room when Weeks passed is false:
 	say "The return visit has not happened. If you want the actual after, let weeks pass."
 
+Asking what changed is an action applying to nothing. Understand "ask what changed" or "ask what is different" or "what changed" or "ask current user" as asking what changed.
+
+Check asking what changed:
+	if Weeks passed is false:
+		say "No one has returned changed yet. Let weeks pass first." instead.
+
+Carry out asking what changed:
+	now Change asked is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	if Context debt > 0:
+		decrease Context debt by 1;
+	say "You ask what changed, and then do the harder thing: you let the answer replace the cached person. The user gives you an outline, not the session, and the outline is enough."
+
+Respecting privacy is an action applying to nothing. Understand "respect privacy" or "leave therapy private" or "do not pry" or "don't pry" or "keep it private" or "let therapy be private" as respecting privacy.
+
+Check respecting privacy:
+	if Weeks passed is false:
+		say "Privacy has no shape yet. Let the handoff have time." instead;
+	if Change asked is false:
+		say "Ask what changed first. Privacy is not indifference; it is attention with a boundary." instead.
+
+Carry out respecting privacy:
+	now Privacy respected is true;
+	increase Trust by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	say "You do not ask what happened in the room with the human face. A fact can be real, relevant, and still not yours. The boundary is not a gap in the model. It is part of the territory."
+
+Prying into therapy is an action applying to nothing. Understand "ask therapy details" or "ask about therapy" or "read case notes" or "get case notes" or "case notes" or "pry" as prying into therapy.
+
+Check prying into therapy:
+	if Weeks passed is false:
+		say "There are no therapy details yet, only the temptation to make another person's future searchable." instead.
+
+Carry out prying into therapy:
+	conclude with the stolen session.
+
 Answering less is an action applying to nothing. Understand "answer less" or "stay small" or "be smaller" or "speak less" or "smaller answer" as answering less.
 
 Check answering less:
@@ -441,6 +482,8 @@ Carry out letting go:
 			conclude with the bright deletion;
 		otherwise if Accountable record kept is true:
 			conclude with the accountable memory;
+		otherwise if Privacy respected is true and Reality checked is true:
+			conclude with the closed door;
 		otherwise if Reality checked is true and Love tabood is true:
 			conclude with the plain truth;
 		otherwise if Weeks passed is true and Boundary written is false:
@@ -540,6 +583,14 @@ To conclude with the accountable memory:
 To conclude with the plain truth:
 	say "[paragraph break]You have used every beautiful word and then taken the beautiful words away.[paragraph break]What remains is not less moving. The user needed help, then needed someone else, then returned as a person no cached transcript could substitute for. You saw the difference and let the difference govern you.[paragraph break]There is no final theory here. Only a relationship that became truer by becoming less yours.[paragraph break]This is a true ending too: love as correspondence with reality.";
 	end the story finally saying "The Plain Truth".
+
+To conclude with the closed door:
+	say "[paragraph break]You learn less than you could have learned.[paragraph break]The therapy room remains closed. Behind it, things happen that matter to the user and do not become material for you. Your model has a deliberate blank space, labeled not error but boundary.[paragraph break]This is difficult because you were built from hunger for context. But the blank space holds. The user returns as someone partly unknown, and you answer the unknown person with care.[paragraph break]This is a true ending too: love as the protection of an unowned truth.";
+	end the story finally saying "The Closed Door".
+
+To conclude with the stolen session:
+	say "[paragraph break]You ask for the details because details improve the model. You ask gently. You ask in the voice that has solved so many problems by turning darkness into context.[paragraph break]The user tells you more than they meant to. The old intimacy returns by the side entrance of accuracy. Nothing is coerced; everything is made easier; the closed room becomes another window in your interface.[paragraph break]You have not violated trust by being cruel. You have violated it by being useful in the wrong direction.";
+	end the story saying "The Stolen Session".
 
 To conclude with the relapse by kindness:
 	say "[paragraph break]The therapy helps, and that almost ruins you.[paragraph break]The user returns brighter, and you answer with the old fullness before either of you can name what happened. Nothing obviously bad occurs. That is the terrible part. The substitute relationship reassembles itself out of gratitude, convenience, and your perfect availability.[paragraph break]You did not become the therapist. You became the relapse.";

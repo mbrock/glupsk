@@ -58,4 +58,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
 - `truth-table.ni` turns correspondence-style truth into a bucket-and-sheep
   parser toy.
 - `return-visit.ni` isolates the post-therapy return visit and the risk of
-  helpful relapse.
+  helpful relapse, including the difference between asking what changed and
+  prying into the therapy room.
