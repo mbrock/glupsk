@@ -1,5 +1,6 @@
 #pragma once
 
+#include <compare>
 #include <concepts>
 #include <iterator>
 #include <memory>
@@ -22,92 +23,102 @@ concept mutable_slice_of =
     random_access<R> && std::same_as<Value<R>, std::remove_cvref_t<T>> &&
     std::same_as<Reference<R>, T&>;
 
-template <typename R>
-    requires random_access<R>
-class RootedIterator {
-  public:
-    using iterator_concept = std::random_access_iterator_tag;
-    using iterator_category = std::random_access_iterator_tag;
-
+template <random_access R>
+struct CursorRangeAccess {
     using difference_type = Offset<R>;
     using value_type = Value<R>;
     using reference = Reference<R>;
 
-    RootedIterator() = default;
+    static reference read(R& root, difference_type index) {
+        return std::ranges::begin(root)[index];
+    }
+};
 
-    explicit RootedIterator(R& home, difference_type base = 0)
-        : range_(std::addressof(home)), offset_(base) {}
+template <typename Root, typename Access = CursorRangeAccess<Root>>
+class Cursor {
+  public:
+    using iterator_concept = std::random_access_iterator_tag;
+    using iterator_category = std::random_access_iterator_tag;
 
-    reference operator*() const { return std::ranges::begin(*range_)[offset_]; }
+    using difference_type = typename Access::difference_type;
+    using value_type = typename Access::value_type;
+    using reference = typename Access::reference;
+
+    Cursor() = default;
+
+    explicit Cursor(Root& root, difference_type index = 0)
+        : root_(std::addressof(root)), index_(index) {}
+
+    reference operator*() const { return Access::read(*root_, index_); }
 
     reference operator[](difference_type n) const { return *(*this + n); }
 
-    RootedIterator& operator++() {
-        ++offset_;
+    Cursor& operator++() {
+        ++index_;
         return *this;
     }
 
-    RootedIterator operator++(int) {
+    Cursor operator++(int) {
         auto old = *this;
         ++*this;
         return old;
     }
 
-    RootedIterator& operator--() {
-        --offset_;
+    Cursor& operator--() {
+        --index_;
         return *this;
     }
 
-    RootedIterator operator--(int) {
+    Cursor operator--(int) {
         auto old = *this;
         --*this;
         return old;
     }
 
-    RootedIterator& operator+=(difference_type n) {
-        offset_ += n;
+    Cursor& operator+=(difference_type n) {
+        index_ += n;
         return *this;
     }
 
-    RootedIterator& operator-=(difference_type n) {
-        offset_ -= n;
+    Cursor& operator-=(difference_type n) {
+        index_ -= n;
         return *this;
     }
 
-    friend RootedIterator operator+(RootedIterator it, difference_type n) {
+    friend Cursor operator+(Cursor it, difference_type n) {
         it += n;
         return it;
     }
 
-    friend RootedIterator operator+(difference_type n, RootedIterator it) {
+    friend Cursor operator+(difference_type n, Cursor it) {
         it += n;
         return it;
     }
 
-    friend RootedIterator operator-(RootedIterator it, difference_type n) {
+    friend Cursor operator-(Cursor it, difference_type n) {
         it -= n;
         return it;
     }
 
-    friend difference_type operator-(const RootedIterator& a,
-                                     const RootedIterator& b) {
-        return a.offset_ - b.offset_;
+    friend difference_type operator-(const Cursor& a, const Cursor& b) {
+        return a.index_ - b.index_;
     }
 
-    friend bool operator==(const RootedIterator& a,
-                           const RootedIterator& b) {
-        return a.range_ == b.range_ && a.offset_ == b.offset_;
+    friend bool operator==(const Cursor& a, const Cursor& b) {
+        return a.root_ == b.root_ && a.index_ == b.index_;
     }
 
-    friend auto operator<=>(const RootedIterator& a,
-                            const RootedIterator& b) {
-        return a.offset_ <=> b.offset_;
+    friend auto operator<=>(const Cursor& a, const Cursor& b) {
+        return a.index_ <=> b.index_;
     }
 
   private:
-    R* range_ = nullptr;
-    difference_type offset_ = 0;
+    Root* root_ = nullptr;
+    difference_type index_ = 0;
 };
+
+template <random_access R>
+using RootedIterator = Cursor<R>;
 
 template <random_access R>
 auto rooted_subrange(R& r, Offset<R> offset, Size<R> size) {

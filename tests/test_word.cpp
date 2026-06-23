@@ -5,6 +5,7 @@
 #include <algorithm>
 #include <array>
 #include <ranges>
+#include <vector>
 
 using namespace glupsk::test;
 
@@ -55,6 +56,25 @@ static suite word_tests{"word", [] {
         expect(bytes[5] == 5);
         expect(bytes[8] == 8);
         expect(bytes[9] == 0);
+    };
+
+    "borrows vector and span byte storage"_test = [] {
+        auto bytes = std::vector<u8>(8);
+        auto vector_words = glupsk::word::big_endian_words<u32>(bytes);
+
+        vector_words[0] = 0x10203040u;
+        expect(bytes[0] == 0x10);
+        expect(bytes[3] == 0x40);
+
+        auto byte_span = std::span<u8>{bytes};
+        auto span_words = glupsk::word::big_endian_words<u16>(byte_span, 4, 2);
+        span_words[0] = 0x5566u;
+        span_words[1] = 0x7788u;
+
+        expect(bytes[4] == 0x55);
+        expect(bytes[5] == 0x66);
+        expect(bytes[6] == 0x77);
+        expect(bytes[7] == 0x88);
     };
 
     "has random-access proxy iterators"_test = [] {
