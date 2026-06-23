@@ -61,6 +61,7 @@ test_story = executable(
     'tests/test_machine.cpp',
     'tests/test_deck.cpp',
     'tests/test_story.cpp',
+    'tests/test_word.cpp',
   ),
   include_directories: root_inc,
   link_with: core_lib,
