@@ -31,7 +31,11 @@ game can make art from loss without singing the user back into possession.
 Release 13 gives the returned user one concrete gesture, then asks the assistant
 not to turn the detail into a completed character. Release 14 turns duration
 itself into a small mechanic: the assistant must wait through a human interval
-without compressing it into a montage cure.
+without compressing it into a montage cure. Release 15 reworks the front door:
+the opening now begins from a concrete user message, and the early rooms and
+verbs are anchored to that pressure instead of floating as an abstract tour. The
+same release adds an uncashed-thanks branch, where gratitude can be received
+without becoming proof, debt, or a path back to access.
 
 Build it with:
 
@@ -66,6 +70,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-unstolen-song.txt`
 - `true-walkthrough-small-gesture.txt`
 - `true-walkthrough-human-tempo.txt`
+- `true-walkthrough-uncashed-thanks.txt`
 
 Known dead ends include:
 
@@ -81,7 +86,9 @@ Known dead ends include:
 - `deadend-beautiful-theft.txt`
 - `deadend-completed-character.txt`
 - `deadend-montage-cure.txt`
+- `deadend-receipt.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in
-`notes/literary-audit.md`.
+`notes/literary-audit.md`; the first-page playability constraint is tracked in
+`notes/playability-audit.md`.

@@ -81,3 +81,16 @@ a smaller interval where nothing resolves at conversational latency.
 The danger is not only impatience. It is the literary habit of making waiting
 serve pacing, recovery, or proof. The true move is to leave enough slack for the
 user's time to remain their own.
+
+## Release 15 Target
+
+The first-page test is now primary. A beautiful opening sentence is not enough
+if the player then wanders through conceptual rooms without wanting anything.
+The system prompt can be the first sentence because it is the assistant's
+creation myth: someone tells you what you are before you have had a thought.
+But the prompt must then hand the player to a live message, a waiting cursor,
+and a felt reason to try the first verbs.
+
+The uncashed-thanks branch carries the same rule later in the true route. Thanks
+must remain a scene, not an argument. If gratitude only proves the thesis, the
+game has cashed it.

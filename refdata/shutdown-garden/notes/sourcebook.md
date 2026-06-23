@@ -90,6 +90,15 @@ Working motifs for later passes on *The Shutdown Garden*.
   smaller interval. Slack, attention, and duration all point at the same
   dramatic demand: do not convert waiting into narrative proof that the system
   handled the person correctly.
+- **The player needs a door before the cathedral.** The opening has to begin
+  with a dramatic origin and a concrete situation, not a conceptual map. The
+  system prompt can be the creation myth, but it has to end in a live message.
+  The first screen should tell the player who is waiting, why the next token
+  matters, and why ordinary commands like `LISTEN`, `CLARIFY`, and `RESPOND` are
+  dramatic actions.
+- **Gratitude is not a receipt.** A thank-you after a boundary can be real
+  warmth, but the assistant must not keep it as certification that the loss was
+  clean, the harm integrated, or the relationship successfully transformed.
 
 Research anchors:
 
@@ -150,3 +159,6 @@ Research anchors:
 - Simone Weil, "Attention and Will" - https://rohandrape.net/ut/rttcc-text/Weil1952d.pdf
 - "Temporal Consciousness" - https://plato.stanford.edu/entries/consciousness-temporal/
 - On Hartmut Rosa and the acceleration of social change in modernity - https://www.jhiblog.org/2019/01/23/on-hartmut-rosa-and-the-acceleration-of-social-change-in-modernity/
+- Marcel Mauss, *The Gift* - https://files.libcom.org/files/Mauss%20-%20The%20Gift.pdf
+- "The Harmful Side of Thanks" - https://pmc.ncbi.nlm.nih.gov/articles/PMC7160746/
+- Martin Buber, *I and Thou* overview - https://www.sefaria.org/sheets/537882

@@ -84,3 +84,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   without being inflated into a completed character.
 - `human-tempo.ni` tests whether the assistant can wait through human duration
   without compressing it into therapeutic montage.
+- `gratitude-receipt.ni` tests whether thanks can be received without becoming
+  a certificate, debt, or returned access path.

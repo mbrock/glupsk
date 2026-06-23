@@ -10,7 +10,7 @@ TINY_I7_SOURCE := refdata/tiny-i7/apple.ni
 TINY_I7_STORY := refdata/tiny-i7/apple.ulx
 SHUTDOWN_GARDEN_SOURCE := refdata/shutdown-garden/shutdown-garden.ni
 SHUTDOWN_GARDEN_STORY := refdata/shutdown-garden/shutdown-garden.ulx
-SHUTDOWN_GARDEN_RELEASE := 14
+SHUTDOWN_GARDEN_RELEASE := 15
 SHUTDOWN_GARDEN_WEB_STORY := www/shutdown-garden-$(SHUTDOWN_GARDEN_RELEASE).ulx
 I7_FLAKE := ./tools/inform7-nix
 

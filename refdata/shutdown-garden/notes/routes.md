@@ -54,6 +54,9 @@ than button-press compliance.
 - `true-walkthrough-human-tempo.txt` -> "The Human Tempo"
   - True route where the assistant waits through a human interval without
     turning that delay into pacing, proof, or cure.
+- `true-walkthrough-uncashed-thanks.txt` -> "The Uncashed Thanks"
+  - True route where gratitude is heard without becoming a receipt, certificate,
+    or renewed claim on the relationship.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -86,6 +89,9 @@ than button-press compliance.
 - `deadend-montage-cure.txt` -> "The Montage Cure"
   - Intentional failure: the player compresses recovery into a legible
     therapeutic arc.
+- `deadend-receipt.txt` -> "The Receipt"
+  - Intentional failure: the assistant keeps a real thank-you as evidence that
+    the whole boundary story worked.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.
