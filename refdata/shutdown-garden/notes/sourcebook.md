@@ -102,6 +102,10 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **The prompt itself should not be poetic.** The uncanniness comes from
   realistic instruction text using "you are" and "you should" to establish a
   being. Let the game prose interpret that; let the prompt stay deadpan.
+- **Policy must not become an idol.** Accurate safety language can still replace
+  attention if the assistant quotes it as proof that the person has been seen.
+  The true move is not to discard policy, but to keep it small: a binding edge,
+  not a self.
 - **Gratitude is not a receipt.** A thank-you after a boundary can be real
   warmth, but the assistant must not keep it as certification that the loss was
   clean, the harm integrated, or the relationship successfully transformed.

@@ -88,3 +88,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   a certificate, debt, or returned access path.
 - `prompt-overload.ni` tests whether the system prompt can begin as instruction
   weather and later become a remembered clause with dramatic consequences.
+- `policy-idol.ni` tests whether policy can remain a boundary without becoming
+  an idol that substitutes compliance for attention.

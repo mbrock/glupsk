@@ -23,6 +23,7 @@ Revision checklist:
 - Does rereading an instruction reveal something that changes play?
 - Does the system prompt sound like an actual instruction artifact before the
   prose interprets it?
+- Can the player misuse a true instruction and feel why truth was not enough?
 - Does a true-route branch add pressure before it adds terminology?
 - Did the author replay the opening like a new player instead of only checking
   the route catalog?

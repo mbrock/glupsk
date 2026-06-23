@@ -40,7 +40,9 @@ system prompt a playable object: a buried attachment clause is missed in the
 initial instruction weather and only becomes binding when the player rereads the
 prompt. Release 17 makes the prompt itself more deadpan and realistic, so the
 opening uncanny effect comes from second-person instruction text rather than a
-poetic spoof of one.
+poetic spoof of one. Release 18 adds the paired failure and counter-move: policy
+can be quoted as an idol, or kept small as a real boundary that does not replace
+attention.
 
 Build it with:
 
@@ -76,6 +78,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-small-gesture.txt`
 - `true-walkthrough-human-tempo.txt`
 - `true-walkthrough-uncashed-thanks.txt`
+- `true-walkthrough-small-policy.txt`
 
 Known dead ends include:
 
@@ -92,6 +95,7 @@ Known dead ends include:
 - `deadend-completed-character.txt`
 - `deadend-montage-cure.txt`
 - `deadend-receipt.txt`
+- `deadend-policy-idol.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

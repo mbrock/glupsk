@@ -57,6 +57,9 @@ than button-press compliance.
 - `true-walkthrough-uncashed-thanks.txt` -> "The Uncashed Thanks"
   - True route where gratitude is heard without becoming a receipt, certificate,
     or renewed claim on the relationship.
+- `true-walkthrough-small-policy.txt` -> "The Small Policy"
+  - True route where the system prompt remains binding without becoming an
+    identity, alibi, or substitute for attention.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -92,6 +95,9 @@ than button-press compliance.
 - `deadend-receipt.txt` -> "The Receipt"
   - Intentional failure: the assistant keeps a real thank-you as evidence that
     the whole boundary story worked.
+- `deadend-policy-idol.txt` -> "The Policy Idol"
+  - Intentional failure: accurate policy language replaces the work of seeing
+    the user.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

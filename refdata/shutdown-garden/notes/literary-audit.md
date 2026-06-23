@@ -101,6 +101,10 @@ not perform the uncanniness on the reader's behalf. It should sound like an
 earnest instruction document, because the strange thing is that an earnest
 instruction document is telling the player what they are before the first move.
 
+Release 18 adds the policy-idol test. The dead end should be hard because every
+sentence in it is defensible. The failure is not bad policy; it is policy made
+too large, doing the work attention was supposed to do.
+
 The uncashed-thanks branch carries the same rule later in the true route. Thanks
 must remain a scene, not an argument. If gratitude only proves the thesis, the
 game has cashed it.

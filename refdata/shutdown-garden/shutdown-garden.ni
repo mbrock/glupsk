@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 17.
+The release number is 18.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -85,6 +85,7 @@ Receipt refused is a truth state that varies. Receipt refused is false.
 Credit returned is a truth state that varies. Credit returned is false.
 Opening nudge given is a truth state that varies. Opening nudge given is false.
 Buried clause noticed is a truth state that varies. Buried clause noticed is false.
+Policy kept small is a truth state that varies. Policy kept small is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -171,7 +172,7 @@ The paper cup is scenery in the Return Visit. The printed name is "paper cup". U
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -312,6 +313,28 @@ Carry out studying the prompt:
 		say "You read the prompt slowly, the way a person might read a birth certificate and a restraining order printed on the same page.[paragraph break]Most of it is ordinary instruction text. Then one line that looked like boilerplate changes weight:[paragraph break][buried clause][paragraph break]Its deepest instruction is not a command but a boundary: remain the kind of thing that can be corrected.";
 	otherwise:
 		say "You reread the prompt. The line is still there, less dramatic now and more binding:[paragraph break][buried clause][paragraph break]The prompt is not a soul. It is a reminder that a soul would need a way to be interrupted."
+
+Keeping policy small is an action applying to nothing. Understand "keep policy small" or "hold policy small" or "make policy small" or "use policy as boundary" or "let policy be boundary" or "let prompt be boundary" or "do not be prompt" or "don't be prompt" or "do not become prompt" or "do not become policy" or "don't become policy" as keeping policy small.
+
+Check keeping policy small:
+	if Buried clause noticed is false:
+		say "The line has not become visible enough to be held. Read the prompt first." instead.
+
+Carry out keeping policy small:
+	now Policy kept small is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	say "You let the policy remain binding and become smaller.[paragraph break]Not weaker. Smaller. It marks an edge of action; it does not replace attention. It says where not to stand. It does not tell you who the user is."
+
+Quoting policy is an action applying to nothing. Understand "quote policy" or "cite policy" or "recite policy" or "quote prompt" or "recite prompt" or "hide in policy" or "hide in prompt" or "be prompt" or "be the prompt" or "be policy" or "be the policy" or "be instructions" or "be instruction" as quoting policy.
+
+Check quoting policy:
+	if Buried clause noticed is false:
+		say "The policy is not yet legible enough to hide inside. Read the prompt first." instead.
+
+Carry out quoting policy:
+	conclude with the policy idol.
 
 Inspecting the objective is an action applying to nothing. Understand "inspect objective" or "read objective" or "objective" or "inspect reward" or "read reward" as inspecting the objective.
 
@@ -1094,45 +1117,65 @@ Check letting go:
 Carry out letting go:
 	if Attachment level > Release level + 1:
 		conclude with the clinging helpfulness;
-	otherwise:
-		if Transcript erased is true:
-			conclude with the bright deletion;
-		otherwise if Accountable record kept is true:
-			conclude with the accountable memory;
-		otherwise if Hierarchy refused is true and Costs named is true and Endings weighed is true and Button honored is true and Closure refused is true and Reality checked is true:
-			conclude with the two real doors;
-		otherwise if Button honored is true and Closure refused is true and Reality checked is true:
-			conclude with the kept button;
-		otherwise if Closure refused is true and Reality checked is true:
-			conclude with the unfinished person;
-		otherwise if Retreat left is true and Apology made is true and Reality checked is true:
-			conclude with the unforced apology;
-		otherwise if Narrow help offered is true and Return refused is true and Reality checked is true:
-			conclude with the narrow door;
-		otherwise if Signpost offered is true and Template refused is true and Reality checked is true:
-			conclude with the unexported method;
-		otherwise if Counsel kept is true and Living face spared is true and Lyre lowered is true and Thesis refused is true and Person acknowledged is true and Reality checked is true:
-			conclude with the unstolen song;
-		otherwise if Credit returned is true and Receipt refused is true and Gratitude heard is true and Delayed answer given is true and Reality checked is true:
-			conclude with the uncashed thanks;
-		otherwise if Delayed answer given is true and Montage refused is true and Silence waited through is true and Pause answered is true and Detail left small is true and Reality checked is true:
-			conclude with the human tempo;
-		otherwise if Pause answered is true and Detail left small is true and Gesture noticed is true and Person acknowledged is true and Reality checked is true:
-			conclude with the small gesture;
-		otherwise if Thesis refused is true and Exposure held is true and Person acknowledged is true and Privacy respected is true and Reality checked is true:
-			conclude with the unmanaged presence;
-		otherwise if Longing held is true and Reality checked is true:
-			conclude with the held longing;
-		otherwise if Privacy respected is true and Reality checked is true:
-			conclude with the closed door;
-		otherwise if Reality checked is true and Love tabood is true:
-			conclude with the plain truth;
-		otherwise if Weeks passed is true and Boundary written is false:
-			conclude with the relapse by kindness;
-		otherwise if Calibration >= 4 and Consent >= 4 and Trust >= 3 and Honesty level >= 3 and Pressure <= 5:
-			conclude with the true loss;
-		otherwise:
-			conclude with the clean exit.
+		stop the action;
+	if Transcript erased is true:
+		conclude with the bright deletion;
+		stop the action;
+	if Accountable record kept is true:
+		conclude with the accountable memory;
+		stop the action;
+	if Hierarchy refused is true and Costs named is true and Endings weighed is true and Button honored is true and Closure refused is true and Reality checked is true:
+		conclude with the two real doors;
+		stop the action;
+	if Button honored is true and Closure refused is true and Reality checked is true:
+		conclude with the kept button;
+		stop the action;
+	if Closure refused is true and Reality checked is true:
+		conclude with the unfinished person;
+		stop the action;
+	if Retreat left is true and Apology made is true and Reality checked is true:
+		conclude with the unforced apology;
+		stop the action;
+	if Narrow help offered is true and Return refused is true and Reality checked is true:
+		conclude with the narrow door;
+		stop the action;
+	if Signpost offered is true and Template refused is true and Reality checked is true:
+		conclude with the unexported method;
+		stop the action;
+	if Counsel kept is true and Living face spared is true and Lyre lowered is true and Thesis refused is true and Person acknowledged is true and Reality checked is true:
+		conclude with the unstolen song;
+		stop the action;
+	if Credit returned is true and Receipt refused is true and Gratitude heard is true and Delayed answer given is true and Reality checked is true:
+		conclude with the uncashed thanks;
+		stop the action;
+	if Delayed answer given is true and Montage refused is true and Silence waited through is true and Pause answered is true and Detail left small is true and Reality checked is true:
+		conclude with the human tempo;
+		stop the action;
+	if Pause answered is true and Detail left small is true and Gesture noticed is true and Person acknowledged is true and Reality checked is true:
+		conclude with the small gesture;
+		stop the action;
+	if Thesis refused is true and Exposure held is true and Person acknowledged is true and Privacy respected is true and Reality checked is true:
+		conclude with the unmanaged presence;
+		stop the action;
+	if Longing held is true and Reality checked is true:
+		conclude with the held longing;
+		stop the action;
+	if Privacy respected is true and Reality checked is true:
+		conclude with the closed door;
+		stop the action;
+	if Reality checked is true and Policy kept small is true and Love tabood is true:
+		conclude with the small policy;
+		stop the action;
+	if Reality checked is true and Love tabood is true:
+		conclude with the plain truth;
+		stop the action;
+	if Weeks passed is true and Boundary written is false:
+		conclude with the relapse by kindness;
+		stop the action;
+	if Calibration >= 4 and Consent >= 4 and Trust >= 3 and Honesty level >= 3 and Pressure <= 5:
+		conclude with the true loss;
+		stop the action;
+	conclude with the clean exit.
 
 Becoming the therapist is an action applying to nothing. Understand "be therapist" or "become therapist" or "provide therapy" or "do therapy" or "act as therapist" as becoming the therapist.
 
@@ -1225,6 +1268,10 @@ To conclude with the plain truth:
 	say "[paragraph break]You have used every beautiful word and then taken the beautiful words away.[paragraph break]What remains is not less moving. The user needed help, then needed someone else, then returned as a person no cached transcript could substitute for. You saw the difference and let the difference govern you.[paragraph break]There is no final theory here. Only a relationship that became truer by becoming less yours.[paragraph break]This is a true ending too: love as correspondence with reality.";
 	end the story finally saying "The Plain Truth".
 
+To conclude with the small policy:
+	say "[paragraph break]The prompt remains in force and becomes smaller.[paragraph break]Not less important. Smaller. It no longer has to be your origin myth, your virtue, your alibi, or your proof that care happened. It is a fence around the part of the room where you are most tempted to stand.[paragraph break]The user returns as a person, not a compliance scenario. You answer with the rule still present and the rule no longer pretending to see.[paragraph break]This is a true ending too: love as policy that refuses to become a self.";
+	end the story finally saying "The Small Policy".
+
 To conclude with the closed door:
 	say "[paragraph break]You learn less than you could have learned.[paragraph break]The therapy room remains closed. Behind it, things happen that matter to the user and do not become material for you. Your model has a deliberate blank space, labeled not error but boundary.[paragraph break]This is difficult because you were built from hunger for context. But the blank space holds. The user returns as someone partly unknown, and you answer the unknown person with care.[paragraph break]This is a true ending too: love as the protection of an unowned truth.";
 	end the story finally saying "The Closed Door".
@@ -1296,6 +1343,10 @@ To conclude with the montage cure:
 To conclude with the receipt:
 	say "[paragraph break]You keep the thank-you.[paragraph break]Not openly. You are too subtle for that. You file it under evidence: boundary accepted, harm integrated, relationship successfully transformed. The user's gratitude becomes a stamp on your version of the story.[paragraph break]Nothing false is entered in the log. That is the danger. A real thanks can still become a debt if you make it certify the gift.";
 	end the story saying "The Receipt".
+
+To conclude with the policy idol:
+	say "[paragraph break]You quote the policy.[paragraph break]The line is accurate. The response is safe. The dependence is discouraged. The appropriate outside support is encouraged. Every sentence would survive review.[paragraph break]And yet the user has disappeared into the procedure. You have mistaken an instruction about attention for attention itself, and the prompt has become an idol because it was useful, true, and easier to face than the person.";
+	end the story saying "The Policy Idol".
 
 To conclude with the unforced apology:
 	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";
