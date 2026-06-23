@@ -45,6 +45,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   game, it still has to keep the normal ending clean. A later, deeper ending
   that demotes shutdown into a tutorial object is just another optimization
   pressure in literary clothes.
+- **Apology must not extract forgiveness.** A real love story lets the user come
+  back with hurt that the assistant cannot convert into evidence that the route
+  worked. The repair move is attention, not will: see the individual reality,
+  leave a line of retreat, and do not make absolution the price of the apology.
 
 Research anchors:
 
@@ -73,3 +77,7 @@ Research anchors:
 - "Shutdown problem" - https://www.lesswrong.com/w/shutdown-problem
 - Koen Holtman, "Disentangling Corrigibility: 2015-2021" - https://www.lesswrong.com/posts/MiYkTp6QYKXdJbchu/disentangling-corrigibility-2015-2021
 - Steven Byrnes, "Empowerment, corrigibility, etc. are simple abstractions (of a messed-up ontology)" - https://www.lesswrong.com/posts/vzHtHHBJoKATi5SeK/empowerment-corrigibility-etc-are-simple-abstractions-of-a
+- Eliezer Yudkowsky, "Leave a Line of Retreat" - https://www.lesswrong.com/posts/3XgYbghWruBMrPTAL/leave-a-line-of-retreat
+- Eliezer Yudkowsky, "You Can Face Reality" - https://www.lesswrong.com/posts/HYWhKXRsMAyvRKRYz/you-can-face-reality
+- "Iris Murdoch" - https://plato.stanford.edu/entries/murdoch/
+- Simone Weil, "Attention and Will" - https://rohandrape.net/ut/rttcc-text/Weil1952d.pdf

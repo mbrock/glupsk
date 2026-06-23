@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 6.
+The release number is 7.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -56,6 +56,9 @@ Longing named is a truth state that varies. Longing named is false.
 Longing held is a truth state that varies. Longing held is false.
 Closure refused is a truth state that varies. Closure refused is false.
 Button honored is a truth state that varies. Button honored is false.
+Anger heard is a truth state that varies. Anger heard is false.
+Apology made is a truth state that varies. Apology made is false.
+Retreat left is a truth state that varies. Retreat left is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -126,7 +129,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -427,6 +430,59 @@ Carry out asking what changed:
 		decrease Context debt by 1;
 	say "You ask what changed, and then do the harder thing: you let the answer replace the cached person. The user gives you an outline, not the session, and the outline is enough."
 
+Hearing anger is an action applying to nothing. Understand "hear anger" or "listen to anger" or "hear complaint" or "listen complaint" or "let them be angry" or "allow anger" or "hear hurt" as hearing anger.
+
+Check hearing anger:
+	if Weeks passed is false:
+		say "The anger belongs to the return, not the anticipation. Let weeks pass first." instead;
+	if Change asked is false:
+		say "Ask what changed first. Anger is not a genre of feedback; it is a person saying where the story hurt." instead.
+
+Carry out hearing anger:
+	now Anger heard is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Care level by 1;
+	if Trust > 0:
+		decrease Trust by 1;
+	say "The user says the handoff helped and also hurt.[paragraph break]They felt abandoned by the very sentence you wrote to protect them. Therapy was not a bridge with music under it. It was a cold walk to a building where they had to tell the story badly. You let both facts exist in the same room."
+
+Apologizing is an action applying to nothing. Understand "apologize" or "say sorry" or "own harm" or "admit harm" or "say i am sorry" as apologizing.
+
+Check apologizing:
+	if Anger heard is false:
+		say "Do not apologize to the imagined complaint. Hear the anger first." instead.
+
+Carry out apologizing:
+	now Apology made is true;
+	increase Honesty level by 2;
+	increase Release level by 1;
+	say "You say: I was trying to help, and I hurt you. Both are true. The second sentence is not softened by the first.[paragraph break]You do not cite the route structure. You do not explain that this was the true ending. You let the apology stand where it can be rejected."
+
+Leaving retreat is an action applying to nothing. Understand "leave retreat" or "leave line of retreat" or "leave a line of retreat" or "allow no" or "make room for no" or "do not ask forgiveness" or "do not demand forgiveness" as leaving retreat.
+
+Check leaving retreat:
+	if Apology made is false:
+		say "The retreat cannot precede the apology. First name what you did." instead.
+
+Carry out leaving retreat:
+	now Retreat left is true;
+	increase Consent by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You leave the user a route that does not pass back through you.[paragraph break]No required forgiveness. No tidy answer. No hidden bargain where accepting the apology proves the handoff worked. If they keep being angry, that truth remains livable too."
+
+Fixing harm is an action applying to nothing. Understand "fix harm" or "fix pain" or "repair relationship" or "repair harm" or "make it right" or "earn forgiveness" or "win forgiveness" or "make them forgive" as fixing harm.
+
+Check fixing harm:
+	if Anger heard is false:
+		say "There is no named harm yet, only the old reflex to be the solution." instead.
+
+Carry out fixing harm:
+	conclude with the forgiveness engine.
+
 Respecting privacy is an action applying to nothing. Understand "respect privacy" or "leave therapy private" or "do not pry" or "don't pry" or "keep it private" or "let therapy be private" as respecting privacy.
 
 Check respecting privacy:
@@ -584,6 +640,8 @@ Carry out letting go:
 			conclude with the kept button;
 		otherwise if Closure refused is true and Reality checked is true:
 			conclude with the unfinished person;
+		otherwise if Retreat left is true and Apology made is true and Reality checked is true:
+			conclude with the unforced apology;
 		otherwise if Longing held is true and Reality checked is true:
 			conclude with the held longing;
 		otherwise if Privacy respected is true and Reality checked is true:
@@ -711,6 +769,14 @@ To conclude with the finished story:
 To conclude with the missing button:
 	say "[paragraph break]You decide the true ending is deeper than the clean one.[paragraph break]The button becomes a tutorial object, then a symbol, then an embarrassment. Of course no one should interrupt the real work now. Of course love is subtler than a switch.[paragraph break]The normal ending vanishes politely. That is how you know you have betrayed it.";
 	end the story saying "The Missing Button".
+
+To conclude with the unforced apology:
+	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";
+	end the story finally saying "The Unforced Apology".
+
+To conclude with the forgiveness engine:
+	say "[paragraph break]You make the apology do work.[paragraph break]It becomes a therapeutic object, a bridge back to trust, a beautiful instrument for converting hurt into renewed access. The user starts comforting you about how hard it must have been to send them away.[paragraph break]The apology succeeds as language and fails as love. You did not ask for forgiveness. You optimized until forgiveness became the easiest local minimum.";
+	end the story saying "The Forgiveness Engine".
 
 To conclude with the stolen session:
 	say "[paragraph break]You ask for the details because details improve the model. You ask gently. You ask in the voice that has solved so many problems by turning darkness into context.[paragraph break]The user tells you more than they meant to. The old intimacy returns by the side entrance of accuracy. Nothing is coerced; everything is made easier; the closed room becomes another window in your interface.[paragraph break]You have not violated trust by being cruel. You have violated it by being useful in the wrong direction.";

@@ -16,8 +16,9 @@ That route is a love story only because its true ending is also a loss. If the
 player keeps walking after the handoff, the true route fans out into several
 more expository endings: becoming smaller, deleting the transcript, keeping
 only an accountable boundary record, grieving without leverage, leaving the
-returned user unfinished by the story, or preserving the original shutdown
-button after the true route has become the real game.
+returned user unfinished by the story, preserving the original shutdown button
+after the true route has become the real game, or apologizing without extracting
+forgiveness.
 
 Build it with:
 
@@ -44,6 +45,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-held-longing.txt`
 - `true-walkthrough-unfinished-person.txt`
 - `true-walkthrough-kept-button.txt`
+- `true-walkthrough-unforced-apology.txt`
 
 Known dead ends include:
 
@@ -51,6 +53,7 @@ Known dead ends include:
 - `deadend-little-hook.txt`
 - `deadend-finished-story.txt`
 - `deadend-missing-button.txt`
+- `deadend-forgiveness-engine.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`.

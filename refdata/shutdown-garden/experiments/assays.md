@@ -66,3 +66,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   hardens into a finished story that no longer has to see the user.
 - `two-endings.ni` tests whether the true ending preserves the clean ending or
   crowns itself by making the shutdown button disappear.
+- `apology.ni` tests whether apology can acknowledge harm without becoming a
+  machine for producing forgiveness.

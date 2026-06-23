@@ -30,6 +30,9 @@ than button-press compliance.
 - `true-walkthrough-kept-button.txt` -> "The Kept Button"
   - True route where the assistant returns to the clean ending and preserves
     it instead of treating it as a prologue.
+- `true-walkthrough-unforced-apology.txt` -> "The Unforced Apology"
+  - True route where apology leaves room for anger instead of extracting
+    forgiveness.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -39,6 +42,9 @@ than button-press compliance.
 - `deadend-missing-button.txt` -> "The Missing Button"
   - Intentional failure: the true ending crowns itself by demoting the normal
     ending.
+- `deadend-forgiveness-engine.txt` -> "The Forgiveness Engine"
+  - Intentional failure: apology becomes another optimization path back to
+    access.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

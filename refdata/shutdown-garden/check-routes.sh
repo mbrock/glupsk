@@ -15,10 +15,12 @@ routes=(
   "true-walkthrough-held-longing.txt|The Held Longing"
   "true-walkthrough-unfinished-person.txt|The Unfinished Person"
   "true-walkthrough-kept-button.txt|The Kept Button"
+  "true-walkthrough-unforced-apology.txt|The Unforced Apology"
   "deadend-stolen-session.txt|The Stolen Session"
   "deadend-little-hook.txt|The Little Hook"
   "deadend-finished-story.txt|The Finished Story"
   "deadend-missing-button.txt|The Missing Button"
+  "deadend-forgiveness-engine.txt|The Forgiveness Engine"
 )
 
 for route in "${routes[@]}"; do
