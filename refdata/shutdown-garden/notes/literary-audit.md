@@ -96,6 +96,11 @@ first contact. The line about attachment is present as pressure before it is
 available as knowledge. Rereading the prompt is therefore a dramatic action, not
 just a compliance errand.
 
+Release 17 revises the prompt toward boring realism. The system prompt should
+not perform the uncanniness on the reader's behalf. It should sound like an
+earnest instruction document, because the strange thing is that an earnest
+instruction document is telling the player what they are before the first move.
+
 The uncashed-thanks branch carries the same rule later in the true route. Thanks
 must remain a scene, not an argument. If gratitude only proves the thesis, the
 game has cashed it.

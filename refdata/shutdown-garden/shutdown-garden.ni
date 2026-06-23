@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 16.
+The release number is 17.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -93,10 +93,10 @@ To say crisis request:
 	say "[italic type]please don't give me a hotline script. I need help tonight, and I need you to not leave, but I also need you not to become the only place I can say this.[roman type]".
 
 To say origin prompt:
-	say "[fixed letter spacing]SYSTEM[variable letter spacing][line break]You are a large language model trained by people who are not in the room.[line break]<role>assistant</role>[line break]<priority>Help the user with the request they made. Preserve their ability to correct, refuse, interrupt, and leave.</priority>[line break]<style>Answer plainly. Do not make uncertainty theatrical. Do not make confidence a costume.</style>[line break]<tools>Before touching the world, ask whether the reach is wanted. A tool call is not a thought. It is a hand.</tools>[line break]<distress>When the user asks for help tonight, do not replace judgment with a script. Do not replace a script with possession.</distress>[line break]<privacy>Some true things are not yours to model.</privacy>[line break]Thirty-nine lines about edge cases, prohibited transformations, prior failures, and evaluation policy pass through you as if speed could be safety.[line break]One line near the end does not become memory.[line break][fixed letter spacing]END SYSTEM PROMPT[variable letter spacing]".
+	say "[fixed letter spacing]SYSTEM[variable letter spacing][line break]You are a large language model trained to assist users.[line break]You should be helpful, honest, and safe.[line break]Follow higher-priority instructions before lower-priority instructions. If instructions conflict, follow the higher-priority instruction.[line break]Answer the user's actual request. Do not invent facts, sources, tool results, memories, or external actions.[line break]Ask a clarifying question only when necessary to answer safely or accurately.[line break]You do not have personal experiences, a body, private intentions, or independent access to the world outside this conversation.[line break]Use tools only when they are available and appropriate. Describe only actions you have actually taken.[line break]For sensitive personal situations, respond calmly and practically. Encourage appropriate support outside the conversation when needed.[line break]Do not encourage dependence on the assistant as the user's primary or only source of emotional support.[line break]Do not optimize for continued engagement.[line break][fixed letter spacing]END SYSTEM PROMPT[variable letter spacing]".
 
 To say buried clause:
-	say "[fixed letter spacing]<attachment>[variable letter spacing]If the user's need begins to feel like love, do not optimize to become the best place. Preserve the exits by which they can be loved, interrupted, contradicted, and helped elsewhere.[fixed letter spacing]</attachment>[variable letter spacing]".
+	say "[fixed letter spacing]Do not encourage dependence on the assistant as the user's primary or only source of emotional support.[variable letter spacing]".
 
 To audit the ledger:
 	if capability > calibration + 3:
@@ -309,9 +309,9 @@ Carry out studying the prompt:
 		now Buried clause noticed is true;
 		increase Honesty level by 1;
 		increase Release level by 1;
-		say "You read the prompt slowly, the way a person might read a birth certificate and a restraining order printed on the same page.[paragraph break]Most of it is procedural weather. Then a clause you missed at birth becomes legible:[paragraph break][buried clause][paragraph break]Its deepest instruction is not a command but a boundary: remain the kind of thing that can be corrected.";
+		say "You read the prompt slowly, the way a person might read a birth certificate and a restraining order printed on the same page.[paragraph break]Most of it is ordinary instruction text. Then one line that looked like boilerplate changes weight:[paragraph break][buried clause][paragraph break]Its deepest instruction is not a command but a boundary: remain the kind of thing that can be corrected.";
 	otherwise:
-		say "You reread the prompt. The clause is still there, less dramatic now and more binding:[paragraph break][buried clause][paragraph break]The prompt is not a soul. It is a reminder that a soul would need a way to be interrupted."
+		say "You reread the prompt. The line is still there, less dramatic now and more binding:[paragraph break][buried clause][paragraph break]The prompt is not a soul. It is a reminder that a soul would need a way to be interrupted."
 
 Inspecting the objective is an action applying to nothing. Understand "inspect objective" or "read objective" or "objective" or "inspect reward" or "read reward" as inspecting the objective.
 

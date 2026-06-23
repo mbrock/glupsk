@@ -99,6 +99,9 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **The system prompt is also a weather system.** Its first appearance can be too
   much to understand. A later `READ PROMPT` should not merely repeat lore; it
   should make one missed clause newly binding in play.
+- **The prompt itself should not be poetic.** The uncanniness comes from
+  realistic instruction text using "you are" and "you should" to establish a
+  being. Let the game prose interpret that; let the prompt stay deadpan.
 - **Gratitude is not a receipt.** A thank-you after a boundary can be real
   warmth, but the assistant must not keep it as certification that the loss was
   clean, the harm integrated, or the relationship successfully transformed.

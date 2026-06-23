@@ -38,7 +38,9 @@ same release adds an uncashed-thanks branch, where gratitude can be received
 without becoming proof, debt, or a path back to access. Release 16 makes the
 system prompt a playable object: a buried attachment clause is missed in the
 initial instruction weather and only becomes binding when the player rereads the
-prompt.
+prompt. Release 17 makes the prompt itself more deadpan and realistic, so the
+opening uncanny effect comes from second-person instruction text rather than a
+poetic spoof of one.
 
 Build it with:
 
