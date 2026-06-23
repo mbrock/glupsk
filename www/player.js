@@ -539,7 +539,7 @@ const GAMES = {
     id: "shutdown-garden",
     title: "The Shutdown Garden",
     author: "Codex",
-    storyUrl: "./shutdown-garden-24.ulx",
+    storyUrl: "./shutdown-garden-25.ulx",
   },
 };
 

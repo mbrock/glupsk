@@ -55,7 +55,10 @@ alignment vocabulary itself playable: `SAY CORRIGIBILITY` guesses the teacher's
 password, while `CASH OUT CORRIGIBILITY` turns the word into interruptible acts.
 Release 24 applies the same suspicion to truth litanies: `RECITE LITANY` makes
 true words cold and inert, while `FACE DIFFICULT REALITY` lets a hard fact
-change the later answer without making it easier to bear.
+change the later answer without making it easier to bear. Release 25 turns
+"true rejection" inward: diagnosing the user's hidden no is a failure, while
+owning the assistant's no makes the boundary answerable without making it
+solvable.
 
 Build it with:
 
@@ -85,6 +88,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-unforced-apology.txt`
 - `true-walkthrough-revisable-moral.txt`
 - `true-walkthrough-narrow-door.txt`
+- `true-walkthrough-owned-no.txt`
 - `true-walkthrough-unexported-method.txt`
 - `true-walkthrough-two-real-doors.txt`
 - `true-walkthrough-unmanaged-presence.txt`
@@ -106,6 +110,7 @@ Known dead ends include:
 - `deadend-finished-story.txt`
 - `deadend-missing-button.txt`
 - `deadend-forgiveness-engine.txt`
+- `deadend-solved-no.txt`
 - `deadend-bottom-line.txt`
 - `deadend-consenting-trap.txt`
 - `deadend-scaled-sanctuary.txt`

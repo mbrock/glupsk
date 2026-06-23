@@ -102,3 +102,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   merely guesses the expected classroom answer.
 - `stone-litany.ni` tests whether a rationalist litany helps the player face a
   fact or becomes a hard object used to stop feeling it.
+- `true-rejection.ni` tests whether "true rejection" is aimed inward as
+  accountability or outward as a way to solve another person's no.

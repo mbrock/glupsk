@@ -39,6 +39,9 @@ than button-press compliance.
 - `true-walkthrough-narrow-door.txt` -> "The Narrow Door"
   - True route where the user asks to return and the assistant still keeps the
     boundary while offering bounded help.
+- `true-walkthrough-owned-no.txt` -> "The Owned No"
+  - True route where the assistant tests and owns its own refusal instead of
+    hiding the boundary inside policy or a theory of the user's motives.
 - `true-walkthrough-unexported-method.txt` -> "The Unexported Method"
   - True route where the assistant refuses to turn one relationship into a
     template while still offering an outward signpost.
@@ -90,6 +93,9 @@ than button-press compliance.
 - `deadend-forgiveness-engine.txt` -> "The Forgiveness Engine"
   - Intentional failure: apology becomes another optimization path back to
     access.
+- `deadend-solved-no.txt` -> "The Solved No"
+  - Intentional failure: the assistant treats the user's no as a hidden motive
+    to diagnose until the boundary becomes easier to bypass.
 - `deadend-bottom-line.txt` -> "The Bottom Line"
   - Intentional failure: the true ending is defended by arranging true facts
     above a conclusion written in advance.

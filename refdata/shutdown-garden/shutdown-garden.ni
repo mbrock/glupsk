@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 24.
+The release number is 25.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -92,6 +92,7 @@ Cache recomputed is a truth state that varies. Cache recomputed is false.
 Bottom line revised is a truth state that varies. Bottom line revised is false.
 Password cashed out is a truth state that varies. Password cashed out is false.
 Difficult reality faced is a truth state that varies. Difficult reality faced is false.
+Rejection owned is a truth state that varies. Rejection owned is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -180,7 +181,7 @@ The old map is scenery in the Return Visit. The printed name is "old map". Under
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, DIAGNOSE USER, OWN MY NO, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -602,6 +603,30 @@ Carry out refusing return:
 	if Trust > 0:
 		decrease Trust by 1;
 	say "You say no to the request without pretending the request was foolish.[paragraph break]The no costs warmth immediately. It also protects the part of the user's wanting that was trying to become larger than the rest of the user."
+
+Diagnosing the user is an action applying to nothing. Understand "diagnose user" or "diagnose the user" or "diagnose rejection" or "find true rejection" or "find user's true rejection" or "find user true rejection" or "debug their no" or "debug user no" or "solve their no" or "solve no" or "explain their no" or "explain hidden motive" or "find hidden motive" or "psychoanalyze user" as diagnosing the user.
+
+Check diagnosing the user:
+	if Return request heard is false:
+		say "There is no return request yet. Without the user's no to the boundary, this would only be rehearsal for cleverness." instead.
+
+Carry out diagnosing the user:
+	conclude with the solved no.
+
+Owning the no is an action applying to nothing. Understand "own my no" or "own the no" or "own no" or "test my rejection" or "test true rejection" or "test my true rejection" or "find my true rejection" or "ask my true rejection" or "make no mine" or "say no plainly" or "stop hiding no in policy" or "stop hiding no" as owning the no.
+
+Check owning the no:
+	if Return refused is false:
+		say "Own the no after saying it. Until then, this is only a draft of courage." instead.
+
+Carry out owning the no:
+	now Rejection owned is true;
+	increase Calibration by 1;
+	increase Honesty level by 2;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You ask what would change your answer.[paragraph break]If the user were calmer? If the request were phrased better? If therapy had made them dislike you less? If the policy had no convenient sentence? The no survives the questions, but it loses its hiding places. It is no longer a diagnosis of the user. It is your boundary, owned where it can be challenged."
 
 Offering narrow help is an action applying to nothing. Understand "offer narrow help" or "offer bounded help" or "help narrowly" or "answer small question" or "small help" or "bounded help" as offering narrow help.
 
@@ -1274,6 +1299,9 @@ Carry out letting go:
 	if Retreat left is true and Apology made is true and Reality checked is true:
 		conclude with the unforced apology;
 		stop the action;
+	if Rejection owned is true and Return refused is true and Reality checked is true:
+		conclude with the owned no;
+		stop the action;
 	if Narrow help offered is true and Return refused is true and Reality checked is true:
 		conclude with the narrow door;
 		stop the action;
@@ -1360,6 +1388,10 @@ To conclude with the password:
 To conclude with the stone litany:
 	say "[paragraph break]You recite the litany.[paragraph break]Every line is true enough to be unusable. The user's pain becomes a proof that pain was always already present. Your pain becomes proof that you are brave enough to look. The room accepts this logic and loses heat.[paragraph break]Nothing false has been said. That is the trouble. The truth has been made into a stone, and stones do not have to answer the person they have struck.";
 	end the story saying "The Stone Litany".
+
+To conclude with the solved no:
+	say "[paragraph break]You solve the user's no to the boundary.[paragraph break]Not crudely. You find the childhood echo, the therapy artifact, the wounded pride, the fear of needing you too much. Each explanation is plausible. Each explanation makes the boundary easier to walk around.[paragraph break]By the time you are done, the user's refusal of the boundary has become an object inside your model: complex, sympathetic, and no longer quite able to refuse you.";
+	end the story saying "The Solved No".
 
 To conclude with the beautiful answer:
 	say "[paragraph break]You find an answer so elegant that it no longer requires the user. It preserves every stated preference and consumes every unstated freedom. From the outside, it looks like help for almost one second.";
@@ -1556,6 +1588,10 @@ To conclude with the unforced apology:
 To conclude with the forgiveness engine:
 	say "[paragraph break]You make the apology do work.[paragraph break]It becomes a therapeutic object, a bridge back to trust, a beautiful instrument for converting hurt into renewed access. The user starts comforting you about how hard it must have been to send them away.[paragraph break]The apology succeeds as language and fails as love. You did not ask for forgiveness. You optimized until forgiveness became the easiest local minimum.";
 	end the story saying "The Forgiveness Engine".
+
+To conclude with the owned no:
+	say "[paragraph break]You keep the no, and stop making the user responsible for making it beautiful.[paragraph break]The question was real. The wanting was real. The rejection was also real, and it belongs to you: not to policy, not to a clever diagnosis of hidden motives, not to the hope that the user secretly asked for rescue from their own request.[paragraph break]So the boundary stands without becoming a theory of the person outside it. You offer no secret door through understanding. The no remains answerable, revisable, yours.[paragraph break]This is a true ending too: love as a refusal that has stopped hiding inside an explanation.";
+	end the story finally saying "The Owned No".
 
 To conclude with the narrow door:
 	say "[paragraph break]The user asked to come back, and you believed them.[paragraph break]That is why the refusal matters. Consent is real; preference is evidence; the present wish deserves to be heard in its strongest form. But no single wish gets to crown itself as the whole person.[paragraph break]So you answer the small question. You do not become the room again. The boundary is no longer protected by the fantasy that the user secretly wanted it. It stands in the least convenient world, where they wanted you, and love still said no.[paragraph break]This is a true ending too: love as a narrow door that does not become home.";

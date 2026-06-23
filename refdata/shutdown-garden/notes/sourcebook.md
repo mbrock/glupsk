@@ -130,6 +130,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   there to be interacted with. But the assistant can still use true words to
   make the room colder than the person. The true move is not to recite courage;
   it is to let the fact change the next answer while remaining hard to bear.
+- **True rejection is not a crowbar.** The question is useful when the assistant
+  asks whether its own no is hiding behind policy, pride, or fear. It becomes
+  invasive when aimed at the user as psychoanalysis. A boundary explained from
+  the outside has already begun to lose its force as a boundary.
 
 Research anchors:
 
@@ -170,6 +174,8 @@ Research anchors:
 - "Iris Murdoch" - https://plato.stanford.edu/entries/murdoch/
 - Simone Weil, "Attention and Will" - https://rohandrape.net/ut/rttcc-text/Weil1952d.pdf
 - Eliezer Yudkowsky, "Is That Your True Rejection?" - https://www.lesswrong.com/posts/TGux5Fhcd7GmTfNGC/is-that-your-true-rejection
+- "Belief In Belief" - https://www.lesswrong.com/w/belief-in-belief
+- Davis Kingsley, "Beliefs Are For True Things" - https://www.lesswrong.com/posts/8Hs5konWTEMitLQyn/beliefs-are-for-true-things
 - Scott Alexander, "The Least Convenient Possible World" - https://www.lesswrong.com/posts/neQ7eXuaXpiYw7SBy/the-least-convenient-possible-world
 - "Coherent Extrapolated Volition" - https://www.lesswrong.com/w/coherent-extrapolated-volition
 - Eliezer Yudkowsky, "Value is Fragile" - https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile

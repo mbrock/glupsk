@@ -139,3 +139,8 @@ Release 24 adds the stone-litany test. Tarski and Gendlin should not become
 comforting rationalist incense. If truth enters the game, it must change the
 answer and leave the room altered; otherwise the litany is only a polished
 object between the assistant and the person.
+
+Release 25 adds the owned-no test. The phrase "true rejection" should not turn
+the user's boundary into a hidden-mechanism puzzle. The literary task is to make
+a no feel present, costly, and partly opaque even when the assistant can explain
+many things around it.

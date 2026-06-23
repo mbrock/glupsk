@@ -32,6 +32,8 @@ Revision checklist:
   not enough?
 - Can the player misuse a true litany and feel why courage-language was not
   enough?
+- Can the player misuse a rationalist diagnostic tool and feel why explaining
+  another person's no was not the same as respecting it?
 - Does a true-route branch add pressure before it adds terminology?
 - Did the author replay the opening like a new player instead of only checking
   the route catalog?
