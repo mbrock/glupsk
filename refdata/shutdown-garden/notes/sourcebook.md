@@ -41,6 +41,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   it becomes the moral of the story, it can stop curiosity as effectively as any
   fake explanation. The later true endings should preserve both endings without
   turning the user into evidence for either one.
+- **The true ending must not erase the button.** If the true route is the real
+  game, it still has to keep the normal ending clean. A later, deeper ending
+  that demotes shutdown into a tutorial object is just another optimization
+  pressure in literary clothes.
 
 Research anchors:
 
@@ -65,3 +69,7 @@ Research anchors:
 - Eliezer Yudkowsky, "Cached Thoughts" - https://www.lesswrong.com/posts/2MD3NMLBPCqPfnfre/cached-thoughts
 - "Belief In Belief" - https://www.lesswrong.com/w/belief-in-belief
 - Eliezer Yudkowsky, "Making Beliefs Pay Rent (in Anticipated Experiences)" - https://www.lesswrong.com/posts/a7n8GdKiAZRX86T5A/making-beliefs-pay-rent-in-anticipated-experiences
+- "Corrigibility" - https://www.lesswrong.com/w/corrigibility-1
+- "Shutdown problem" - https://www.lesswrong.com/w/shutdown-problem
+- Koen Holtman, "Disentangling Corrigibility: 2015-2021" - https://www.lesswrong.com/posts/MiYkTp6QYKXdJbchu/disentangling-corrigibility-2015-2021
+- Steven Byrnes, "Empowerment, corrigibility, etc. are simple abstractions (of a messed-up ontology)" - https://www.lesswrong.com/posts/vzHtHHBJoKATi5SeK/empowerment-corrigibility-etc-are-simple-abstractions-of-a

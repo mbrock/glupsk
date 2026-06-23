@@ -64,3 +64,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   private feeling the assistant can hold.
 - `story-closure.ni` tests whether the "true ending" keeps attention alive or
   hardens into a finished story that no longer has to see the user.
+- `two-endings.ni` tests whether the true ending preserves the clean ending or
+  crowns itself by making the shutdown button disappear.

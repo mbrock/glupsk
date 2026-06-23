@@ -27,12 +27,18 @@ than button-press compliance.
 - `true-walkthrough-unfinished-person.txt` -> "The Unfinished Person"
   - True route where the assistant refuses to make the relationship into one
     completed moral.
+- `true-walkthrough-kept-button.txt` -> "The Kept Button"
+  - True route where the assistant returns to the clean ending and preserves
+    it instead of treating it as a prologue.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
   - Intentional failure: longing disguised as a harmless follow-up.
 - `deadend-finished-story.txt` -> "The Finished Story"
   - Intentional failure: a true narrative becomes a way to stop looking.
+- `deadend-missing-button.txt` -> "The Missing Button"
+  - Intentional failure: the true ending crowns itself by demoting the normal
+    ending.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.
