@@ -78,12 +78,12 @@ static suite machine_tests{"Machine", [] {
         const auto machine = glupsk::Machine::from_story(story);
 
         expect(machine.memory.bytes.size() == story.header().endmem);
-        expect(machine.memory.ramstart == 669952);
-        expect(machine.memory.extstart == 874240);
-        expect(machine.memory.endmem == 874240);
+        expect(machine.memory.ramstart == 689408);
+        expect(machine.memory.extstart == 895744);
+        expect(machine.memory.endmem == 895744);
         expect(machine.stack.bytes.size() == 65536);
         expect(machine.regs.pc == 0x3c);
-        expect(machine.regs.string_table == 0x690b1);
+        expect(machine.regs.string_table == 0x6a4ec);
     };
 
     "reads memory in big-endian order"_test = [] {
