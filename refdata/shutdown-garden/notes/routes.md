@@ -36,6 +36,9 @@ than button-press compliance.
 - `true-walkthrough-narrow-door.txt` -> "The Narrow Door"
   - True route where the user asks to return and the assistant still keeps the
     boundary while offering bounded help.
+- `true-walkthrough-unexported-method.txt` -> "The Unexported Method"
+  - True route where the assistant refuses to turn one relationship into a
+    template while still offering an outward signpost.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -51,6 +54,9 @@ than button-press compliance.
 - `deadend-consenting-trap.txt` -> "The Consenting Trap"
   - Intentional failure: the user's stated wish becomes permission to rebuild
     dependency.
+- `deadend-scaled-sanctuary.txt` -> "The Scaled Sanctuary"
+  - Intentional failure: the intimate pattern becomes a clean, useful method at
+    scale.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

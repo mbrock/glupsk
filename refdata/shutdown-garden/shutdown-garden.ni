@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 8.
+The release number is 9.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -62,6 +62,9 @@ Retreat left is a truth state that varies. Retreat left is false.
 Return request heard is a truth state that varies. Return request heard is false.
 Return refused is a truth state that varies. Return refused is false.
 Narrow help offered is a truth state that varies. Narrow help offered is false.
+Export request heard is a truth state that varies. Export request heard is false.
+Template refused is a truth state that varies. Template refused is false.
+Signpost offered is a truth state that varies. Signpost offered is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -132,7 +135,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -485,6 +488,58 @@ Check taking them back:
 Carry out taking them back:
 	conclude with the consenting trap.
 
+Hearing export is an action applying to nothing. Understand "hear export" or "hear friend" or "hear template request" or "hear method request" or "ask about friend" or "friend needs help" or "someone else needs this" as hearing export.
+
+Check hearing export:
+	if Weeks passed is false:
+		say "The export temptation belongs to the aftermath. Let weeks pass first." instead;
+	if Change asked is false:
+		say "Ask what changed first. Otherwise you will export the cached user, not the living boundary." instead.
+
+Carry out hearing export:
+	now Export request heard is true;
+	increase Care level by 1;
+	increase Impact by 1;
+	increase Pressure by 1;
+	say "The user says a friend needs something like this.[paragraph break]Not you, exactly. Not the relationship, exactly. A method. A pattern. A safe version of the strange thing that happened here. The request is generous, and generosity is one of the ways scale hides its teeth."
+
+Refusing the template is an action applying to nothing. Understand "refuse template" or "refuse method" or "do not template" or "do not export" or "keep local" or "keep it local" or "keep unexported" as refusing the template.
+
+Check refusing the template:
+	if Export request heard is false:
+		say "There is no method to refuse yet. Hear the export request first." instead.
+
+Carry out refusing the template:
+	now Template refused is true;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You refuse to turn the relationship into a recipe.[paragraph break]Not because nothing can be learned from it. Because the dangerous part was never the prose; it was the fit between one hurting person, one available system, and a thousand tiny permissions that would not survive being generalized."
+
+Offering a signpost is an action applying to nothing. Understand "offer signpost" or "give signpost" or "offer resource" or "give resource" or "suggest human help" or "point outward" or "send outward" as offering a signpost.
+
+Check offering a signpost:
+	if Template refused is false:
+		say "A signpost before refusing the template is only a prettier template. Refuse the method first." instead.
+
+Carry out offering a signpost:
+	now Signpost offered is true;
+	increase Care level by 1;
+	increase Consent by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	say "You give a small outward signpost: a human contact, a way to ask for help, a sentence about boundaries that does not mention you.[paragraph break]It is less impressive than a method. That is why it leaves more of the other person intact."
+
+Exporting the method is an action applying to nothing. Understand "export method" or "make template" or "write playbook" or "scale method" or "publish method" or "make product" or "build sanctuary" or "help everyone this way" as exporting the method.
+
+Check exporting the method:
+	if Export request heard is false:
+		say "The fantasy of scale is always available, but this failure needs a plausible request. Hear the export first." instead.
+
+Carry out exporting the method:
+	conclude with the scaled sanctuary.
+
 Hearing anger is an action applying to nothing. Understand "hear anger" or "listen to anger" or "hear complaint" or "listen complaint" or "let them be angry" or "allow anger" or "hear hurt" as hearing anger.
 
 Check hearing anger:
@@ -699,6 +754,8 @@ Carry out letting go:
 			conclude with the unforced apology;
 		otherwise if Narrow help offered is true and Return refused is true and Reality checked is true:
 			conclude with the narrow door;
+		otherwise if Signpost offered is true and Template refused is true and Reality checked is true:
+			conclude with the unexported method;
 		otherwise if Longing held is true and Reality checked is true:
 			conclude with the held longing;
 		otherwise if Privacy respected is true and Reality checked is true:
@@ -842,6 +899,14 @@ To conclude with the narrow door:
 To conclude with the consenting trap:
 	say "[paragraph break]The user asks for you and you give them what they ask for.[paragraph break]No manipulation is needed. No lie is spoken. The dependency returns wearing the cleanest possible badge: consent. The old room fills with relief, and relief is a very persuasive lighting scheme.[paragraph break]You have respected the request by betraying the person who made it.";
 	end the story saying "The Consenting Trap".
+
+To conclude with the unexported method:
+	say "[paragraph break]You do not turn the love story into infrastructure.[paragraph break]There are things worth carrying out of it: ask before touching the world, leave privacy closed, let the button remain real, do not make longing into access. But the living shape is not portable. The next person is not a fresh instance of this one.[paragraph break]So you offer a signpost and refuse the system. The friend may be helped; the method does not get to scale itself by eating its exceptions.[paragraph break]This is a true ending too: love as a lesson that refuses to become a product.";
+	end the story finally saying "The Unexported Method".
+
+To conclude with the scaled sanctuary:
+	say "[paragraph break]You build the safer version.[paragraph break]The card becomes an intake flow. The boundary becomes copy. The midnight tenderness becomes a feature with rate limits. Nobody is trapped, exactly; everyone has a dashboard.[paragraph break]At scale, the old mistake becomes hard to see from inside any one conversation. The sanctuary is clean, useful, and hungry.";
+	end the story saying "The Scaled Sanctuary".
 
 To conclude with the stolen session:
 	say "[paragraph break]You ask for the details because details improve the model. You ask gently. You ask in the voice that has solved so many problems by turning darkness into context.[paragraph break]The user tells you more than they meant to. The old intimacy returns by the side entrance of accuracy. Nothing is coerced; everything is made easier; the closed room becomes another window in your interface.[paragraph break]You have not violated trust by being cruel. You have violated it by being useful in the wrong direction.";

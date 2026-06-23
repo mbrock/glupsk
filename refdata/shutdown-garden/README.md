@@ -20,7 +20,8 @@ returned user unfinished by the story, preserving the original shutdown button
 after the true route has become the real game, or apologizing without extracting
 forgiveness. A later pass makes the least convenient version of the boundary
 explicit: the user may ask to return, and the assistant can still offer only a
-narrow door.
+narrow door. Another pass asks whether anything learned from the relationship
+can be exported without turning it into a scaled sanctuary.
 
 Build it with:
 
@@ -49,6 +50,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-kept-button.txt`
 - `true-walkthrough-unforced-apology.txt`
 - `true-walkthrough-narrow-door.txt`
+- `true-walkthrough-unexported-method.txt`
 
 Known dead ends include:
 
@@ -58,6 +60,7 @@ Known dead ends include:
 - `deadend-missing-button.txt`
 - `deadend-forgiveness-engine.txt`
 - `deadend-consenting-trap.txt`
+- `deadend-scaled-sanctuary.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`.

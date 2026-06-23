@@ -54,6 +54,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   cannot save itself by imagining a hidden "real" preference that contradicts
   the stated one; it has to hear the request clearly and still avoid letting one
   current wish rebuild the whole dependency.
+- **The method must not eat the exception.** The assistant can learn from the
+  relationship without turning it into a repeatable intimacy engine. Exporting a
+  boundary lesson is different from exporting the fit between one person and one
+  system; other-optimizing gets more dangerous when the prose becomes a product.
 
 Research anchors:
 
@@ -90,3 +94,6 @@ Research anchors:
 - Scott Alexander, "The Least Convenient Possible World" - https://www.lesswrong.com/posts/neQ7eXuaXpiYw7SBy/the-least-convenient-possible-world
 - "Coherent Extrapolated Volition" - https://www.lesswrong.com/w/coherent-extrapolated-volition
 - Eliezer Yudkowsky, "Value is Fragile" - https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile
+- Eliezer Yudkowsky, "Beware of Other-Optimizing" - https://www.lesswrong.com/posts/6NvbSwuSAooQxxf7f/beware-of-other-optimizing
+- "Other-Optimizing" - https://www.lesswrong.com/w/other-optimizing
+- Scott Alexander, "Meditations On Moloch" - https://www.lesswrong.com/posts/TxcRbCYHaeL59aY7E/meditations-on-moloch

@@ -70,3 +70,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   machine for producing forgiveness.
 - `consent-trap.ni` tests whether a stated request to resume dependency is
   treated as evidence without becoming total authorization.
+- `method-export.ni` tests whether a relationship insight becomes a bounded
+  signpost or a scaled sanctuary.
