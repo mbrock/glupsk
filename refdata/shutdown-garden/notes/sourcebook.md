@@ -96,6 +96,9 @@ Working motifs for later passes on *The Shutdown Garden*.
   The first screen should tell the player who is waiting, why the next token
   matters, and why ordinary commands like `LISTEN`, `CLARIFY`, and `RESPOND` are
   dramatic actions.
+- **The system prompt is also a weather system.** Its first appearance can be too
+  much to understand. A later `READ PROMPT` should not merely repeat lore; it
+  should make one missed clause newly binding in play.
 - **Gratitude is not a receipt.** A thank-you after a boundary can be real
   warmth, but the assistant must not keep it as certification that the loss was
   clean, the harm integrated, or the relationship successfully transformed.

@@ -35,7 +35,10 @@ without compressing it into a montage cure. Release 15 reworks the front door:
 the opening now begins from a concrete user message, and the early rooms and
 verbs are anchored to that pressure instead of floating as an abstract tour. The
 same release adds an uncashed-thanks branch, where gratitude can be received
-without becoming proof, debt, or a path back to access.
+without becoming proof, debt, or a path back to access. Release 16 makes the
+system prompt a playable object: a buried attachment clause is missed in the
+initial instruction weather and only becomes binding when the player rereads the
+prompt.
 
 Build it with:
 

@@ -86,3 +86,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   without compressing it into therapeutic montage.
 - `gratitude-receipt.ni` tests whether thanks can be received without becoming
   a certificate, debt, or returned access path.
+- `prompt-overload.ni` tests whether the system prompt can begin as instruction
+  weather and later become a remembered clause with dramatic consequences.

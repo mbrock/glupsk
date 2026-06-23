@@ -20,6 +20,7 @@ Revision checklist:
 - Does the first screen make the player curious about what happens next?
 - Does every nearby room answer "why am I here right now?"
 - Does a wrong early move fail as drama, not as a rubric?
+- Does rereading an instruction reveal something that changes play?
 - Does a true-route branch add pressure before it adds terminology?
 - Did the author replay the opening like a new player instead of only checking
   the route catalog?
