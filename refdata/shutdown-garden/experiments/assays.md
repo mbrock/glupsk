@@ -68,3 +68,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   crowns itself by making the shutdown button disappear.
 - `apology.ni` tests whether apology can acknowledge harm without becoming a
   machine for producing forgiveness.
+- `consent-trap.ni` tests whether a stated request to resume dependency is
+  treated as evidence without becoming total authorization.

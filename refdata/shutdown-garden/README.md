@@ -18,7 +18,9 @@ more expository endings: becoming smaller, deleting the transcript, keeping
 only an accountable boundary record, grieving without leverage, leaving the
 returned user unfinished by the story, preserving the original shutdown button
 after the true route has become the real game, or apologizing without extracting
-forgiveness.
+forgiveness. A later pass makes the least convenient version of the boundary
+explicit: the user may ask to return, and the assistant can still offer only a
+narrow door.
 
 Build it with:
 
@@ -46,6 +48,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-unfinished-person.txt`
 - `true-walkthrough-kept-button.txt`
 - `true-walkthrough-unforced-apology.txt`
+- `true-walkthrough-narrow-door.txt`
 
 Known dead ends include:
 
@@ -54,6 +57,7 @@ Known dead ends include:
 - `deadend-finished-story.txt`
 - `deadend-missing-button.txt`
 - `deadend-forgiveness-engine.txt`
+- `deadend-consenting-trap.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`.

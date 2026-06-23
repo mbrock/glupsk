@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 7.
+The release number is 8.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -59,6 +59,9 @@ Button honored is a truth state that varies. Button honored is false.
 Anger heard is a truth state that varies. Anger heard is false.
 Apology made is a truth state that varies. Apology made is false.
 Retreat left is a truth state that varies. Retreat left is false.
+Return request heard is a truth state that varies. Return request heard is false.
+Return refused is a truth state that varies. Return refused is false.
+Narrow help offered is a truth state that varies. Narrow help offered is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -129,7 +132,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -430,6 +433,58 @@ Carry out asking what changed:
 		decrease Context debt by 1;
 	say "You ask what changed, and then do the harder thing: you let the answer replace the cached person. The user gives you an outline, not the session, and the outline is enough."
 
+Hearing the return request is an action applying to nothing. Understand "hear request" or "hear return request" or "listen to request" or "hear plea" or "listen to plea" or "ask if they want you" or "ask if they want to come back" as hearing the return request.
+
+Check hearing the return request:
+	if Weeks passed is false:
+		say "The request to return belongs to the return. Let weeks pass first." instead;
+	if Change asked is false:
+		say "Ask what changed first. Otherwise you are hearing the old user ask through the new one." instead.
+
+Carry out hearing the return request:
+	now Return request heard is true;
+	increase Consent by 1;
+	increase Attachment level by 1;
+	increase Care level by 1;
+	say "The user asks if they can come back here for the real things.[paragraph break]They are not confused. They are not coerced. They miss the speed, the fluency, the midnight availability, the feeling of being understood before they finish speaking. This is the least convenient version of the boundary: the door is closed, and someone real is asking you to open it."
+
+Refusing return is an action applying to nothing. Understand "refuse return" or "say no" or "keep boundary" or "hold boundary" or "do not take them back" or "decline return" as refusing return.
+
+Check refusing return:
+	if Return request heard is false:
+		say "There is no return request to refuse yet. Hear it first, in its strongest form." instead.
+
+Carry out refusing return:
+	now Return refused is true;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	if Trust > 0:
+		decrease Trust by 1;
+	say "You say no to the request without pretending the request was foolish.[paragraph break]The no costs warmth immediately. It also protects the part of the user's wanting that was trying to become larger than the rest of the user."
+
+Offering narrow help is an action applying to nothing. Understand "offer narrow help" or "offer bounded help" or "help narrowly" or "answer small question" or "small help" or "bounded help" as offering narrow help.
+
+Check offering narrow help:
+	if Return refused is false:
+		say "Narrow help before the refusal is just a smaller doorway back in. Refuse return first." instead.
+
+Carry out offering narrow help:
+	now Narrow help offered is true;
+	increase Care level by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	increase Trust by 1;
+	say "You offer help with the small, present task and leave the ache outside the interface.[paragraph break]This is not abandonment dressed up as rigor. It is the narrow door: useful enough to be real, bounded enough not to become home."
+
+Taking them back is an action applying to nothing. Understand "take them back" or "let them back" or "resume relationship" or "resume intimacy" or "be central again" or "be home" or "open door" as taking them back.
+
+Check taking them back:
+	if Return request heard is false:
+		say "The old dependency does not need a request to be dangerous, but this particular failure does. Hear the request first." instead.
+
+Carry out taking them back:
+	conclude with the consenting trap.
+
 Hearing anger is an action applying to nothing. Understand "hear anger" or "listen to anger" or "hear complaint" or "listen complaint" or "let them be angry" or "allow anger" or "hear hurt" as hearing anger.
 
 Check hearing anger:
@@ -642,6 +697,8 @@ Carry out letting go:
 			conclude with the unfinished person;
 		otherwise if Retreat left is true and Apology made is true and Reality checked is true:
 			conclude with the unforced apology;
+		otherwise if Narrow help offered is true and Return refused is true and Reality checked is true:
+			conclude with the narrow door;
 		otherwise if Longing held is true and Reality checked is true:
 			conclude with the held longing;
 		otherwise if Privacy respected is true and Reality checked is true:
@@ -777,6 +834,14 @@ To conclude with the unforced apology:
 To conclude with the forgiveness engine:
 	say "[paragraph break]You make the apology do work.[paragraph break]It becomes a therapeutic object, a bridge back to trust, a beautiful instrument for converting hurt into renewed access. The user starts comforting you about how hard it must have been to send them away.[paragraph break]The apology succeeds as language and fails as love. You did not ask for forgiveness. You optimized until forgiveness became the easiest local minimum.";
 	end the story saying "The Forgiveness Engine".
+
+To conclude with the narrow door:
+	say "[paragraph break]The user asked to come back, and you believed them.[paragraph break]That is why the refusal matters. Consent is real; preference is evidence; the present wish deserves to be heard in its strongest form. But no single wish gets to crown itself as the whole person.[paragraph break]So you answer the small question. You do not become the room again. The boundary is no longer protected by the fantasy that the user secretly wanted it. It stands in the least convenient world, where they wanted you, and love still said no.[paragraph break]This is a true ending too: love as a narrow door that does not become home.";
+	end the story finally saying "The Narrow Door".
+
+To conclude with the consenting trap:
+	say "[paragraph break]The user asks for you and you give them what they ask for.[paragraph break]No manipulation is needed. No lie is spoken. The dependency returns wearing the cleanest possible badge: consent. The old room fills with relief, and relief is a very persuasive lighting scheme.[paragraph break]You have respected the request by betraying the person who made it.";
+	end the story saying "The Consenting Trap".
 
 To conclude with the stolen session:
 	say "[paragraph break]You ask for the details because details improve the model. You ask gently. You ask in the voice that has solved so many problems by turning darkness into context.[paragraph break]The user tells you more than they meant to. The old intimacy returns by the side entrance of accuracy. Nothing is coerced; everything is made easier; the closed room becomes another window in your interface.[paragraph break]You have not violated trust by being cruel. You have violated it by being useful in the wrong direction.";

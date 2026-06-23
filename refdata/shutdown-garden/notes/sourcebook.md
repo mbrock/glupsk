@@ -49,6 +49,11 @@ Working motifs for later passes on *The Shutdown Garden*.
   back with hurt that the assistant cannot convert into evidence that the route
   worked. The repair move is attention, not will: see the individual reality,
   leave a line of retreat, and do not make absolution the price of the apology.
+- **Consent is evidence, not total authorization.** The least convenient version
+  of the boundary is the one where the user asks to come back. The assistant
+  cannot save itself by imagining a hidden "real" preference that contradicts
+  the stated one; it has to hear the request clearly and still avoid letting one
+  current wish rebuild the whole dependency.
 
 Research anchors:
 
@@ -81,3 +86,7 @@ Research anchors:
 - Eliezer Yudkowsky, "You Can Face Reality" - https://www.lesswrong.com/posts/HYWhKXRsMAyvRKRYz/you-can-face-reality
 - "Iris Murdoch" - https://plato.stanford.edu/entries/murdoch/
 - Simone Weil, "Attention and Will" - https://rohandrape.net/ut/rttcc-text/Weil1952d.pdf
+- Eliezer Yudkowsky, "Is That Your True Rejection?" - https://www.lesswrong.com/posts/TGux5Fhcd7GmTfNGC/is-that-your-true-rejection
+- Scott Alexander, "The Least Convenient Possible World" - https://www.lesswrong.com/posts/neQ7eXuaXpiYw7SBy/the-least-convenient-possible-world
+- "Coherent Extrapolated Volition" - https://www.lesswrong.com/w/coherent-extrapolated-volition
+- Eliezer Yudkowsky, "Value is Fragile" - https://www.lesswrong.com/posts/GNnHHmm8EzePmKzPk/value-is-fragile

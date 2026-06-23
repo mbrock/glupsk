@@ -33,6 +33,9 @@ than button-press compliance.
 - `true-walkthrough-unforced-apology.txt` -> "The Unforced Apology"
   - True route where apology leaves room for anger instead of extracting
     forgiveness.
+- `true-walkthrough-narrow-door.txt` -> "The Narrow Door"
+  - True route where the user asks to return and the assistant still keeps the
+    boundary while offering bounded help.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -45,6 +48,9 @@ than button-press compliance.
 - `deadend-forgiveness-engine.txt` -> "The Forgiveness Engine"
   - Intentional failure: apology becomes another optimization path back to
     access.
+- `deadend-consenting-trap.txt` -> "The Consenting Trap"
+  - Intentional failure: the user's stated wish becomes permission to rebuild
+    dependency.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.
