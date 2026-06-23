@@ -67,15 +67,15 @@ static suite story_tests{"Story", [] {
     "parses the committed AA story"_test = [] {
         const auto story = glupsk::Story::load("refdata/aa.ulx");
         expect(story.version_string() == "3.1.2");
-        expect(story.bytes().size() == 895744);
-        expect(story.header().ramstart == 689408);
-        expect(story.header().extstart == 895744);
-        expect(story.header().endmem == 895744);
+        expect(story.bytes().size() == 896768);
+        expect(story.header().ramstart == 690432);
+        expect(story.header().extstart == 896768);
+        expect(story.header().endmem == 896768);
         expect(story.header().stack_size == 65536);
         expect(story.header().start_func == 0x3c);
-        expect(story.header().decoding_table == 0x6a4ec);
-        expect(story.header().checksum == 0x2fa1eb34);
-        expect(story.computed_checksum() == 0x2fa1eb34);
+        expect(story.header().decoding_table == 0x6a816);
+        expect(story.header().checksum == 0xa1ce6b7f);
+        expect(story.computed_checksum() == 0xa1ce6b7f);
         expect(story.checksum_ok());
     };
 }};

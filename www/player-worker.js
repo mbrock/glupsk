@@ -5,7 +5,7 @@ const VM_OK = 0;
 const VM_BLOCKED = 1;
 const VM_HALTED = 2;
 const VM_ERROR = 3;
-const STORY_URL = "./aa-14.ulx";
+const DEFAULT_STORY_URL = "./aa-14.ulx";
 const HOST_INPUT_BLOCKED = 0xffffffff;
 const GLK_WINDOW_TEXT_BUFFER = 3;
 const GLK_WINDOW_TEXT_GRID = 4;
@@ -412,7 +412,7 @@ self.addEventListener("message", async (event) => {
   try {
     const message = event.data;
     if (message.type === "start") {
-      player = await startPlayer();
+      player = await startPlayer(message.storyUrl ?? DEFAULT_STORY_URL);
       player.run();
       return;
     }
@@ -428,7 +428,7 @@ self.addEventListener("message", async (event) => {
   }
 });
 
-async function startPlayer() {
+async function startPlayer(storyUrl) {
   const wasi = new WasiPreview1();
   const host = new WorkerGlkHost();
 
@@ -465,7 +465,7 @@ async function startPlayer() {
 
   const [wasmResult, story] = await Promise.all([
     instantiateWasmStreaming(fetch("./glupsk.wasm"), imports),
-    fetch(STORY_URL)
+    fetch(storyUrl)
       .then(requireOk)
       .then((response) => response.arrayBuffer()),
   ]);

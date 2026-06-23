@@ -528,7 +528,41 @@ function isFixedSplit(method) {
   return (method & WINMETHOD_DIVISION_MASK) === WINMETHOD_FIXED;
 }
 
-const worker = new Worker("./player-worker.js?v=14", { type: "module" });
+const GAMES = {
+  aa: {
+    id: "aa",
+    title: "Bertil's Bash Blues",
+    author: "Daniel Brockman",
+    storyUrl: "./aa-14.ulx",
+  },
+  "shutdown-garden": {
+    id: "shutdown-garden",
+    title: "The Shutdown Garden",
+    author: "Codex",
+    storyUrl: "./shutdown-garden-1.ulx",
+  },
+};
+
+function selectedGame() {
+  const gameId = new URLSearchParams(window.location.search).get("game") ??
+    "aa";
+  return GAMES[gameId] ?? GAMES.aa;
+}
+
+const game = selectedGame();
+document.title = `${game.title} - Glupsk`;
+document.querySelector(".player")?.setAttribute(
+  "aria-label",
+  `${game.title} in the Glupsk interactive fiction player`,
+);
+document.querySelector("#status").value = `Loading ${game.title}...`;
+for (const link of document.querySelectorAll("[data-game]")) {
+  const selected = link.dataset.game === game.id;
+  link.classList.toggle("selected", selected);
+  link.toggleAttribute("aria-current", selected);
+}
+
+const worker = new Worker("./player-worker.js?v=15", { type: "module" });
 const renderer = new DomRenderer(
   document.querySelector("#windows"),
   document.querySelector("#command-form"),
@@ -561,4 +595,8 @@ document.querySelector("#command-form").addEventListener("submit", (event) => {
   renderer.submitLine();
 });
 
-worker.postMessage({ type: "start" });
+worker.postMessage({
+  type: "start",
+  storyUrl: game.storyUrl,
+  title: game.title,
+});

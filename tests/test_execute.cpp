@@ -301,7 +301,7 @@ static suite execute_tests{"Execute", [] {
             << glk.transcript;
         expect(glk.transcript.find("Bemelmans Bar") != std::string::npos)
             << glk.transcript;
-        expect(glk.transcript.find("You hear nothing unexpected.") !=
+        expect(glk.transcript.find("You stop. You stop calculating.") !=
                std::string::npos)
             << glk.transcript;
         expect(glk.transcript.find("Fatal Error") == std::string::npos)

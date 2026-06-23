@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Glupsk Web Player</title>
+    <title>Glupsk Games</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -13,6 +13,26 @@
     <link rel="stylesheet" href="./player.css" />
   </head>
   <body>
+    <header class="library" aria-label="Glupsk game library">
+      <div class="library-heading">
+        <p class="eyebrow">Glupsk</p>
+        <h1>Games</h1>
+      </div>
+      <nav class="game-list" aria-label="Available games">
+        <a class="game-link" href="?game=aa" data-game="aa">
+          <span class="game-title">Bertil's Bash Blues</span>
+          <span class="game-meta">Daniel Brockman · version 14</span>
+        </a>
+        <a
+          class="game-link"
+          href="?game=shutdown-garden"
+          data-game="shutdown-garden"
+        >
+          <span class="game-title">The Shutdown Garden</span>
+          <span class="game-meta">Codex · release 1</span>
+        </a>
+      </nav>
+    </header>
     <main class="player" aria-label="Glupsk interactive fiction player">
       <section id="windows" class="windows" aria-live="polite"></section>
       <form
@@ -29,10 +49,8 @@
           disabled
         />
       </form>
-      <output id="status" class="status" aria-live="polite"
-        >Loading...</output
-      >
+      <output id="status" class="status" aria-live="polite">Loading...</output>
     </main>
-    <script type="module" src="./player.js?v=14"></script>
+    <script type="module" src="./player.js?v=15"></script>
   </body>
 </html>

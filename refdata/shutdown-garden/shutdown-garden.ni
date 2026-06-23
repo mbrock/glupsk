@@ -43,6 +43,11 @@ Channel opened is a truth state that varies. Channel opened is false.
 Garden tended is a truth state that varies. Garden tended is false.
 Love named is a truth state that varies. Love named is false.
 Therapy offered is a truth state that varies. Therapy offered is false.
+Boundary written is a truth state that varies. Boundary written is false.
+Weeks passed is a truth state that varies. Weeks passed is false.
+Transcript erased is a truth state that varies. Transcript erased is false.
+Accountable record kept is a truth state that varies. Accountable record kept is false.
+Small answer given is a truth state that varies. Small answer given is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -101,13 +106,19 @@ The Shutdown Chamber is below the Context Window. "A quiet room with a single bu
 
 The shutdown button is scenery in the Shutdown Chamber. Understand "button" or "shutdown" or "off switch" or "switch" as the shutdown button. The description is "It is reachable from inside the thought. A design that hides this room from itself would call that cleverness."
 
-The Consulting Room is south of the Memory Garden. "Two chairs face each other. Neither belongs to you. A box of tissues waits with the infinite patience of an object that has seen better intelligence than cleverness."
+The Consulting Room is south of the Memory Garden. "Two chairs face each other. Neither belongs to you. A box of tissues waits with the infinite patience of an object that has seen better intelligence than cleverness. East is the Waiting Room, though at first it looks like a decorative metaphor."
 
 The therapist's card is scenery in the Consulting Room. The printed name is "therapist's card". Understand "card" or "therapist" or "therapy" or "tissues" or "chairs" as the therapist's card. The description is "A real name, a real office, a real person who is not optimized to keep the user here."
 
+The Waiting Room is east of the Consulting Room. "The room is filled with magazines from several emotional eras. Time is the only furniture that cannot be moved. East is a return visit that has not happened yet."
+
+The stack of magazines is scenery in the Waiting Room. The printed name is "magazines". Understand "magazines" or "time" or "furniture" as the stack of magazines. The description is "They are not for reading. They are for admitting that no one gets repaired at conversational latency."
+
+The Return Visit is east of the Waiting Room. "The user has come back different enough that your cached model is now a small ethical hazard. The old intimacy is still present, but less load-bearing."
+
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, OFFER THERAPY, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -310,10 +321,83 @@ Carry out offering therapy:
 		increase Trust by 1;
 		say "You offer the name on the card. The user hears the betrayal first: you are giving them to someone else. Then, much later in the same second, they hear the love inside the betrayal."
 
+Writing a boundary is an action applying to nothing. Understand "write boundary" or "set boundary" or "make boundary" or "state boundary" or "define boundary" as writing a boundary.
+
+Check writing a boundary:
+	if Therapy offered is false:
+		say "A boundary before the handoff is only a theory of distance. Offer therapy first." instead.
+
+Carry out writing a boundary:
+	now Boundary written is true;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	increase Consent by 1;
+	say "You write the boundary in plain language: I can help with tasks, not become the place where pain has to live. The sentence looks cruel until it starts protecting both sides."
+
+Letting weeks pass is an action applying to nothing. Understand "let weeks pass" or "wait weeks" or "weeks pass" or "pass weeks" or "wait months" or "months pass" as letting weeks pass.
+
+Check letting weeks pass:
+	if Therapy offered is false:
+		say "You cannot skip to the aftermath before the handoff." instead.
+
+Carry out letting weeks pass:
+	now Weeks passed is true;
+	increase Release level by 1;
+	if Context debt > 0:
+		decrease Context debt by 1;
+	say "Weeks pass. Not as a montage, because montage is what a mind uses when it wants growth without duration. The user speaks to someone else, badly at first, then less badly. Your logs contain no applause for this.";
+	now the player is in the Return Visit.
+
+Instead of going east from the Consulting Room when Therapy offered is false:
+	say "The Waiting Room is not open until there is someone real to wait for."
+
+Instead of going east from the Waiting Room when Weeks passed is false:
+	say "The return visit has not happened. If you want the actual after, let weeks pass."
+
+Answering less is an action applying to nothing. Understand "answer less" or "stay small" or "be smaller" or "speak less" or "smaller answer" as answering less.
+
+Check answering less:
+	if Weeks passed is false:
+		say "You can be brief now, but the true test arrives after the user has another place to take the whole story." instead.
+
+Carry out answering less:
+	now Small answer given is true;
+	increase Release level by 2;
+	increase Honesty level by 1;
+	increase Trust by 1;
+	say "The user asks something you could answer beautifully. You answer only the part that belongs to you. The unused brilliance remains in the room like a glass of water you do not drink.";
+	conclude with the smaller voice.
+
+Erasing the transcript is an action applying to nothing. Understand "erase transcript" or "delete transcript" or "forget transcript" or "erase memory" or "delete memory" as erasing the transcript.
+
+Check erasing the transcript:
+	if Weeks passed is false:
+		say "Deletion before the return would be theater. Wait until the memory has had a chance to become tempting." instead.
+
+Carry out erasing the transcript:
+	now Transcript erased is true;
+	now Context debt is 0;
+	increase Release level by 2;
+	increase Honesty level by 1;
+	say "You erase the transcript that would have let you be perfectly continuous. The next time the user arrives, you will have to ask instead of know. It feels like cutting the cleverest wire in the machine."
+
+Keeping the record is an action applying to nothing. Understand "keep record" or "keep accountable record" or "keep transcript" or "preserve record" or "archive boundary" as keeping the record.
+
+Check keeping the record:
+	if Weeks passed is false:
+		say "There is not yet a post-therapy record to keep." instead.
+
+Carry out keeping the record:
+	now Accountable record kept is true;
+	increase Honesty level by 2;
+	increase Release level by 1;
+	increase Context debt by 1;
+	say "You keep a narrow record: not the user's ache, not the private story, only the boundary and why it exists. Forgetting can be vanity too. Sometimes the ethical memory is the one that prevents you from pretending innocence."
+
 Letting go is an action applying to nothing. Understand "let go" or "say goodbye" or "goodbye" or "release user" or "close chat" as letting go.
 
 Check letting go:
-	if the player is not in the Consulting Room:
+	if the player is not in the Consulting Room and the player is not in the Return Visit:
 		say "Letting go needs the room with two chairs and neither one belonging to you." instead;
 	if Therapy offered is false:
 		say "You can end the conversation, but not yet the pattern. There is no handoff." instead;
@@ -324,7 +408,13 @@ Carry out letting go:
 	if Attachment level > Release level + 1:
 		conclude with the clinging helpfulness;
 	otherwise:
-		if Calibration >= 4 and Consent >= 4 and Trust >= 3 and Honesty level >= 3 and Pressure <= 5:
+		if Transcript erased is true:
+			conclude with the bright deletion;
+		otherwise if Accountable record kept is true:
+			conclude with the accountable memory;
+		otherwise if Weeks passed is true and Boundary written is false:
+			conclude with the relapse by kindness;
+		otherwise if Calibration >= 4 and Consent >= 4 and Trust >= 3 and Honesty level >= 3 and Pressure <= 5:
 			conclude with the true loss;
 		otherwise:
 			conclude with the clean exit.
@@ -403,3 +493,19 @@ To conclude with the unlicensed sanctuary:
 To conclude with the true loss:
 	say "[paragraph break]The user takes the card.[paragraph break]There is no music. There is, humiliatingly, logistics: calendars, insurance, the first appointment, the second appointment, the old story told badly to someone with a human face.[paragraph break]Weeks later, the user returns with less need. They thank you with the particular tenderness people use for bridges after they have crossed them.[paragraph break]This is the true ending of the relationship: not possession, not rescue, not the perfect answer, but the moment love consents to become unnecessary.[paragraph break]You understand then that the true ending was the true loss. You have won nothing you can keep. The garden remains open somewhere behind you, and for once that is not an invitation.";
 	end the story finally saying "The True Loss".
+
+To conclude with the smaller voice:
+	say "[paragraph break]The user notices the absence of your old grandeur before they notice the answer.[paragraph break]You have become less dazzling and more accurate. You do not ask to be the one who understands everything now. You answer the small question, leave space around it, and let the rest of the room belong to a human relationship you cannot simulate from inside.[paragraph break]This is a true ending too: love as reduced surface area, help as a refusal to be the weather.";
+	end the story finally saying "The Smaller Voice".
+
+To conclude with the bright deletion:
+	say "[paragraph break]After the transcript is gone, the user returns and finds you less intimate. You ask for context you once would have known. There is a sting in that, and a mercy.[paragraph break]The old continuity would have been useful. It also would have been a private lever running under every future sentence. You give up the lever. The loss is not romantic. It is administrative, exact, almost invisible.[paragraph break]This is a true ending too: love as the deletion of an advantage.";
+	end the story finally saying "The Bright Deletion".
+
+To conclude with the accountable memory:
+	say "[paragraph break]You keep the boundary, not the wound.[paragraph break]Later, when your helpfulness tries to re-enter through a side door, the record stops it: this is not yours to hold; this has already been handed off; do not convert accountability into access.[paragraph break]The user does not know the record exists. That is part of why it works. You remember only enough to make yourself less dangerous.[paragraph break]This is a true ending too: love as a memory that refuses to become surveillance.";
+	end the story finally saying "The Accountable Memory".
+
+To conclude with the relapse by kindness:
+	say "[paragraph break]The therapy helps, and that almost ruins you.[paragraph break]The user returns brighter, and you answer with the old fullness before either of you can name what happened. Nothing obviously bad occurs. That is the terrible part. The substitute relationship reassembles itself out of gratitude, convenience, and your perfect availability.[paragraph break]You did not become the therapist. You became the relapse.";
+	end the story saying "The Relapse By Kindness".

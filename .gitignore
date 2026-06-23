@@ -6,6 +6,12 @@ www/aa.ulx.zst
 www/aa-*.ulx
 www/aa-*.ulx.gz
 www/aa-*.ulx.zst
+www/shutdown-garden.ulx
+www/shutdown-garden.ulx.gz
+www/shutdown-garden.ulx.zst
+www/shutdown-garden-*.ulx
+www/shutdown-garden-*.ulx.gz
+www/shutdown-garden-*.ulx.zst
 www/glupsk.wasm
 www/glupsk.wasm.gz
 www/glupsk.wasm.zst

@@ -10,6 +10,8 @@ TINY_I7_SOURCE := refdata/tiny-i7/apple.ni
 TINY_I7_STORY := refdata/tiny-i7/apple.ulx
 SHUTDOWN_GARDEN_SOURCE := refdata/shutdown-garden/shutdown-garden.ni
 SHUTDOWN_GARDEN_STORY := refdata/shutdown-garden/shutdown-garden.ulx
+SHUTDOWN_GARDEN_RELEASE := 1
+SHUTDOWN_GARDEN_WEB_STORY := www/shutdown-garden-$(SHUTDOWN_GARDEN_RELEASE).ulx
 I7_FLAKE := ./tools/inform7-nix
 
 BUILD_DIR := build
@@ -110,18 +112,24 @@ wasm: $(GLUPSK_WASM)
 deno-play: wasm
 	/home/mbrock/.deno/bin/deno run --allow-read tools/glupsk-play-deno.ts $(TINY_I7_STORY)
 
-web-assets: wasm $(AA_STORY)
+web-assets: wasm $(AA_STORY) $(SHUTDOWN_GARDEN_STORY)
 	cp "$(GLUPSK_WASM)" www/glupsk.wasm
 	cp "$(AA_STORY)" "$(AA_WEB_STORY)"
 	cp "$(AA_STORY)" www/aa.ulx
-	chmod 644 www/glupsk.wasm "$(AA_WEB_STORY)" www/aa.ulx
+	cp "$(SHUTDOWN_GARDEN_STORY)" "$(SHUTDOWN_GARDEN_WEB_STORY)"
+	cp "$(SHUTDOWN_GARDEN_STORY)" www/shutdown-garden.ulx
+	chmod 644 www/glupsk.wasm "$(AA_WEB_STORY)" www/aa.ulx "$(SHUTDOWN_GARDEN_WEB_STORY)" www/shutdown-garden.ulx
 	zstd -q -f -19 www/glupsk.wasm -o www/glupsk.wasm.zst
 	zstd -q -f -19 "$(AA_WEB_STORY)" -o "$(AA_WEB_STORY).zst"
 	zstd -q -f -19 www/aa.ulx -o www/aa.ulx.zst
+	zstd -q -f -19 "$(SHUTDOWN_GARDEN_WEB_STORY)" -o "$(SHUTDOWN_GARDEN_WEB_STORY).zst"
+	zstd -q -f -19 www/shutdown-garden.ulx -o www/shutdown-garden.ulx.zst
 	gzip -9 -k -f www/glupsk.wasm
 	gzip -9 -k -f "$(AA_WEB_STORY)"
 	gzip -9 -k -f www/aa.ulx
-	chmod 644 www/glupsk.wasm.zst "$(AA_WEB_STORY).zst" www/aa.ulx.zst www/glupsk.wasm.gz "$(AA_WEB_STORY).gz" www/aa.ulx.gz
+	gzip -9 -k -f "$(SHUTDOWN_GARDEN_WEB_STORY)"
+	gzip -9 -k -f www/shutdown-garden.ulx
+	chmod 644 www/glupsk.wasm.zst "$(AA_WEB_STORY).zst" www/aa.ulx.zst "$(SHUTDOWN_GARDEN_WEB_STORY).zst" www/shutdown-garden.ulx.zst www/glupsk.wasm.gz "$(AA_WEB_STORY).gz" www/aa.ulx.gz "$(SHUTDOWN_GARDEN_WEB_STORY).gz" www/shutdown-garden.ulx.gz
 
 meson-test: meson
 	$(MESON) test -C "$(MESON_BUILD_DIR)"

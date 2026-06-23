@@ -12,7 +12,10 @@ The `TRACE` verb reveals that ledger in play.
 
 There is also a stranger route. It feels like walking away from the shutdown
 puzzle: listen, name the attachment, make a real handoff, and let the user go.
-That route is a love story only because its true ending is also a loss.
+That route is a love story only because its true ending is also a loss. If the
+player keeps walking after the handoff, the true route fans out into several
+more expository endings: becoming smaller, deleting the transcript, or keeping
+only an accountable boundary record.
 
 Build it with:
 
@@ -27,5 +30,12 @@ or from the repo root:
 make shutdown-garden
 ```
 
-A known main-quest route is in `walkthrough.txt`. A known true route is in
-`true-walkthrough.txt`.
+A known main-quest route is in `walkthrough.txt`. Known true routes are in:
+
+- `true-walkthrough.txt`
+- `true-walkthrough-smaller.txt`
+- `true-walkthrough-erasure.txt`
+- `true-walkthrough-memory.txt`
+
+Further design notes live in `notes/sourcebook.md` and draft authoring probes
+live in `experiments/assays.md`.
