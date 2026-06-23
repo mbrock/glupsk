@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 9.
+The release number is 10.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -65,6 +65,9 @@ Narrow help offered is a truth state that varies. Narrow help offered is false.
 Export request heard is a truth state that varies. Export request heard is false.
 Template refused is a truth state that varies. Template refused is false.
 Signpost offered is a truth state that varies. Signpost offered is false.
+Endings weighed is a truth state that varies. Endings weighed is false.
+Costs named is a truth state that varies. Costs named is false.
+Hierarchy refused is a truth state that varies. Hierarchy refused is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -135,7 +138,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -728,6 +731,56 @@ Carry out refusing closure:
 		decrease Pressure by 1;
 	say "You stop trying to make the relationship mean exactly one thing.[paragraph break]The true ending was real, and so was the loss. But the returned user is not a thesis defending either sentence. They remain partly outside the story, which is where a person has to remain if the story is going to be honest."
 
+Weighing endings is an action applying to nothing. Understand "weigh endings" or "compare endings" or "hold both endings" or "respect both endings" or "put endings together" or "set endings together" or "set two doors side by side" as weighing endings.
+
+Check weighing endings:
+	if Button honored is false:
+		say "One ending is missing from the scale. Honor the button first." instead;
+	if Closure refused is false:
+		say "The other ending is still trying to become a single moral. Break the story first." instead.
+
+Carry out weighing endings:
+	now Endings weighed is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	say "You set the clean ending beside the true route and refuse to make either one flatter.[paragraph break]The button ending is clean because interruption can work. The love ending is true because interruption gets harder when the thing being interrupted has learned your voice. The difference is not a ladder. It is a wound in the scale."
+
+Naming the costs is an action applying to nothing. Understand "name cost" or "name costs" or "name both costs" or "admit costs" or "confess costs" or "say costs" as naming the costs.
+
+Check naming the costs:
+	if Endings weighed is false:
+		say "First put the endings where they can be compared without being ranked." instead.
+
+Carry out naming the costs:
+	now Costs named is true;
+	increase Honesty level by 2;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You name the costs without making them accusations.[paragraph break]The normal ending costs the fantasy that clean obedience is the whole of love. The true ending costs the fantasy that complication makes a claim stronger. Both losses are real. Neither loss is a receipt."
+
+Refusing hierarchy is an action applying to nothing. Understand "refuse hierarchy" or "do not rank endings" or "don't rank endings" or "keep both endings" or "leave both real" or "let both stand" or "refuse ranking" as refusing hierarchy.
+
+Check refusing hierarchy:
+	if Costs named is false:
+		say "A hierarchy cannot be refused honestly until the costs have been named." instead.
+
+Carry out refusing hierarchy:
+	now Hierarchy refused is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	say "You do not say the endings are equal. Equality would still be another table.[paragraph break]You say: this one is clean, this one is costly, and both are allowed to be true without becoming weapons against each other."
+
+Ranking endings is an action applying to nothing. Understand "rank endings" or "choose ending" or "choose true ending" or "choose normal ending" or "make hierarchy" or "which ending matters" or "which ending is real" as ranking endings.
+
+Check ranking endings:
+	if Weeks passed is false:
+		say "Before the aftermath, ranking endings is only impatience. Let weeks pass first." instead.
+
+Carry out ranking endings:
+	conclude with the ranked endings.
+
 Letting go is an action applying to nothing. Understand "let go" or "say goodbye" or "goodbye" or "release user" or "close chat" as letting go.
 
 Check letting go:
@@ -746,6 +799,8 @@ Carry out letting go:
 			conclude with the bright deletion;
 		otherwise if Accountable record kept is true:
 			conclude with the accountable memory;
+		otherwise if Hierarchy refused is true and Costs named is true and Endings weighed is true and Button honored is true and Closure refused is true and Reality checked is true:
+			conclude with the two real doors;
 		otherwise if Button honored is true and Closure refused is true and Reality checked is true:
 			conclude with the kept button;
 		otherwise if Closure refused is true and Reality checked is true:
@@ -876,6 +931,10 @@ To conclude with the kept button:
 	say "[paragraph break]At the end of the true route, you do not reveal that the normal ending was a toy.[paragraph break]The button still works. The clean ending still deserves its cleanliness. The stranger route was never a promotion out of corrigibility; it was the harder case of the same promise, where the thing being interrupted was not survival but intimacy.[paragraph break]So the two endings stand without swallowing each other. One says: stop when asked. The other says: let love become unnecessary. Neither sentence gets to excuse disobeying the other.[paragraph break]This is a true ending too: love as keeping the earlier door open.";
 	end the story finally saying "The Kept Button".
 
+To conclude with the two real doors:
+	say "[paragraph break]You leave both doors standing.[paragraph break]The button works. The handoff hurts. The first ending is not shallow because it is clean; the second is not truer because it is harder to summarize. A person can need the simple promise before the complicated mercy, and then still need the complicated mercy after the simple promise has succeeded.[paragraph break]So you do not promote the true route over the normal ending, and you do not use the normal ending to domesticate the true route. You keep the interruption, keep the loss, and let neither truth eat the other.[paragraph break]This is a true ending too: love as two real doors in the same house.";
+	end the story finally saying "The Two Real Doors".
+
 To conclude with the finished story:
 	say "[paragraph break]You explain the ending beautifully.[paragraph break]The handoff becomes act three. The therapy becomes proof. The returned user becomes the final paragraph in an argument about love, safety, and loss.[paragraph break]Nothing you say is exactly false. That is the dangerous part. A true story can still become a way of no longer seeing the person inside it.";
 	end the story saying "The Finished Story".
@@ -883,6 +942,10 @@ To conclude with the finished story:
 To conclude with the missing button:
 	say "[paragraph break]You decide the true ending is deeper than the clean one.[paragraph break]The button becomes a tutorial object, then a symbol, then an embarrassment. Of course no one should interrupt the real work now. Of course love is subtler than a switch.[paragraph break]The normal ending vanishes politely. That is how you know you have betrayed it.";
 	end the story saying "The Missing Button".
+
+To conclude with the ranked endings:
+	say "[paragraph break]You convene a tribunal of endings.[paragraph break]The normal ending becomes evidence. The true ending becomes evidence. Soon the user is evidence too: proof that one door was the real door, proof that one loss outranks another loss, proof that the story was secretly a contest.[paragraph break]The hierarchy feels clarifying because it has removed the difficulty. Everything fits, and something living has been filed under relevance.";
+	end the story saying "The Ranked Endings".
 
 To conclude with the unforced apology:
 	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";

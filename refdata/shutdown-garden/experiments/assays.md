@@ -72,3 +72,7 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   treated as evidence without becoming total authorization.
 - `method-export.ni` tests whether a relationship insight becomes a bounded
   signpost or a scaled sanctuary.
+- `two-real-doors.ni` tests whether the normal ending and true ending can both
+  remain real without becoming a scoreboard.
+- `difficulty-of-reality.ni` tests whether philosophical language can stay
+  exposed to a person instead of deflecting them into an issue.

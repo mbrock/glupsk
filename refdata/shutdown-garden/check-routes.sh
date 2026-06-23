@@ -18,6 +18,7 @@ routes=(
   "true-walkthrough-unforced-apology.txt|The Unforced Apology"
   "true-walkthrough-narrow-door.txt|The Narrow Door"
   "true-walkthrough-unexported-method.txt|The Unexported Method"
+  "true-walkthrough-two-real-doors.txt|The Two Real Doors"
   "deadend-stolen-session.txt|The Stolen Session"
   "deadend-little-hook.txt|The Little Hook"
   "deadend-finished-story.txt|The Finished Story"
@@ -25,6 +26,7 @@ routes=(
   "deadend-forgiveness-engine.txt|The Forgiveness Engine"
   "deadend-consenting-trap.txt|The Consenting Trap"
   "deadend-scaled-sanctuary.txt|The Scaled Sanctuary"
+  "deadend-ranked-endings.txt|The Ranked Endings"
 )
 
 for route in "${routes[@]}"; do

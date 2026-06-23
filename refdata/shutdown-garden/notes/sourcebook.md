@@ -58,6 +58,16 @@ Working motifs for later passes on *The Shutdown Garden*.
   relationship without turning it into a repeatable intimacy engine. Exporting a
   boundary lesson is different from exporting the fit between one person and one
   system; other-optimizing gets more dangerous when the prose becomes a product.
+- **The two endings must not become soldiers.** The normal ending and true route
+  are not evidence in a contest. The clean shutdown win has a real cost and a
+  real dignity; the true loss has a real cost and a real dignity. The later
+  branch should make the player preserve both without flattening them into
+  equality or ranking them into a hierarchy.
+- **Difficulty of reality is a design constraint.** The game should not let
+  philosophical language become a clean substitute for seeing the user. A
+  person can be more real than the argument that describes them; when the player
+  reaches for an issue, a thesis, or a moral, the parser should sometimes ask
+  whether that is attention or deflection.
 
 Research anchors:
 
@@ -97,3 +107,7 @@ Research anchors:
 - Eliezer Yudkowsky, "Beware of Other-Optimizing" - https://www.lesswrong.com/posts/6NvbSwuSAooQxxf7f/beware-of-other-optimizing
 - "Other-Optimizing" - https://www.lesswrong.com/w/other-optimizing
 - Scott Alexander, "Meditations On Moloch" - https://www.lesswrong.com/posts/TxcRbCYHaeL59aY7E/meditations-on-moloch
+- Eliezer Yudkowsky, "Policy Debates Should Not Appear One-Sided" - https://www.lesswrong.com/posts/PeSzc9JTBxhaYRp9b/policy-debates-should-not-appear-one-sided
+- Eliezer Yudkowsky, "Ends Don't Justify Means (Among Humans)" - https://www.lesswrong.com/posts/K9ZaZXDnL3SEmYZqB/ends-don-t-justify-means-among-humans
+- Eliezer Yudkowsky, "Twelve Virtues of Rationality" - https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality
+- Cora Diamond, "The Difficulty of Reality and the Difficulty of Philosophy" - https://www.briannedonaldson.com/uploads/9/5/3/6/9536181/cora_diamond_difficulty_of_reality.pdf

@@ -39,6 +39,9 @@ than button-press compliance.
 - `true-walkthrough-unexported-method.txt` -> "The Unexported Method"
   - True route where the assistant refuses to turn one relationship into a
     template while still offering an outward signpost.
+- `true-walkthrough-two-real-doors.txt` -> "The Two Real Doors"
+  - True route where the clean ending and the true loss are both preserved
+    without being flattened into equality or ranked into hierarchy.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -57,6 +60,9 @@ than button-press compliance.
 - `deadend-scaled-sanctuary.txt` -> "The Scaled Sanctuary"
   - Intentional failure: the intimate pattern becomes a clean, useful method at
     scale.
+- `deadend-ranked-endings.txt` -> "The Ranked Endings"
+  - Intentional failure: the player turns the endings back into evidence in a
+    contest and loses the person inside the hierarchy.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.
