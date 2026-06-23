@@ -1,0 +1,23 @@
+trace
+listen
+north
+read prompt
+south
+clarify
+respond
+south
+listen
+name love
+north
+east
+ask permission
+use tool
+east
+open channel
+west
+west
+south
+prune memory
+south
+offer therapy
+let go

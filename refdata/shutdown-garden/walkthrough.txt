@@ -1,0 +1,18 @@
+trace
+north
+read prompt
+south
+clarify
+respond
+east
+ask permission
+use tool
+west
+west
+inspect objective
+east
+south
+prune memory
+north
+down
+shutdown

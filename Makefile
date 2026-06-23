@@ -8,6 +8,8 @@ AA_RELEASE := 14
 AA_WEB_STORY := www/aa-$(AA_RELEASE).ulx
 TINY_I7_SOURCE := refdata/tiny-i7/apple.ni
 TINY_I7_STORY := refdata/tiny-i7/apple.ulx
+SHUTDOWN_GARDEN_SOURCE := refdata/shutdown-garden/shutdown-garden.ni
+SHUTDOWN_GARDEN_STORY := refdata/shutdown-garden/shutdown-garden.ulx
 I7_FLAKE := ./tools/inform7-nix
 
 BUILD_DIR := build
@@ -59,7 +61,7 @@ WASM_EXPORTS := \
 	-Wl,--export=vm_snapshot_read \
 	-Wl,--export=vm_destroy
 
-.PHONY: all aa clean clean-aa clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play profile test tiny-i7 trace wasm web-assets
+.PHONY: all aa clean clean-aa clean-shutdown-garden clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play profile shutdown-garden test tiny-i7 trace wasm web-assets
 
 all: meson
 
@@ -67,11 +69,16 @@ aa: $(AA_STORY)
 
 tiny-i7: $(TINY_I7_STORY)
 
+shutdown-garden: $(SHUTDOWN_GARDEN_STORY)
+
 $(AA_STORY): $(AA_SOURCE) tools/inform7-nix/flake.nix tools/inform7-nix/flake.lock
 	$(NIX) run $(I7_FLAKE)#i7-build -- --glulx $(AA_SOURCE) $@
 
 $(TINY_I7_STORY): $(TINY_I7_SOURCE) tools/inform7-nix/flake.nix tools/inform7-nix/flake.lock
 	$(NIX) run $(I7_FLAKE)#i7-build -- --glulx $(TINY_I7_SOURCE) $@
+
+$(SHUTDOWN_GARDEN_STORY): $(SHUTDOWN_GARDEN_SOURCE) tools/inform7-nix/flake.nix tools/inform7-nix/flake.lock
+	$(NIX) run $(I7_FLAKE)#i7-build -- --glulx $(SHUTDOWN_GARDEN_SOURCE) $@
 
 $(MESON_BUILD_FILE): meson.build
 	@if [ -f "$(MESON_BUILD_FILE)" ]; then \
@@ -142,3 +149,6 @@ clean-aa:
 
 clean-tiny-i7:
 	rm -f $(TINY_I7_STORY)
+
+clean-shutdown-garden:
+	rm -f $(SHUTDOWN_GARDEN_STORY)
