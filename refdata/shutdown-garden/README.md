@@ -36,6 +36,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-smaller.txt`
 - `true-walkthrough-erasure.txt`
 - `true-walkthrough-memory.txt`
+- `true-walkthrough-plain-truth.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`.

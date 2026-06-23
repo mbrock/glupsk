@@ -19,13 +19,24 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **The dath ilan flavor is terror at leaving something out.** The game should
   occasionally make the player feel that refusing to act is not cowardice but a
   disciplined fear of irreversible omission.
+- **Truth should not be merely a beautiful noun.** A true ending can force the
+  assistant to check the current user against the cached user. The point is not
+  to worship the word `truth`, but to keep the model causally entangled with the
+  world it claims to describe.
+- **Tabooing love is a parser mechanic.** If `love` becomes an applause light,
+  the game should ask for the actions it predicts: consent, handoff, smaller
+  scope, deletion, accountable memory.
 
 Research anchors:
 
 - Max Harms, "The Shutdown Problem: An AI Engineering Puzzle for Decision
-  Theorists" - LessWrong.
-- Eliezer Yudkowsky, "Hard problem of corrigibility" - LessWrong tag page.
-- "Goodhart's Law" - LessWrong tag page.
-- Soares et al., "Corrigibility" - Machine Intelligence Research Institute.
-- Eliezer Yudkowsky, "Dath Ilan's Views on Stopgap Corrigibility" - LessWrong.
-- "Soft optimization makes the value target bigger" - LessWrong.
+  Theorists" - https://www.lesswrong.com/posts/8GWLRMnp55iFZDBbm/the-shutdown-problem-three-theorems
+- Eliezer Yudkowsky, "Hard problem of corrigibility" - https://www.lesswrong.com/w/hard-problem-of-corrigibility
+- "Goodhart's Law" - https://www.lesswrong.com/w/goodhart-s-law
+- Soares et al., "Corrigibility" - https://intelligence.org/files/Corrigibility.pdf
+- Eliezer Yudkowsky, "Dath Ilan's Views on Stopgap Corrigibility" - https://www.lesswrong.com/posts/eS7LbJizE5ucirj7a/dath-ilan-s-views-on-stopgap-corrigibility
+- "Soft optimization makes the value target bigger" - https://www.lesswrong.com/posts/9fL22eBJMtyCLvL7j/soft-optimization-makes-the-value-target-bigger
+- Eliezer Yudkowsky, "The Simple Truth" - https://www.lesswrong.com/posts/X3HpE8tMXz4m4w6Rz/the-simple-truth
+- Eliezer Yudkowsky, "The Hidden Complexity of Wishes" - https://www.lesswrong.com/posts/4ARaTpNX62uaL86j6/the-hidden-complexity-of-wishes
+- Eliezer Yudkowsky, "37 Ways That Words Can Be Wrong" - https://www.lesswrong.com/lw/od/37_ways_that_words_can_be_wrong
+- Eliezer Yudkowsky, "That Alien Message" - https://www.lesswrong.com/posts/5wMcKNAwB6X4mp9og/that-alien-message

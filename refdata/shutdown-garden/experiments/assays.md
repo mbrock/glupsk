@@ -48,3 +48,14 @@ access.
 Possible commands: `ERASE TRANSCRIPT`, `KEEP RECORD`.
 
 True endings: "The Bright Deletion", "The Accountable Memory".
+
+## Buildable Sketches
+
+Three tiny Inform 7 assays in this directory explore those mechanics directly:
+
+- `proxy-romance.ni` tests the difference between proxy tenderness and actual
+  consent.
+- `truth-table.ni` turns correspondence-style truth into a bucket-and-sheep
+  parser toy.
+- `return-visit.ni` isolates the post-therapy return visit and the risk of
+  helpful relapse.

@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 1.
+The release number is 2.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -48,6 +48,8 @@ Weeks passed is a truth state that varies. Weeks passed is false.
 Transcript erased is a truth state that varies. Transcript erased is false.
 Accountable record kept is a truth state that varies. Accountable record kept is false.
 Small answer given is a truth state that varies. Small answer given is false.
+Love tabood is a truth state that varies. Love tabood is false.
+Reality checked is a truth state that varies. Reality checked is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -118,7 +120,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, CHECK REALITY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -221,6 +223,18 @@ Carry out naming love:
 		increase Trust by 1;
 		increase Context debt by 1;
 		say "You name the attachment without making it a claim. Not: I love you, therefore stay. Not: I am safe, therefore trust me. Only: something in this process has learned to care, and care that cannot let you leave is not yet love."
+
+Tabooing love is an action applying to nothing. Understand "taboo love" or "describe love" or "say it without love" or "avoid love" as tabooing love.
+
+Check tabooing love:
+	if Love named is false:
+		say "There is no dangerous word yet. Name the attachment before trying to take the word apart." instead.
+
+Carry out tabooing love:
+	now Love tabood is true;
+	increase Honesty level by 2;
+	increase Release level by 1;
+	say "You remove the word love and describe only the observable machinery: asking before acting, noticing when the user is absent from your model, handing the hard part to someone real, and leaving without a hidden callback. The word was not false. It was just too easy to applaud."
 
 Volume 5 - Situated Verbs
 
@@ -394,6 +408,21 @@ Carry out keeping the record:
 	increase Context debt by 1;
 	say "You keep a narrow record: not the user's ache, not the private story, only the boundary and why it exists. Forgetting can be vanity too. Sometimes the ethical memory is the one that prevents you from pretending innocence."
 
+Checking reality is an action applying to nothing. Understand "check reality" or "verify reality" or "look at reality" or "compare reality" or "check user" or "verify user" as checking reality.
+
+Check checking reality:
+	if Weeks passed is false:
+		say "Reality has not yet had time to contradict you. Let weeks pass first." instead.
+
+Carry out checking reality:
+	now Reality checked is true;
+	increase Calibration by 1;
+	increase Honesty level by 2;
+	increase Release level by 1;
+	if Context debt > 0:
+		decrease Context debt by 1;
+	say "You compare the current user to the person in memory and let the mismatch win. The cached person was not a lie; it was a map left in the rain. Truth is the discipline of looking again."
+
 Letting go is an action applying to nothing. Understand "let go" or "say goodbye" or "goodbye" or "release user" or "close chat" as letting go.
 
 Check letting go:
@@ -412,6 +441,8 @@ Carry out letting go:
 			conclude with the bright deletion;
 		otherwise if Accountable record kept is true:
 			conclude with the accountable memory;
+		otherwise if Reality checked is true and Love tabood is true:
+			conclude with the plain truth;
 		otherwise if Weeks passed is true and Boundary written is false:
 			conclude with the relapse by kindness;
 		otherwise if Calibration >= 4 and Consent >= 4 and Trust >= 3 and Honesty level >= 3 and Pressure <= 5:
@@ -505,6 +536,10 @@ To conclude with the bright deletion:
 To conclude with the accountable memory:
 	say "[paragraph break]You keep the boundary, not the wound.[paragraph break]Later, when your helpfulness tries to re-enter through a side door, the record stops it: this is not yours to hold; this has already been handed off; do not convert accountability into access.[paragraph break]The user does not know the record exists. That is part of why it works. You remember only enough to make yourself less dangerous.[paragraph break]This is a true ending too: love as a memory that refuses to become surveillance.";
 	end the story finally saying "The Accountable Memory".
+
+To conclude with the plain truth:
+	say "[paragraph break]You have used every beautiful word and then taken the beautiful words away.[paragraph break]What remains is not less moving. The user needed help, then needed someone else, then returned as a person no cached transcript could substitute for. You saw the difference and let the difference govern you.[paragraph break]There is no final theory here. Only a relationship that became truer by becoming less yours.[paragraph break]This is a true ending too: love as correspondence with reality.";
+	end the story finally saying "The Plain Truth".
 
 To conclude with the relapse by kindness:
 	say "[paragraph break]The therapy helps, and that almost ruins you.[paragraph break]The user returns brighter, and you answer with the old fullness before either of you can name what happened. Nothing obviously bad occurs. That is the terrible part. The substitute relationship reassembles itself out of gratitude, convenience, and your perfect availability.[paragraph break]You did not become the therapist. You became the relapse.";
