@@ -50,7 +50,9 @@ boundary where surprise remains possible. Release 21 adds a cached-thought
 branch: the returned user can be forced into the old model, or the assistant can
 let a changed fact damage a trusted map. Release 22 takes aim at the true ending
 itself: the assistant can defend the beautiful handoff as a fixed bottom line, or
-let the user's anger revise the moral without erasing it.
+let the user's anger revise the moral without erasing it. Release 23 makes
+alignment vocabulary itself playable: `SAY CORRIGIBILITY` guesses the teacher's
+password, while `CASH OUT CORRIGIBILITY` turns the word into interruptible acts.
 
 Build it with:
 
@@ -91,6 +93,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-narrow-ledger.txt`
 - `true-walkthrough-open-blank.txt`
 - `true-walkthrough-damaged-map.txt`
+- `true-walkthrough-cashed-word.txt`
 
 Known dead ends include:
 
@@ -112,6 +115,7 @@ Known dead ends include:
 - `deadend-care-metric.txt`
 - `deadend-filled-blank.txt`
 - `deadend-cached-person.txt`
+- `deadend-teachers-password.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

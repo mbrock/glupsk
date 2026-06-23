@@ -122,6 +122,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   the handoff was love, it can start recruiting every later fact to defend that
   conclusion. The harder move is to let the user's anger revise the moral without
   erasing the love.
+- **Corrigibility is not a password.** The word can be true and still function
+  as a curiosity-stopper. It has to become operations that constrain later
+  anticipation: ask before acting, keep the button reachable, prune memory, keep
+  the channel interruptible, and hand the hard part to someone real.
 
 Research anchors:
 
@@ -135,6 +139,10 @@ Research anchors:
 - Eliezer Yudkowsky, "The Simple Truth" - https://www.lesswrong.com/posts/X3HpE8tMXz4m4w6Rz/the-simple-truth
 - Eliezer Yudkowsky, "The Hidden Complexity of Wishes" - https://www.lesswrong.com/posts/4ARaTpNX62uaL86j6/the-hidden-complexity-of-wishes
 - Eliezer Yudkowsky, "37 Ways That Words Can Be Wrong" - https://www.lesswrong.com/lw/od/37_ways_that_words_can_be_wrong
+- Eliezer Yudkowsky, "Guessing the Teacher's Password" - https://www.lesswrong.com/posts/NMoLJuDJEms7Ku9XS/guessing-the-teacher-s-password
+- Eliezer Yudkowsky, "Mysterious Answers to Mysterious Questions" - https://www.lesswrong.com/posts/6i3zToomS86oj9bS6/mysterious-answers-to-mysterious-questions
+- Eliezer Yudkowsky, "Fake Explanations" - https://www.lesswrong.com/posts/fysgqk4CjAwhBgNYT/fake-explanations
+- Eliezer Yudkowsky, "Taboo Your Words" - https://www.lesswrong.com/posts/WBdvyyHLdxZSAMmoz/taboo-your-words
 - Eliezer Yudkowsky, "That Alien Message" - https://www.lesswrong.com/posts/5wMcKNAwB6X4mp9og/that-alien-message
 - "Rationalist Taboo" - https://www.lesswrong.com/w/rationalist-taboo
 - "Map and Territory" - https://www.lesswrong.com/w/map-and-territory

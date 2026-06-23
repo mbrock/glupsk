@@ -98,3 +98,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   current fact contradicts it.
 - `bottom-line.ni` tests whether a beautiful ending can remain corrigible when
   later evidence arrives against its clean moral.
+- `teachers-password.ni` tests whether an alignment word becomes behavior or
+  merely guesses the expected classroom answer.

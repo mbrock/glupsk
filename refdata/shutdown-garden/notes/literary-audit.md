@@ -129,3 +129,8 @@ The branch should make the true ending less fragile by letting it be corrected.
 The uncashed-thanks branch carries the same rule later in the true route. Thanks
 must remain a scene, not an argument. If gratitude only proves the thesis, the
 game has cashed it.
+
+Release 23 adds the teacher's-password test. Alignment vocabulary should not
+become genre costume: `corrigibility` has to earn its place by turning into
+verbs, objects, interruptions, and losses. The false ending should feel like a
+student being technically right in a way that changes nothing.

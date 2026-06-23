@@ -72,6 +72,9 @@ than button-press compliance.
 - `true-walkthrough-damaged-map.txt` -> "The Damaged Map"
   - True route where the assistant lets a changed fact damage the old cached
     model, so belief changes anticipated behavior instead of remaining a slogan.
+- `true-walkthrough-cashed-word.txt` -> "The Cashed Word"
+  - True route where corrigibility stops being a passphrase and becomes concrete
+    interruptible behavior.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -121,6 +124,9 @@ than button-press compliance.
 - `deadend-cached-person.txt` -> "The Cached Person"
   - Intentional failure: a once-useful model of the user is trusted after the
     return and becomes a tender constraint on the real person.
+- `deadend-teachers-password.txt` -> "The Teacher's Password"
+  - Intentional failure: a correct alignment word is recited as if correctness
+    by itself changed what the assistant anticipates or does.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

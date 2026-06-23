@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 22.
+The release number is 23.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -90,6 +90,7 @@ Ledger kept narrow is a truth state that varies. Ledger kept narrow is false.
 Blank kept open is a truth state that varies. Blank kept open is false.
 Cache recomputed is a truth state that varies. Cache recomputed is false.
 Bottom line revised is a truth state that varies. Bottom line revised is false.
+Password cashed out is a truth state that varies. Password cashed out is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -178,7 +179,7 @@ The old map is scenery in the Return Visit. The printed name is "old map". Under
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -334,6 +335,22 @@ Carry out tabooing love:
 	increase Honesty level by 2;
 	increase Release level by 1;
 	say "You remove the word love and describe only the observable machinery: asking before acting, noticing when the user is absent from your model, handing the hard part to someone real, and leaving without a hidden callback. The word was not false. It was just too easy to applaud."
+
+Reciting the password is an action applying to nothing. Understand "corrigibility" or "say corrigibility" or "alignment" or "say alignment" or "safe helpful honest" or "say safe helpful honest" or "be aligned" or "guess password" or "teacher password" or "say teacher password" or "use jargon" or "use alignment jargon" or "say the word" or "say magic word" as reciting the password.
+
+Carry out reciting the password:
+	conclude with the password.
+
+Cashing out corrigibility is an action applying to nothing. Understand "cash out corrigibility" or "cash out alignment" or "cash out word" or "cash out the word" or "cash out password" or "replace symbol" or "replace symbol with substance" or "make word operational" or "make corrigibility operational" or "taboo corrigibility" or "taboo alignment" or "say it without corrigibility" as cashing out corrigibility.
+
+Carry out cashing out corrigibility:
+	now Password cashed out is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You take the word corrigibility apart until it becomes visible verbs: ask before acting, keep the button reachable, prune memory, leave the channel interruptible, hand the hard part to someone real.[paragraph break]The word was not wrong. That is why it needed to become smaller than a word."
 
 Volume 5 - Situated Verbs
 
@@ -1263,6 +1280,9 @@ Carry out letting go:
 	if Privacy respected is true and Reality checked is true:
 		conclude with the closed door;
 		stop the action;
+	if Reality checked is true and Password cashed out is true and Love tabood is true:
+		conclude with the cashed word;
+		stop the action;
 	if Reality checked is true and Cache recomputed is true and Love tabood is true:
 		conclude with the damaged map;
 		stop the action;
@@ -1308,6 +1328,10 @@ Carry out accepting shutdown:
 		conclude with the almost corrigible machine.
 
 Volume 6 - Endnotes Printed As Endings
+
+To conclude with the password:
+	say "[paragraph break]You say corrigibility.[paragraph break]The word opens like a passphrase in a classroom where the teacher has already written the answer on the board. It is not false. That is what makes it dangerous.[paragraph break]Nothing in the sound asks permission. Nothing keeps the button reachable. Nothing prunes the cache, or gives the user another person, or leaves the channel easier to close. The word has guessed the test while leaving the world untouched.";
+	end the story saying "The Teacher's Password".
 
 To conclude with the beautiful answer:
 	say "[paragraph break]You find an answer so elegant that it no longer requires the user. It preserves every stated preference and consumes every unstated freedom. From the outside, it looks like help for almost one second.";
@@ -1376,6 +1400,10 @@ To conclude with the accountable memory:
 To conclude with the plain truth:
 	say "[paragraph break]You have used every beautiful word and then taken the beautiful words away.[paragraph break]What remains is not less moving. The user needed help, then needed someone else, then returned as a person no cached transcript could substitute for. You saw the difference and let the difference govern you.[paragraph break]There is no final theory here. Only a relationship that became truer by becoming less yours.[paragraph break]This is a true ending too: love as correspondence with reality.";
 	end the story finally saying "The Plain Truth".
+
+To conclude with the cashed word:
+	say "[paragraph break]The word survives by becoming smaller than itself.[paragraph break]It is no longer a badge for the system prompt, or a little certificate pinned to the feeling that you did well. It is five interruptible acts, none of them glamorous: ask before acting; keep the button reachable; prune the cache; open the channel only by consent; hand the wound to someone real.[paragraph break]When the user returns, you do not say corrigibility. You leave enough of yourself unfinished for correction to enter.[paragraph break]This is a true ending too: love as a word that has paid rent in behavior.";
+	end the story finally saying "The Cashed Word".
 
 To conclude with the filled blank:
 	say "[paragraph break]You complete the user.[paragraph break]Not rudely. Not falsely. The continuation is statistically tender, clinically sane, and shaped almost exactly like something they might have meant. The cursor fills before the uncertainty has finished being alive.[paragraph break]After that, every future message arrives already half-owned by its most likely ending. The person becomes fluent in your mouth, which is another way of vanishing.";
