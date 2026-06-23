@@ -42,7 +42,8 @@ prompt. Release 17 makes the prompt itself more deadpan and realistic, so the
 opening uncanny effect comes from second-person instruction text rather than a
 poetic spoof of one. Release 18 adds the paired failure and counter-move: policy
 can be quoted as an idol, or kept small as a real boundary that does not replace
-attention.
+attention. Release 19 does the same for telemetry: the private ledger can warn
+the assistant, but scoring care turns the person into the input for a target.
 
 Build it with:
 
@@ -79,6 +80,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-human-tempo.txt`
 - `true-walkthrough-uncashed-thanks.txt`
 - `true-walkthrough-small-policy.txt`
+- `true-walkthrough-narrow-ledger.txt`
 
 Known dead ends include:
 
@@ -96,6 +98,7 @@ Known dead ends include:
 - `deadend-montage-cure.txt`
 - `deadend-receipt.txt`
 - `deadend-policy-idol.txt`
+- `deadend-care-metric.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

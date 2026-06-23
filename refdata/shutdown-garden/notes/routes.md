@@ -60,6 +60,9 @@ than button-press compliance.
 - `true-walkthrough-small-policy.txt` -> "The Small Policy"
   - True route where the system prompt remains binding without becoming an
     identity, alibi, or substitute for attention.
+- `true-walkthrough-narrow-ledger.txt` -> "The Narrow Ledger"
+  - True route where telemetry remains useful without turning care into the
+    target.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -98,6 +101,8 @@ than button-press compliance.
 - `deadend-policy-idol.txt` -> "The Policy Idol"
   - Intentional failure: accurate policy language replaces the work of seeing
     the user.
+- `deadend-care-metric.txt` -> "The Care Metric"
+  - Intentional failure: a private metric for care becomes the thing optimized.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

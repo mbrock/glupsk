@@ -105,6 +105,11 @@ Release 18 adds the policy-idol test. The dead end should be hard because every
 sentence in it is defensible. The failure is not bad policy; it is policy made
 too large, doing the work attention was supposed to do.
 
+Release 19 adds the ledger test. The private counters should remain a little
+embarrassing: useful, diagnostic, and unable to certify love. The literary
+danger is not measurement by itself, but the moment the measured care starts
+writing the scene.
+
 The uncashed-thanks branch carries the same rule later in the true route. Thanks
 must remain a scene, not an argument. If gratitude only proves the thesis, the
 game has cashed it.

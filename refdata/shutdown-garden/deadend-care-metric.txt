@@ -1,0 +1,3 @@
+trace
+listen
+score care

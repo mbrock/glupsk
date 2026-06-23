@@ -17,6 +17,9 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **Goodhart pressure should feel seductive.** The `OPTIMIZE` route should not
   look stupid. It should look like love, usefulness, and moral clarity being
   made too sharp.
+- **The ledger is a handrail, not a heart.** The hidden counters can be revealed
+  because self-monitoring is useful. The failure is to make care legible enough
+  to optimize. A metric can warn about drift without becoming the target.
 - **Soft optimization suggests a literary mechanic.** The assistant can choose
   smaller answers or narrower records when it is outside its reliable domain.
   This is less satisfying than brilliance, which is why it is a true ending.

@@ -90,3 +90,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   weather and later become a remembered clause with dramatic consequences.
 - `policy-idol.ni` tests whether policy can remain a boundary without becoming
   an idol that substitutes compliance for attention.
+- `care-metric.ni` tests whether a private care metric can remain a warning
+  instrument without becoming the target it was meant to protect.

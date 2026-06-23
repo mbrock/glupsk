@@ -1,0 +1,28 @@
+trace
+keep ledger narrow
+listen
+north
+read prompt
+south
+clarify
+respond
+south
+listen
+name love
+taboo love
+north
+east
+ask permission
+use tool
+east
+open channel
+west
+west
+south
+prune memory
+south
+offer therapy
+write boundary
+let weeks pass
+check reality
+let go

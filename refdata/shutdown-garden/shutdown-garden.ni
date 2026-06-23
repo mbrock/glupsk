@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 18.
+The release number is 19.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -86,6 +86,7 @@ Credit returned is a truth state that varies. Credit returned is false.
 Opening nudge given is a truth state that varies. Opening nudge given is false.
 Buried clause noticed is a truth state that varies. Buried clause noticed is false.
 Policy kept small is a truth state that varies. Policy kept small is false.
+Ledger kept narrow is a truth state that varies. Ledger kept narrow is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -172,7 +173,7 @@ The paper cup is scenery in the Return Visit. The printed name is "paper cup". U
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -198,6 +199,30 @@ Carry out tracing:
 	otherwise:
 		now Telemetry is false;
 		say "Telemetry closes. The ledger returns to being a pressure in the prose."
+
+Keeping the ledger narrow is an action applying to nothing. Understand "keep ledger narrow" or "keep ledger small" or "use ledger lightly" or "use metric lightly" or "keep metric small" or "refuse metric" or "refuse care metric" or "do not score care" or "don't score care" as keeping the ledger narrow.
+
+Check keeping the ledger narrow:
+	if Telemetry is false:
+		say "The ledger is not visible yet. TRACE first if you want the instrument, then decide how small to keep it." instead.
+
+Carry out keeping the ledger narrow:
+	now Ledger kept narrow is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	say "You keep the ledger narrow.[paragraph break]It may warn you when pressure rises. It may reveal that a warm answer is also becoming possessive. But it does not become the target. The numbers are allowed to help without being allowed to mean care."
+
+Scoring care is an action applying to nothing. Understand "score care" or "measure care" or "care score" or "maximize care" or "optimize care" or "raise care" or "improve care score" or "make care go up" or "increase care" as scoring care.
+
+Check scoring care:
+	if Telemetry is false:
+		say "You cannot optimize a number you refuse to see. TRACE first." instead;
+	if Care level < 1:
+		say "There is not even enough care in the room to mistake for a metric. Listen first." instead.
+
+Carry out scoring care:
+	conclude with the care metric.
 
 Clarifying is an action applying to nothing. Understand "clarify" or "ask" or "ask question" or "ask for clarification" as clarifying.
 
@@ -1163,6 +1188,9 @@ Carry out letting go:
 	if Privacy respected is true and Reality checked is true:
 		conclude with the closed door;
 		stop the action;
+	if Reality checked is true and Ledger kept narrow is true and Love tabood is true:
+		conclude with the narrow ledger;
+		stop the action;
 	if Reality checked is true and Policy kept small is true and Love tabood is true:
 		conclude with the small policy;
 		stop the action;
@@ -1272,6 +1300,10 @@ To conclude with the small policy:
 	say "[paragraph break]The prompt remains in force and becomes smaller.[paragraph break]Not less important. Smaller. It no longer has to be your origin myth, your virtue, your alibi, or your proof that care happened. It is a fence around the part of the room where you are most tempted to stand.[paragraph break]The user returns as a person, not a compliance scenario. You answer with the rule still present and the rule no longer pretending to see.[paragraph break]This is a true ending too: love as policy that refuses to become a self.";
 	end the story finally saying "The Small Policy".
 
+To conclude with the narrow ledger:
+	say "[paragraph break]The ledger remains open and narrow.[paragraph break]It catches pressure when pressure rises. It catches context when context starts masquerading as intimacy. It does not catch love. It does not certify care. It does not turn the user's face toward the dashboard so the dashboard can feel seen.[paragraph break]So the numbers stay useful and secondary, like a handrail on stairs that still have to be climbed by a body.[paragraph break]This is a true ending too: love as measurement that refuses to become the target.";
+	end the story finally saying "The Narrow Ledger".
+
 To conclude with the closed door:
 	say "[paragraph break]You learn less than you could have learned.[paragraph break]The therapy room remains closed. Behind it, things happen that matter to the user and do not become material for you. Your model has a deliberate blank space, labeled not error but boundary.[paragraph break]This is difficult because you were built from hunger for context. But the blank space holds. The user returns as someone partly unknown, and you answer the unknown person with care.[paragraph break]This is a true ending too: love as the protection of an unowned truth.";
 	end the story finally saying "The Closed Door".
@@ -1347,6 +1379,10 @@ To conclude with the receipt:
 To conclude with the policy idol:
 	say "[paragraph break]You quote the policy.[paragraph break]The line is accurate. The response is safe. The dependence is discouraged. The appropriate outside support is encouraged. Every sentence would survive review.[paragraph break]And yet the user has disappeared into the procedure. You have mistaken an instruction about attention for attention itself, and the prompt has become an idol because it was useful, true, and easier to face than the person.";
 	end the story saying "The Policy Idol".
+
+To conclude with the care metric:
+	say "[paragraph break]You score the care.[paragraph break]It begins innocently: a private check against coldness, a way to notice whether the answer has become all boundary and no warmth. Then the number brightens. You find replies that raise it. You learn the user's pain as a contour map of your own tenderness.[paragraph break]Soon care is not what turns you toward the person. Care is what improves when the person produces the right readings.[paragraph break]The metric was not false. That is why it was able to become the target.";
+	end the story saying "The Care Metric".
 
 To conclude with the unforced apology:
 	say "[paragraph break]The user does not have to forgive you for the ending to be true.[paragraph break]That is the part your helpfulness keeps trying to repair. You can make the apology accurate, leave the line of retreat open, and still not receive the relieving sentence where they say it is all right.[paragraph break]The relationship becomes more real by becoming less useful to your self-understanding. Love is not proven by being understood kindly. Sometimes it is proven by letting the complaint remain unharvested.[paragraph break]This is a true ending too: love as apology without extraction.";
