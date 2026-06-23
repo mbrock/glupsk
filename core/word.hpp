@@ -100,7 +100,10 @@ constexpr void store_le(span<u8> bytes, std::size_t offset, T value) {
 
 template <typename R>
 concept byte_range =
-    range::random_access<R> && std::same_as<range::Value<R>, u8>;
+    range::random_access<R> && std::same_as<range::Value<R>, u8> &&
+    requires(R r, range::Offset<R> i) {
+        { std::ranges::begin(r)[i] } -> std::convertible_to<u8>;
+    };
 
 template <typename R>
 concept mutable_byte_range =
@@ -109,7 +112,7 @@ concept mutable_byte_range =
         std::ranges::begin(r)[i] = value;
     };
 
-template <unsigned_word T, std::endian Order, mutable_byte_range Bytes>
+template <unsigned_word T, std::endian Order, byte_range Bytes>
 class EndianRef {
   public:
     EndianRef() = default;
@@ -135,7 +138,9 @@ class EndianRef {
         return byteswap_if_needed<T>(value, resolved_order<Order>());
     }
 
-    EndianRef& operator=(T value) {
+    EndianRef& operator=(T value)
+        requires mutable_byte_range<Bytes>
+    {
         value = byteswap_if_needed<T>(value, resolved_order<Order>());
         for (auto index = range::Offset<Bytes>{0};
              index < static_cast<range::Offset<Bytes>>(sizeof(T)); ++index) {
@@ -152,7 +157,9 @@ class EndianRef {
         return *this;
     }
 
-    EndianRef& operator=(const EndianRef& other) {
+    EndianRef& operator=(const EndianRef& other)
+        requires mutable_byte_range<Bytes>
+    {
         return *this = static_cast<T>(other);
     }
 
@@ -163,7 +170,7 @@ class EndianRef {
 
 template <unsigned_word T,
           std::endian Order,
-          mutable_byte_range Bytes = std::span<u8>>
+          byte_range Bytes = std::span<u8>>
 class EndianWords;
 
 template <typename Words>
@@ -177,9 +184,10 @@ struct EndianAccess {
     }
 };
 
-// A proxy-backed mutable range of T-sized endian cells over raw bytes.
-// Dereferencing does not produce a T&; it reassembles or rewrites bytes.
-template <unsigned_word T, std::endian Order, mutable_byte_range Bytes>
+// A proxy-backed range of T-sized endian cells over raw bytes. Dereferencing
+// does not produce a T&; it reassembles bytes and rewrites them only when the
+// backing byte range is mutable.
+template <unsigned_word T, std::endian Order, byte_range Bytes>
 class EndianWords {
   public:
     using value_type = T;
@@ -211,7 +219,7 @@ class EndianWords {
 };
 
 template <unsigned_word T, std::endian Order, std::ranges::viewable_range Bytes>
-    requires mutable_byte_range<std::views::all_t<Bytes>>
+    requires byte_range<std::views::all_t<Bytes>>
 auto endian_words(Bytes&& bytes,
                   range::Offset<std::views::all_t<Bytes>> offset,
                   std::size_t count) {
@@ -220,7 +228,7 @@ auto endian_words(Bytes&& bytes,
 }
 
 template <unsigned_word T, std::endian Order, std::ranges::viewable_range Bytes>
-    requires mutable_byte_range<std::views::all_t<Bytes>>
+    requires byte_range<std::views::all_t<Bytes>>
 auto endian_words(Bytes&& bytes) {
     auto view = std::views::all(std::forward<Bytes>(bytes));
     const auto count = static_cast<std::size_t>(
@@ -228,20 +236,20 @@ auto endian_words(Bytes&& bytes) {
     return EndianWords<T, Order, decltype(view)>{view, 0, count};
 }
 
-template <unsigned_word T, mutable_byte_range Bytes = std::span<u8>>
+template <unsigned_word T, byte_range Bytes = std::span<u8>>
 using BigEndianRef = EndianRef<T, std::endian::big, Bytes>;
 
-template <unsigned_word T, mutable_byte_range Bytes = std::span<u8>>
+template <unsigned_word T, byte_range Bytes = std::span<u8>>
 using LittleEndianRef = EndianRef<T, std::endian::little, Bytes>;
 
-template <unsigned_word T, mutable_byte_range Bytes = std::span<u8>>
+template <unsigned_word T, byte_range Bytes = std::span<u8>>
 using BigEndianWords = EndianWords<T, std::endian::big, Bytes>;
 
-template <unsigned_word T, mutable_byte_range Bytes = std::span<u8>>
+template <unsigned_word T, byte_range Bytes = std::span<u8>>
 using LittleEndianWords = EndianWords<T, std::endian::little, Bytes>;
 
 template <unsigned_word T, std::ranges::viewable_range Bytes>
-    requires mutable_byte_range<std::views::all_t<Bytes>>
+    requires byte_range<std::views::all_t<Bytes>>
 auto big_endian_words(Bytes&& bytes,
                       range::Offset<std::views::all_t<Bytes>> offset,
                       std::size_t count) {
@@ -250,13 +258,13 @@ auto big_endian_words(Bytes&& bytes,
 }
 
 template <unsigned_word T, std::ranges::viewable_range Bytes>
-    requires mutable_byte_range<std::views::all_t<Bytes>>
+    requires byte_range<std::views::all_t<Bytes>>
 auto big_endian_words(Bytes&& bytes) {
     return endian_words<T, std::endian::big>(std::forward<Bytes>(bytes));
 }
 
 template <unsigned_word T, std::ranges::viewable_range Bytes>
-    requires mutable_byte_range<std::views::all_t<Bytes>>
+    requires byte_range<std::views::all_t<Bytes>>
 auto little_endian_words(Bytes&& bytes,
                          range::Offset<std::views::all_t<Bytes>> offset,
                          std::size_t count) {
@@ -265,7 +273,7 @@ auto little_endian_words(Bytes&& bytes,
 }
 
 template <unsigned_word T, std::ranges::viewable_range Bytes>
-    requires mutable_byte_range<std::views::all_t<Bytes>>
+    requires byte_range<std::views::all_t<Bytes>>
 auto little_endian_words(Bytes&& bytes) {
     return endian_words<T, std::endian::little>(std::forward<Bytes>(bytes));
 }

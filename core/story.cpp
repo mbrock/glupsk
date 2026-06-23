@@ -2,6 +2,7 @@
 
 #include "core/bytes.hpp"
 #include "core/error.hpp"
+#include "core/word.hpp"
 
 #if GLUPSK_ENABLE_FILESYSTEM
 #include <fstream>
@@ -12,16 +13,17 @@ namespace glupsk {
 namespace {
 
 GlulxHeader parse_header(span<const u8> bytes) {
+    auto words = word::big_endian_words<u32>(bytes);
     GlulxHeader header;
-    header.magic = read_u32_be(bytes, 0);
-    header.version = read_u32_be(bytes, 4);
-    header.ramstart = read_u32_be(bytes, 8);
-    header.extstart = read_u32_be(bytes, 12);
-    header.endmem = read_u32_be(bytes, 16);
-    header.stack_size = read_u32_be(bytes, 20);
-    header.start_func = read_u32_be(bytes, 24);
-    header.decoding_table = read_u32_be(bytes, 28);
-    header.checksum = read_u32_be(bytes, 32);
+    header.magic = words[0];
+    header.version = words[1];
+    header.ramstart = words[2];
+    header.extstart = words[3];
+    header.endmem = words[4];
+    header.stack_size = words[5];
+    header.start_func = words[6];
+    header.decoding_table = words[7];
+    header.checksum = words[8];
     return header;
 }
 
@@ -37,12 +39,13 @@ u32 compute_glulx_checksum(span<const u8> bytes) {
     require(bytes.size() % 4 == 0,
             "Glulx story length must be a multiple of four bytes");
 
+    auto words = word::big_endian_words<u32>(bytes);
     u32 sum = 0;
-    for (std::size_t offset = 0; offset < bytes.size(); offset += 4) {
-        if (offset == 32) {
+    for (std::size_t index = 0; index < words.size(); ++index) {
+        if (index == 8) {
             continue;
         }
-        sum += read_u32_be(bytes, offset);
+        sum += words[index];
     }
     return sum;
 }

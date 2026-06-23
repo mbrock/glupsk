@@ -116,6 +116,19 @@ static suite word_tests{"word", [] {
         expect(bytes[7] == 0x88);
     };
 
+    "views read-only byte storage"_test = [] {
+        const auto bytes = std::array<u8, 8>{
+            0x01, 0x23, 0x45, 0x67,
+            0x89, 0xab, 0xcd, 0xef,
+        };
+        auto words = glupsk::word::big_endian_words<u32>(bytes);
+
+        static_assert(std::ranges::random_access_range<decltype(words)>);
+        expect(words.size() == 2);
+        expect(static_cast<u32>(words[0]) == 0x01234567u);
+        expect(static_cast<u32>(words[1]) == 0x89abcdefu);
+    };
+
     "has random-access proxy iterators"_test = [] {
         using Words = glupsk::word::BigEndianWords<u32>;
         static_assert(std::ranges::random_access_range<Words>);
