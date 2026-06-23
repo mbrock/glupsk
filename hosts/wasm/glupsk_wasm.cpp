@@ -124,7 +124,7 @@ struct DenoTerminalHost {
     }
 
     glupsk::GlkCallResult write(Stream& stream,
-                                glupsk::GlkTextData text,
+                                const glupsk::GlkTextData& text,
                                 glupsk::GlkStyle style) {
         const auto style_id = static_cast<std::uint32_t>(style);
         if (const auto* bytes = std::get_if<std::string>(&text)) {
@@ -137,12 +137,26 @@ struct DenoTerminalHost {
             return glupsk::glk_returned();
         }
 
-        const auto& codepoints = std::get<std::vector<glupsk::u32>>(text);
-        glupsk_host_write_unicode(stream.window,
-                                  stream.id,
-                                  style_id,
-                                  codepoints.data(),
-                                  static_cast<std::uint32_t>(codepoints.size()));
+        const auto write_codepoints = [&](std::span<const glupsk::u32> codepoints) {
+            glupsk_host_write_unicode(
+                stream.window,
+                stream.id,
+                style_id,
+                codepoints.data(),
+                static_cast<std::uint32_t>(codepoints.size()));
+        };
+
+        if (const auto* codepoints = std::get_if<std::vector<glupsk::u32>>(&text)) {
+            write_codepoints(*codepoints);
+            return glupsk::glk_returned();
+        }
+        if (const auto* codepoints = std::get_if<std::span<const glupsk::u32>>(&text)) {
+            write_codepoints(*codepoints);
+            return glupsk::glk_returned();
+        }
+        for (const auto chunk : std::get<glupsk::GlkCodepointChunks>(text).chunks) {
+            write_codepoints(chunk);
+        }
         return glupsk::glk_returned();
     }
 

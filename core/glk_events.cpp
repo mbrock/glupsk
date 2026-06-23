@@ -44,16 +44,37 @@ u32 glk_write_input_text(Machine& machine,
         return count;
     }
 
-    const auto& unicode = std::get<std::vector<u32>>(text);
-    const auto count =
-        std::min<u32>(pending.max_length, static_cast<u32>(unicode.size()));
-    for (u32 index = 0; index < count; ++index) {
+    const auto write_codepoint = [&](u32 index, u32 ch) {
         if (pending.encoding == GlkTextEncoding::unicode) {
             machine.memory.write32(pending.buffer_address + index * 4,
-                                   unicode[index]);
+                                   ch);
         } else {
             machine.memory.write8(pending.buffer_address + index,
-                                  static_cast<u8>(unicode[index]));
+                                  static_cast<u8>(ch));
+        }
+    };
+
+    auto count = u32{0};
+    const auto write_span = [&](span<const u32> codepoints) {
+        for (const auto ch : codepoints) {
+            if (count == pending.max_length) {
+                return;
+            }
+            write_codepoint(count, ch);
+            ++count;
+        }
+    };
+
+    if (const auto* unicode = std::get_if<std::vector<u32>>(&text)) {
+        write_span(*unicode);
+    } else if (const auto* unicode = std::get_if<span<const u32>>(&text)) {
+        write_span(*unicode);
+    } else {
+        for (const auto chunk : std::get<GlkCodepointChunks>(text).chunks) {
+            write_span(chunk);
+            if (count == pending.max_length) {
+                break;
+            }
         }
     }
     return count;

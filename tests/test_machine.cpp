@@ -331,6 +331,29 @@ static suite machine_tests{"Machine", [] {
         expect(glk.host().writes.front().style == glupsk::GlkStyle::header);
     };
 
+    "flushes buffered Glk characters as owned transcript text"_test = [] {
+        const auto story =
+            glupsk::Story::from_bytes(synthetic_story_with_extra_memory());
+        auto machine = glupsk::Machine::from_story(story);
+        auto glk = glupsk::TranscriptGlk{};
+
+        const auto root = glk.call_returned(
+            machine, 0x23, std::array<glupsk::u32, 5>{0, 0, 0, 0, 9});
+        glk.call_returned(machine, 0x2f, std::array<glupsk::u32, 1>{root});
+
+        glk.put_char(machine, 'O');
+        glk.put_char(machine, 'K');
+        expect(glk.transcript.empty());
+
+        glk.flush(machine);
+
+        expect(glk.transcript == "OK");
+        expect(glk.host().writes.size() == 1);
+        const auto& text = glk.host().writes.front().text;
+        const auto& codepoints = std::get<std::vector<glupsk::u32>>(text);
+        expect(codepoints == std::vector<glupsk::u32>{'O', 'K'});
+    };
+
     "handles Glk Unicode buffer case selectors"_test = [] {
         const auto story =
             glupsk::Story::from_bytes(synthetic_story_with_extra_memory());

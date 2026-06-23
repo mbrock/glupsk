@@ -10,6 +10,7 @@
 #include "core/machine.hpp"
 
 #include <algorithm>
+#include <array>
 #include <concepts>
 #include <optional>
 #include <utility>
@@ -334,17 +335,25 @@ class GlkSession : public GlkRuntime {
         if (record.buffer.empty()) {
             return;
         }
-        auto codepoints = std::vector<u32>{};
-        codepoints.reserve(record.buffer.size());
-        while (!record.buffer.empty()) {
-            const auto run = record.buffer.contiguous_prefix();
-            codepoints.insert(codepoints.end(), run.begin(), run.end());
-            record.buffer.consume(run.size());
-        }
-        const auto result = host_.write(
-            host_stream.stream, GlkTextData{std::move(codepoints)}, current_style_);
+        auto [first, second] = record.buffer.contiguous_parts();
+        auto chunks = std::array<span<const u32>, 2>{
+            span<const u32>{first},
+            span<const u32>{second},
+        };
+        const auto text =
+            second.empty()
+                ? GlkTextData{span<const u32>{first}}
+                : GlkTextData{GlkCodepointChunks{span<const span<const u32>>{
+                      chunks.data(),
+                      chunks.size(),
+                  }}};
+        const auto result =
+            host_.write(host_stream.stream, text, current_style_);
         if (const auto* fatal = std::get_if<GlkFatal>(&result)) {
             fail(fatal->message);
+        }
+        if (std::holds_alternative<GlkReturned>(result)) {
+            record.buffer.consume(glk_text_length(text));
         }
     }
 
@@ -544,7 +553,7 @@ class GlkSession : public GlkRuntime {
         current_style_ = GlkStyle::input;
         auto result = write_to(machine, stream, text);
         if (std::holds_alternative<GlkReturned>(result)) {
-            result = std::holds_alternative<std::string>(text)
+            result = glk_text_is_latin1(text)
                          ? write_to(machine, stream, std::string{"\n"})
                          : write_to(machine, stream, std::vector<u32>{'\n'});
         }

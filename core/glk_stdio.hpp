@@ -105,6 +105,18 @@ struct StdioGlkHost {
         }
     }
 
+    void write_text(span<const u32> text) {
+        for (const auto ch : text) {
+            write_codepoint(ch);
+        }
+    }
+
+    void write_text(const GlkCodepointChunks& text) {
+        for (const auto chunk : text.chunks) {
+            write_text(chunk);
+        }
+    }
+
     void write_codepoint(u32 ch) {
         if (ch == '\r') {
             ch = '\n';

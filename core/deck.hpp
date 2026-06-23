@@ -162,6 +162,7 @@ public:
   using Base::Base;
   using Base::capacity;
   using Base::clear;
+  using Base::contiguous_parts;
   using Base::consume;
   using Base::contiguous_prefix;
   using Base::empty;

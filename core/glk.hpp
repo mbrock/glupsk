@@ -3,6 +3,7 @@
 #include "core/types.hpp"
 
 #include <string>
+#include <span>
 #include <utility>
 #include <variant>
 #include <vector>
@@ -137,10 +138,15 @@ struct GlkTextString {
 // the bridge has decoded the VM memory involved.
 using GlkText = std::variant<GlkTextChar, GlkTextBuffer, GlkTextString>;
 
-// Materialized text passed across the semantic host boundary. std::string is
-// used for Latin-1/byte-oriented Glk text; std::vector<u32> is used for Unicode
-// codepoints.
-using GlkTextData = std::variant<std::string, std::vector<u32>>;
+struct GlkCodepointChunks {
+    span<const span<const u32>> chunks;
+};
+
+// Text passed across the semantic host boundary. Latin-1 text is compactly
+// owned as bytes. Unicode text may be owned, borrowed as one span, or borrowed
+// as several spans when the source is already split by ring-buffer geometry.
+using GlkTextData =
+    std::variant<std::string, std::vector<u32>, span<const u32>, GlkCodepointChunks>;
 
 struct GlkEvent {
     u32 type = 0;

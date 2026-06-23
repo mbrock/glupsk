@@ -9,6 +9,8 @@ u32 glk_char_to_lower(u32 ch);
 u32 glk_char_to_upper(u32 ch);
 
 u32 glk_text_length(const GlkTextData& text);
+bool glk_text_is_latin1(const GlkTextData& text);
+GlkTextData glk_own_text(const GlkTextData& text);
 GlkTextData glk_materialize_text(Machine& machine, const GlkText& text);
 GlkTextData glk_materialize_text(Machine& machine, const GlkTextChar& text);
 GlkTextData glk_materialize_text(Machine& machine, const GlkTextBuffer& text);

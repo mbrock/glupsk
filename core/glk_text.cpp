@@ -24,7 +24,40 @@ u32 glk_text_length(const GlkTextData& text) {
     if (const auto* bytes = std::get_if<std::string>(&text)) {
         return static_cast<u32>(bytes->size());
     }
-    return static_cast<u32>(std::get<std::vector<u32>>(text).size());
+    if (const auto* codepoints = std::get_if<std::vector<u32>>(&text)) {
+        return static_cast<u32>(codepoints->size());
+    }
+    if (const auto* codepoints = std::get_if<span<const u32>>(&text)) {
+        return static_cast<u32>(codepoints->size());
+    }
+    u32 count = 0;
+    for (const auto chunk : std::get<GlkCodepointChunks>(text).chunks) {
+        count += static_cast<u32>(chunk.size());
+    }
+    return count;
+}
+
+bool glk_text_is_latin1(const GlkTextData& text) {
+    return std::holds_alternative<std::string>(text);
+}
+
+GlkTextData glk_own_text(const GlkTextData& text) {
+    if (const auto* bytes = std::get_if<std::string>(&text)) {
+        return *bytes;
+    }
+    if (const auto* codepoints = std::get_if<std::vector<u32>>(&text)) {
+        return *codepoints;
+    }
+    if (const auto* codepoints = std::get_if<span<const u32>>(&text)) {
+        return std::vector<u32>{codepoints->begin(), codepoints->end()};
+    }
+
+    auto owned = std::vector<u32>{};
+    owned.reserve(glk_text_length(text));
+    for (const auto chunk : std::get<GlkCodepointChunks>(text).chunks) {
+        owned.insert(owned.end(), chunk.begin(), chunk.end());
+    }
+    return owned;
 }
 
 GlkTextData glk_materialize_text(Machine& machine, const GlkText& text) {

@@ -36,8 +36,50 @@ void glk_write_to_memory_stream(Machine& machine,
         }
         return;
     }
-    for (const auto ch : std::get<std::vector<u32>>(text)) {
-        write_codepoint(ch);
+    if (const auto* codepoints = std::get_if<std::vector<u32>>(&text)) {
+        for (const auto ch : *codepoints) {
+            write_codepoint(ch);
+        }
+        return;
+    }
+    if (const auto* codepoints = std::get_if<span<const u32>>(&text)) {
+        for (const auto ch : *codepoints) {
+            write_codepoint(ch);
+        }
+        return;
+    }
+    for (const auto chunk : std::get<GlkCodepointChunks>(text).chunks) {
+        for (const auto ch : chunk) {
+            write_codepoint(ch);
+        }
+    }
+}
+
+template <typename WriteCodepoint>
+void glk_write_unicode_text(const GlkTextData& text,
+                            WriteCodepoint write_codepoint) {
+    if (const auto* bytes = std::get_if<std::string>(&text)) {
+        for (const auto ch : *bytes) {
+            write_codepoint(static_cast<u8>(ch));
+        }
+        return;
+    }
+    if (const auto* codepoints = std::get_if<std::vector<u32>>(&text)) {
+        for (const auto ch : *codepoints) {
+            write_codepoint(ch);
+        }
+        return;
+    }
+    if (const auto* codepoints = std::get_if<span<const u32>>(&text)) {
+        for (const auto ch : *codepoints) {
+            write_codepoint(ch);
+        }
+        return;
+    }
+    for (const auto chunk : std::get<GlkCodepointChunks>(text).chunks) {
+        for (const auto ch : chunk) {
+            write_codepoint(ch);
+        }
     }
 }
 
@@ -57,15 +99,7 @@ void glk_write_to_unicode_memory_stream(Machine& machine,
         ++record.write_count;
     };
 
-    if (const auto* bytes = std::get_if<std::string>(&text)) {
-        for (const auto ch : *bytes) {
-            write_codepoint(static_cast<u8>(ch));
-        }
-        return;
-    }
-    for (const auto ch : std::get<std::vector<u32>>(text)) {
-        write_codepoint(ch);
-    }
+    glk_write_unicode_text(text, write_codepoint);
 }
 
 template <typename Host>

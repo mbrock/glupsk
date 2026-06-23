@@ -63,7 +63,7 @@ struct TranscriptGlkHost {
                         GlkStyle style) {
         append(stream.text, data);
         append(text, data);
-        writes.push_back(Write{.text = data, .style = style});
+        writes.push_back(Write{.text = glk_own_text(data), .style = style});
         return glk_returned();
     }
 
@@ -110,11 +110,27 @@ struct TranscriptGlkHost {
 
     static void append(std::string& out, const std::vector<u32>& text) {
         for (auto ch : text) {
-            if (ch == '\r') {
-                ch = '\n';
-            }
-            out.push_back(ch <= 0x7fu ? static_cast<char>(ch) : '?');
+            append_codepoint(out, ch);
         }
+    }
+
+    static void append(std::string& out, span<const u32> text) {
+        for (auto ch : text) {
+            append_codepoint(out, ch);
+        }
+    }
+
+    static void append(std::string& out, const GlkCodepointChunks& text) {
+        for (auto chunk : text.chunks) {
+            append(out, chunk);
+        }
+    }
+
+    static void append_codepoint(std::string& out, u32 ch) {
+        if (ch == '\r') {
+            ch = '\n';
+        }
+        out.push_back(ch <= 0x7fu ? static_cast<char>(ch) : '?');
     }
 };
 
