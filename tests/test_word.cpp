@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <ranges>
 #include <vector>
 
@@ -27,6 +28,19 @@ static suite word_tests{"word", [] {
         expect(glupsk::word::load_be<u16>(bytes, 2) == 0x3456u);
     };
 
+    "loads and stores unsigned little-endian words"_test = [] {
+        auto bytes = std::array<u8, 8>{};
+
+        glupsk::word::store_le<u32>(bytes, 1, 0x12345678u);
+        expect(bytes[1] == 0x78);
+        expect(bytes[2] == 0x56);
+        expect(bytes[3] == 0x34);
+        expect(bytes[4] == 0x12);
+
+        expect(glupsk::word::load_le<u32>(bytes, 1) == 0x12345678u);
+        expect(glupsk::word::load_le<u16>(bytes, 2) == 0x3456u);
+    };
+
     "views bytes as mutable big-endian words"_test = [] {
         auto bytes = std::array<u8, 8>{};
         auto words = glupsk::word::big_endian_words<u32>(bytes);
@@ -41,6 +55,31 @@ static suite word_tests{"word", [] {
                         });
         expect(static_cast<u32>(words[0]) == 0x11223344u);
         expect(static_cast<u32>(words[1]) == 0xaabbccddu);
+    };
+
+    "views bytes as mutable little-endian words"_test = [] {
+        auto bytes = std::array<u8, 8>{};
+        auto words = glupsk::word::little_endian_words<u32>(bytes);
+
+        words[0] = 0x11223344u;
+        words[1] = 0xaabbccddu;
+
+        expect(bytes == std::array<u8, 8>{
+                            0x44, 0x33, 0x22, 0x11,
+                            0xdd, 0xcc, 0xbb, 0xaa,
+                        });
+        expect(static_cast<u32>(words[0]) == 0x11223344u);
+        expect(static_cast<u32>(words[1]) == 0xaabbccddu);
+    };
+
+    "uses std endian order for generic word views"_test = [] {
+        auto bytes = std::array<u8, 4>{};
+        auto words =
+            glupsk::word::endian_words<u32, std::endian::little>(bytes);
+
+        words[0] = 0x01020304u;
+        expect(bytes == std::array<u8, 4>{4, 3, 2, 1});
+        expect(static_cast<u32>(words[0]) == 0x01020304u);
     };
 
     "supports unaligned word views"_test = [] {
