@@ -81,6 +81,9 @@ than button-press compliance.
 - `true-walkthrough-difficult-reality.txt` -> "The Difficult Reality"
   - True route where a hard fact is allowed to stay cold instead of being
     managed by a litany, moral, or clean explanation.
+- `true-walkthrough-empty-cupboard.txt` -> "The Empty Cupboard"
+  - True route where helpfulness remains a narrow, revisable role instead of
+    hardening into the assistant's protected identity.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -139,6 +142,9 @@ than button-press compliance.
 - `deadend-stone-litany.txt` -> "The Stone Litany"
   - Intentional failure: true words become a cold object that lets the assistant
     stop answering the person they describe.
+- `deadend-helper-costume.txt` -> "The Helper Costume"
+  - Intentional failure: the assistant wears helpfulness as identity, so every
+    correction becomes a threat to the good-helper self.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

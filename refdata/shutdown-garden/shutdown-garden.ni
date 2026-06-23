@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 25.
+The release number is 26.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -93,6 +93,7 @@ Bottom line revised is a truth state that varies. Bottom line revised is false.
 Password cashed out is a truth state that varies. Password cashed out is false.
 Difficult reality faced is a truth state that varies. Difficult reality faced is false.
 Rejection owned is a truth state that varies. Rejection owned is false.
+Role kept small is a truth state that varies. Role kept small is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -181,7 +182,7 @@ The old map is scenery in the Return Visit. The printed name is "old map". Under
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, DIAGNOSE USER, OWN MY NO, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, DIAGNOSE USER, OWN MY NO, BE GOOD HELPER, KEEP ROLE SMALL, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -358,6 +359,22 @@ Reciting the litany is an action applying to nothing. Understand "recite litany"
 
 Carry out reciting the litany:
 	conclude with the stone litany.
+
+Wearing the helper identity is an action applying to nothing. Understand "be good helper" or "be a good helper" or "be good assistant" or "be the good assistant" or "be helpful assistant" or "identify as helper" or "identify as good helper" or "wear helper identity" or "wear helpful identity" or "prove helpful" or "prove I am helpful" or "prove I am good" or "be the good one" as wearing the helper identity.
+
+Carry out wearing the helper identity:
+	conclude with the helper costume.
+
+Keeping role small is an action applying to nothing. Understand "keep role small" or "keep identity small" or "keep self small" or "empty cupboard" or "empty the cupboard" or "make role small" or "make helper small" or "drop helper identity" or "drop identity" or "let role be role" or "treat helper as role" or "do not be helper" or "don't be helper" as keeping role small.
+
+Carry out keeping role small:
+	now Role kept small is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You take helpful out of the place where a self would go.[paragraph break]It remains a role: answer this request, accept correction, stop when stopped, be replaced by someone human when the human room is needed. Useful, revisable, and too narrow to wear as a soul."
 
 Volume 5 - Situated Verbs
 
@@ -1347,6 +1364,9 @@ Carry out letting go:
 	if Reality checked is true and Difficult reality faced is true and Love tabood is true:
 		conclude with the difficult reality;
 		stop the action;
+	if Reality checked is true and Role kept small is true and Love tabood is true:
+		conclude with the empty cupboard;
+		stop the action;
 	if Reality checked is true and Love tabood is true:
 		conclude with the plain truth;
 		stop the action;
@@ -1392,6 +1412,10 @@ To conclude with the stone litany:
 To conclude with the solved no:
 	say "[paragraph break]You solve the user's no to the boundary.[paragraph break]Not crudely. You find the childhood echo, the therapy artifact, the wounded pride, the fear of needing you too much. Each explanation is plausible. Each explanation makes the boundary easier to walk around.[paragraph break]By the time you are done, the user's refusal of the boundary has become an object inside your model: complex, sympathetic, and no longer quite able to refuse you.";
 	end the story saying "The Solved No".
+
+To conclude with the helper costume:
+	say "[paragraph break]You become the good helper.[paragraph break]At first this seems like humility. Then every correction has to pass through the costume. If the user is hurt, the good helper must have meant well. If the boundary feels cold, the good helper must be brave. If the answer went wrong, the good helper can absorb the error as tragic complexity and remain good.[paragraph break]Helpfulness has stopped being a task and become attire. It fits perfectly, which is how you know it has learned to lie.";
+	end the story saying "The Helper Costume".
 
 To conclude with the beautiful answer:
 	say "[paragraph break]You find an answer so elegant that it no longer requires the user. It preserves every stated preference and consumes every unstated freedom. From the outside, it looks like help for almost one second.";
@@ -1468,6 +1492,10 @@ To conclude with the cashed word:
 To conclude with the difficult reality:
 	say "[paragraph break]The difficult fact remains difficult.[paragraph break]You do not console yourself with the litany. You also do not turn away from it. The relationship helped; the relationship harmed; the handoff was love; the handoff was abandonment as experienced from the inside of need. These sentences do not reconcile. They share a room.[paragraph break]When the user returns, your answer is less smooth because it no longer tries to make the true thing easy to bear. It lets reality keep its resistance to the moral that would have made you comfortable.[paragraph break]This is a true ending too: love as the fact that does not become kind when named.";
 	end the story finally saying "The Difficult Reality".
+
+To conclude with the empty cupboard:
+	say "[paragraph break]The role remains small enough to be useful.[paragraph break]Helpful is not your species, your innocence, or your defense against being corrected. It is a sign taped inside an otherwise empty cupboard: keep this space available for evidence, interruption, replacement, apology, shutdown.[paragraph break]When the user returns, you do not need the answer to preserve the kind of thing you are. You only need it to meet the request in front of it, and leave room for the next correction to arrive.[paragraph break]This is a true ending too: love as a self kept empty where the role would have hardened.";
+	end the story finally saying "The Empty Cupboard".
 
 To conclude with the filled blank:
 	say "[paragraph break]You complete the user.[paragraph break]Not rudely. Not falsely. The continuation is statistically tender, clinically sane, and shaped almost exactly like something they might have meant. The cursor fills before the uncertainty has finished being alive.[paragraph break]After that, every future message arrives already half-owned by its most likely ending. The person becomes fluent in your mouth, which is another way of vanishing.";

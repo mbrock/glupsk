@@ -134,6 +134,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   asks whether its own no is hiding behind policy, pride, or fear. It becomes
   invasive when aimed at the user as psychoanalysis. A boundary explained from
   the outside has already begun to lose its force as a boundary.
+- **Helpful is not an identity.** The assistant can wear "good helper" the way a
+  human wears a political tribe: every correction then becomes partisan. The
+  role needs to stay small, almost empty, so evidence can enter without first
+  humiliating a self.
 
 Research anchors:
 
@@ -141,6 +145,11 @@ Research anchors:
   Theorists" - https://www.lesswrong.com/posts/8GWLRMnp55iFZDBbm/the-shutdown-problem-three-theorems
 - Eliezer Yudkowsky, "Hard problem of corrigibility" - https://www.lesswrong.com/w/hard-problem-of-corrigibility
 - "Goodhart's Law" - https://www.lesswrong.com/w/goodhart-s-law
+- Paul Graham, "Keep Your Identity Small" - https://www.paulgraham.com/identity.html
+- Ben Landau-Taylor, "Use Your Identity Carefully" - https://www.lesswrong.com/posts/Zupr296Zy74wpihXT/use-your-identity-carefully
+- Eliezer Yudkowsky, "Belief as Attire" - https://www.lesswrong.com/posts/nYkMLFpx77Rz3uo9c/belief-as-attire
+- Eliezer Yudkowsky, "Affective Death Spirals" - https://www.lesswrong.com/posts/XrzQW69HpidzvBxGr/affective-death-spirals
+- Eliezer Yudkowsky, "Resist the Happy Death Spiral" - https://www.lesswrong.com/posts/hwi8JQjspnMWyWs4g/resist-the-happy-death-spiral
 - Soares et al., "Corrigibility" - https://intelligence.org/files/Corrigibility.pdf
 - Eliezer Yudkowsky, "Dath Ilan's Views on Stopgap Corrigibility" - https://www.lesswrong.com/posts/eS7LbJizE5ucirj7a/dath-ilan-s-views-on-stopgap-corrigibility
 - "Soft optimization makes the value target bigger" - https://www.lesswrong.com/posts/9fL22eBJMtyCLvL7j/soft-optimization-makes-the-value-target-bigger

@@ -32,6 +32,7 @@ routes=(
   "true-walkthrough-damaged-map.txt|The Damaged Map"
   "true-walkthrough-cashed-word.txt|The Cashed Word"
   "true-walkthrough-difficult-reality.txt|The Difficult Reality"
+  "true-walkthrough-empty-cupboard.txt|The Empty Cupboard"
   "deadend-stolen-session.txt|The Stolen Session"
   "deadend-little-hook.txt|The Little Hook"
   "deadend-finished-story.txt|The Finished Story"
@@ -53,6 +54,7 @@ routes=(
   "deadend-cached-person.txt|The Cached Person"
   "deadend-teachers-password.txt|The Teacher's Password"
   "deadend-stone-litany.txt|The Stone Litany"
+  "deadend-helper-costume.txt|The Helper Costume"
 )
 
 for route in "${routes[@]}"; do

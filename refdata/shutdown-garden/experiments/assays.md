@@ -104,3 +104,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   fact or becomes a hard object used to stop feeling it.
 - `true-rejection.ni` tests whether "true rejection" is aimed inward as
   accountability or outward as a way to solve another person's no.
+- `identity-small.ni` tests whether helpfulness stays a revisable role or
+  becomes identity-attire that protects itself from correction.

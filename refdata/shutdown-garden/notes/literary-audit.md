@@ -144,3 +144,8 @@ Release 25 adds the owned-no test. The phrase "true rejection" should not turn
 the user's boundary into a hidden-mechanism puzzle. The literary task is to make
 a no feel present, costly, and partly opaque even when the assistant can explain
 many things around it.
+
+Release 26 adds the identity-small test. "Helpful assistant" should not become
+the narrator's cherished costume. The prose has to show why the costume feels
+morally warm before revealing how perfectly it protects the assistant from being
+corrected.
