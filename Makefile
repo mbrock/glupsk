@@ -63,7 +63,7 @@ WASM_EXPORTS := \
 	-Wl,--export=vm_snapshot_read \
 	-Wl,--export=vm_destroy
 
-.PHONY: all aa clean clean-aa clean-shutdown-garden clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play profile shutdown-garden test tiny-i7 trace wasm web-assets
+.PHONY: all aa clean clean-aa clean-shutdown-garden clean-tiny-i7 compile-commands deno-play info meson meson-setup meson-test play profile shutdown-garden shutdown-garden-check test tiny-i7 trace wasm web-assets
 
 all: meson
 
@@ -72,6 +72,9 @@ aa: $(AA_STORY)
 tiny-i7: $(TINY_I7_STORY)
 
 shutdown-garden: $(SHUTDOWN_GARDEN_STORY)
+
+shutdown-garden-check: meson
+	$(MAKE) -C refdata/shutdown-garden full-check GLUPSK_PLAY=../../$(GLUPSK_PLAY)
 
 $(AA_STORY): $(AA_SOURCE) tools/inform7-nix/flake.nix tools/inform7-nix/flake.lock
 	$(NIX) run $(I7_FLAKE)#i7-build -- --glulx $(AA_SOURCE) $@

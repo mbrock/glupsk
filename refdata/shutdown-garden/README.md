@@ -28,6 +28,7 @@ or from the repo root:
 
 ```sh
 make shutdown-garden
+make shutdown-garden-check
 ```
 
 A known main-quest route is in `walkthrough.txt`. Known true routes are in:
