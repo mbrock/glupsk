@@ -134,3 +134,8 @@ Release 23 adds the teacher's-password test. Alignment vocabulary should not
 become genre costume: `corrigibility` has to earn its place by turning into
 verbs, objects, interruptions, and losses. The false ending should feel like a
 student being technically right in a way that changes nothing.
+
+Release 24 adds the stone-litany test. Tarski and Gendlin should not become
+comforting rationalist incense. If truth enters the game, it must change the
+answer and leave the room altered; otherwise the litany is only a polished
+object between the assistant and the person.

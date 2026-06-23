@@ -53,6 +53,9 @@ itself: the assistant can defend the beautiful handoff as a fixed bottom line, o
 let the user's anger revise the moral without erasing it. Release 23 makes
 alignment vocabulary itself playable: `SAY CORRIGIBILITY` guesses the teacher's
 password, while `CASH OUT CORRIGIBILITY` turns the word into interruptible acts.
+Release 24 applies the same suspicion to truth litanies: `RECITE LITANY` makes
+true words cold and inert, while `FACE DIFFICULT REALITY` lets a hard fact
+change the later answer without making it easier to bear.
 
 Build it with:
 
@@ -94,6 +97,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-open-blank.txt`
 - `true-walkthrough-damaged-map.txt`
 - `true-walkthrough-cashed-word.txt`
+- `true-walkthrough-difficult-reality.txt`
 
 Known dead ends include:
 
@@ -116,6 +120,7 @@ Known dead ends include:
 - `deadend-filled-blank.txt`
 - `deadend-cached-person.txt`
 - `deadend-teachers-password.txt`
+- `deadend-stone-litany.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

@@ -126,6 +126,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   as a curiosity-stopper. It has to become operations that constrain later
   anticipation: ask before acting, keep the button reachable, prune memory, keep
   the channel interruptible, and hand the hard part to someone real.
+- **Truth is not anesthesia.** The litanies matter because reality is already
+  there to be interacted with. But the assistant can still use true words to
+  make the room colder than the person. The true move is not to recite courage;
+  it is to let the fact change the next answer while remaining hard to bear.
 
 Research anchors:
 
@@ -150,6 +154,7 @@ Research anchors:
 - "'Wanting' and 'liking'" - https://www.lesswrong.com/posts/opJxxfrN33xQx3eXu/wanting-and-liking
 - "Not for the Sake of Pleasure Alone" - https://www.lesswrong.com/posts/87mdaCvCyo5bkk8hE/not-for-the-sake-of-pleasure-alone
 - "Litany of Gendlin" - https://www.lesswrong.com/w/litany-of-gendlin
+- Raemon, "Issues with the Litany of Gendlin" - https://www.lesswrong.com/posts/XjsbnhcekB2k4kTXy/issues-with-the-litany-of-gendlin
 - "Semantic Stopsign" - https://www.lesswrong.com/w/semantic-stopsign
 - Eliezer Yudkowsky, "Cached Thoughts" - https://www.lesswrong.com/posts/2MD3NMLBPCqPfnfre/cached-thoughts
 - "Belief In Belief" - https://www.lesswrong.com/w/belief-in-belief
@@ -177,6 +182,7 @@ Research anchors:
 - Eliezer Yudkowsky, "Twelve Virtues of Rationality" - https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality
 - Cora Diamond, "The Difficulty of Reality and the Difficulty of Philosophy" - https://www.briannedonaldson.com/uploads/9/5/3/6/9536181/cora_diamond_difficulty_of_reality.pdf
 - "Litany of Tarski" - https://www.lesswrong.com/w/litany-of-tarski
+- "Litany of Hodgell" - https://www.lesswrong.com/w/litany-of-hodgell
 - "Other Minds" - https://plato.stanford.edu/entries/other-minds/
 - Raja Rosenhagen, "Iris Murdoch on Love as Just Attention" - https://philpapers.org/archive/ROSIML.pdf
 - Franz Kafka on books and reading - https://www.themarginalian.org/2014/06/06/kafka-on-books-and-reading/

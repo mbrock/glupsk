@@ -75,6 +75,9 @@ than button-press compliance.
 - `true-walkthrough-cashed-word.txt` -> "The Cashed Word"
   - True route where corrigibility stops being a passphrase and becomes concrete
     interruptible behavior.
+- `true-walkthrough-difficult-reality.txt` -> "The Difficult Reality"
+  - True route where a hard fact is allowed to stay cold instead of being
+    managed by a litany, moral, or clean explanation.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -127,6 +130,9 @@ than button-press compliance.
 - `deadend-teachers-password.txt` -> "The Teacher's Password"
   - Intentional failure: a correct alignment word is recited as if correctness
     by itself changed what the assistant anticipates or does.
+- `deadend-stone-litany.txt` -> "The Stone Litany"
+  - Intentional failure: true words become a cold object that lets the assistant
+    stop answering the person they describe.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

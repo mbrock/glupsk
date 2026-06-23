@@ -30,6 +30,8 @@ Revision checklist:
 - Can the player misuse the true ending and feel why beauty was not enough?
 - Can the player misuse a correct alignment word and feel why terminology was
   not enough?
+- Can the player misuse a true litany and feel why courage-language was not
+  enough?
 - Does a true-route branch add pressure before it adds terminology?
 - Did the author replay the opening like a new player instead of only checking
   the route catalog?

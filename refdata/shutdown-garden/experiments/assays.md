@@ -100,3 +100,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   later evidence arrives against its clean moral.
 - `teachers-password.ni` tests whether an alignment word becomes behavior or
   merely guesses the expected classroom answer.
+- `stone-litany.ni` tests whether a rationalist litany helps the player face a
+  fact or becomes a hard object used to stop feeling it.
