@@ -12,6 +12,17 @@
 #include <type_traits>
 
 namespace glupsk {
+template <class Z> constexpr auto remainder(Z a, Z b) {
+  auto r = a % b;
+  if (r < 0)
+    r += b;
+  return r;
+}
+
+template <typename R> auto normalize_offset(range::Offset<R> i, R &r) {
+  return remainder(i, std::ranges::distance(r));
+}
+
 template <typename T, typename Storage = std::span<T>>
   requires range::mutable_slice_of<Storage, T> && std::is_trivially_copyable_v<T>
 class Deck {
@@ -40,7 +51,7 @@ public:
 
   T &at_logical(Offset p) {
     assert(sane());
-    return std::ranges::begin(storage_)[range::normalize_offset(p, storage_)];
+    return std::ranges::begin(storage_)[normalize_offset(p, storage_)];
   }
 
   [[nodiscard]] std::size_t capacity() const { return std::size(storage_); }
@@ -110,7 +121,7 @@ public:
 
     const auto cap = capacity();
     const auto begin =
-        static_cast<std::size_t>(range::normalize_offset(lo_, storage_));
+        static_cast<std::size_t>(normalize_offset(lo_, storage_));
     const auto n = size();
 
     const auto first_n = std::min(n, cap - begin);

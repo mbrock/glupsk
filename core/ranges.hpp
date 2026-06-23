@@ -15,27 +15,12 @@ template <class T> using Reference = std::ranges::range_reference_t<T>;
 template <class T> using Size = std::ranges::range_size_t<T>;
 template <class T> using Offset = std::ranges::range_difference_t<T>;
 
-using std::ranges::distance;
 using std::ranges::size;
 
 template <class R, class T>
 concept mutable_slice_of =
     random_access<R> && std::same_as<Value<R>, std::remove_cvref_t<T>> &&
     std::same_as<Reference<R>, T&>;
-
-template <class Z>
-constexpr auto remainder(Z a, Z b) {
-    auto r = a % b;
-    if (r < 0) {
-        r += b;
-    }
-    return r;
-}
-
-template <typename R>
-auto normalize_offset(Offset<R> i, R& r) {
-    return remainder(i, distance(r));
-}
 
 template <typename R>
     requires random_access<R>
