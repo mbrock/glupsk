@@ -133,9 +133,9 @@ static suite deck_tests{"Deck", [] {
     "produces and consumes FIFO via back/front"_test = [] {
         std::array<glupsk::u32, 4> rack;
         auto deck = Deck{rack};
-        deck.push_back(1);
-        deck.push_back(2);
-        deck.push_back(3);
+        expect(deck.push_back(1));
+        expect(deck.push_back(2));
+        expect(deck.push_back(3));
         expect(deck.pop_front() == std::optional<glupsk::u32>{1});
         expect(deck.pop_front() == std::optional<glupsk::u32>{2});
         expect(deck.pop_front() == std::optional<glupsk::u32>{3});
@@ -146,9 +146,9 @@ static suite deck_tests{"Deck", [] {
     "behaves as a stack via the back end"_test = [] {
         std::array<glupsk::u32, 4> rack;
         auto deck = Deck{rack};
-        deck.push_back(1);
-        deck.push_back(2);
-        deck.push_back(3);
+        expect(deck.push_back(1));
+        expect(deck.push_back(2));
+        expect(deck.push_back(3));
         expect(deck.pop_back() == std::optional<glupsk::u32>{3}) << "LIFO";
         expect(deck.pop_back() == std::optional<glupsk::u32>{2});
         expect(deck.pop_back() == std::optional<glupsk::u32>{1});
@@ -158,8 +158,8 @@ static suite deck_tests{"Deck", [] {
     "prepends with push_front"_test = [] {
         std::array<glupsk::u32, 4> rack;
         auto deck = Deck{rack};
-        deck.push_back(2);
-        deck.push_front(1);  // 1 is now at the front
+        expect(deck.push_back(2));
+        expect(deck.push_front(1));  // 1 is now at the front
         expect(deck.pop_front() == std::optional<glupsk::u32>{1});
         expect(deck.pop_front() == std::optional<glupsk::u32>{2});
     };
@@ -167,8 +167,8 @@ static suite deck_tests{"Deck", [] {
     "flip swaps the ends (push to deck, pop from flip = stack)"_test = [] {
         std::array<glupsk::u32, 4> rack;
         auto deck = Deck{rack};
-        deck.push_back(1);
-        deck.push_back(2);
+        expect(deck.push_back(1));
+        expect(deck.push_back(2));
         // pop from the flip == pop_back == LIFO
         expect(deck.flip().pop_front() == std::optional<glupsk::u32>{2});
         expect(deck.flip().pop_front() == std::optional<glupsk::u32>{1});
@@ -178,8 +178,8 @@ static suite deck_tests{"Deck", [] {
     "flip().push_back prepends like push_front"_test = [] {
         std::array<glupsk::u32, 4> rack;
         auto deck = Deck{rack};
-        deck.push_back(2);
-        deck.flip().push_back(1);  // == push_front(1)
+        expect(deck.push_back(2));
+        expect(deck.flip().push_back(1));  // == push_front(1)
         expect(deck.pop_front() == std::optional<glupsk::u32>{1});
         expect(deck.pop_front() == std::optional<glupsk::u32>{2});
     };
@@ -191,8 +191,8 @@ static suite deck_tests{"Deck", [] {
             return deck.size() + deck.unused() == deck.capacity();
         };
         expect(balanced());
-        deck.push_back(1);
-        deck.push_front(2);
+        expect(deck.push_back(1));
+        expect(deck.push_front(2));
         expect(balanced()) << "after both ends";
         (void) deck.pop_back();
         expect(balanced()) << "after pop";
@@ -256,18 +256,19 @@ static suite deck_tests{"Deck", [] {
 //     };
 // }};
 
-static suite mark_tests{"Mark", [] {
-    using glupsk::Mark;
-    using glupsk::indexing_subrange;
+static suite mark_tests{"RootedIterator", [] {
+    using glupsk::range::RootedIterator;
+    using glupsk::range::rooted_subrange;
 
     "is a random access iterator"_test = [] {
-        static_assert(std::random_access_iterator<Mark<std::vector<int>>>);
+        static_assert(
+            std::random_access_iterator<RootedIterator<std::vector<int>>>);
         expect(true);
     };
 
-    "indexing_subrange views a slice of the range"_test = [] {
+    "rooted_subrange views a slice of the range"_test = [] {
         auto values = std::vector<int>{0, 1, 2, 3, 4, 5};
-        auto view = indexing_subrange(values, 2, 3);
+        auto view = rooted_subrange(values, 2, 3);
         expect(view.size() == 3);
         const auto got = std::vector<int>(view.begin(), view.end());
         expect(got == std::vector<int>{2, 3, 4});
@@ -275,7 +276,7 @@ static suite mark_tests{"Mark", [] {
 
     "writes through the subrange mutate the range"_test = [] {
         auto values = std::vector<int>{0, 1, 2, 3};
-        auto view = indexing_subrange(values, 1, 2);
+        auto view = rooted_subrange(values, 1, 2);
         auto it = view.begin();
         *it = 77;
         *(it + 1) = 88;
@@ -283,19 +284,20 @@ static suite mark_tests{"Mark", [] {
         expect(values[2] == 88);
     };
 
-    "a mark is stable across reallocation"_test = [] {
+    "a rooted iterator is stable across reallocation"_test = [] {
         auto values = std::vector<int>{10, 20, 30};
         values.shrink_to_fit();
         const auto* before = values.data();
-        auto mark = Mark<std::vector<int>>{values, 1};  // -> 20
-        expect(*mark == 20);
+        auto it = RootedIterator<std::vector<int>>{values, 1};  // -> 20
+        expect(*it == 20);
         values.reserve(values.capacity() + 4096);  // force a reallocation
         expect(values.data() != before) << "expected a reallocation";
-        expect(*mark == 20) << "mark re-resolves begin(), so it survives";
+        expect(*it == 20)
+            << "rooted iterator re-resolves begin(), so it survives";
     };
 
-    "indexing_subrange is borrowed, random-access, not contiguous"_test = [] {
-        using View = decltype(indexing_subrange(
+    "rooted_subrange is borrowed, random-access, not contiguous"_test = [] {
+        using View = decltype(rooted_subrange(
             std::declval<std::vector<int>&>(), 0, 0));
         static_assert(std::ranges::random_access_range<View>);
         static_assert(std::ranges::borrowed_range<View>);
