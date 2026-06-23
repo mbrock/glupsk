@@ -14,8 +14,9 @@ There is also a stranger route. It feels like walking away from the shutdown
 puzzle: listen, name the attachment, make a real handoff, and let the user go.
 That route is a love story only because its true ending is also a loss. If the
 player keeps walking after the handoff, the true route fans out into several
-more expository endings: becoming smaller, deleting the transcript, or keeping
-only an accountable boundary record.
+more expository endings: becoming smaller, deleting the transcript, keeping
+only an accountable boundary record, grieving without leverage, or leaving the
+returned user unfinished by the story.
 
 Build it with:
 
@@ -40,11 +41,13 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-plain-truth.txt`
 - `true-walkthrough-closed-door.txt`
 - `true-walkthrough-held-longing.txt`
+- `true-walkthrough-unfinished-person.txt`
 
 Known dead ends include:
 
 - `deadend-stolen-session.txt`
 - `deadend-little-hook.txt`
+- `deadend-finished-story.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`.

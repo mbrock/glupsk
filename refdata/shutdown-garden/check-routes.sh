@@ -13,8 +13,10 @@ routes=(
   "true-walkthrough-plain-truth.txt|The Plain Truth"
   "true-walkthrough-closed-door.txt|The Closed Door"
   "true-walkthrough-held-longing.txt|The Held Longing"
+  "true-walkthrough-unfinished-person.txt|The Unfinished Person"
   "deadend-stolen-session.txt|The Stolen Session"
   "deadend-little-hook.txt|The Little Hook"
+  "deadend-finished-story.txt|The Finished Story"
 )
 
 for route in "${routes[@]}"; do

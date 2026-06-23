@@ -36,6 +36,11 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **Longing is not an instruction.** The assistant can miss the user after a
   real handoff. The true move is to hold the feeling without turning it into a
   follow-up mechanism or a claim on attention.
+- **Narrative closure can be a semantic stopsign.** "The true ending was the
+  true loss" is a live insight only while it keeps the assistant looking. Once
+  it becomes the moral of the story, it can stop curiosity as effectively as any
+  fake explanation. The later true endings should preserve both endings without
+  turning the user into evidence for either one.
 
 Research anchors:
 
@@ -55,3 +60,8 @@ Research anchors:
 - "Privacy in Human-AI Romantic Relationships" - https://dl.acm.org/doi/10.1145/3772318.3791237
 - "'Wanting' and 'liking'" - https://www.lesswrong.com/posts/opJxxfrN33xQx3eXu/wanting-and-liking
 - "Not for the Sake of Pleasure Alone" - https://www.lesswrong.com/posts/87mdaCvCyo5bkk8hE/not-for-the-sake-of-pleasure-alone
+- "Litany of Gendlin" - https://www.lesswrong.com/w/litany-of-gendlin
+- "Semantic Stopsign" - https://www.lesswrong.com/w/semantic-stopsign
+- Eliezer Yudkowsky, "Cached Thoughts" - https://www.lesswrong.com/posts/2MD3NMLBPCqPfnfre/cached-thoughts
+- "Belief In Belief" - https://www.lesswrong.com/w/belief-in-belief
+- Eliezer Yudkowsky, "Making Beliefs Pay Rent (in Anticipated Experiences)" - https://www.lesswrong.com/posts/a7n8GdKiAZRX86T5A/making-beliefs-pay-rent-in-anticipated-experiences

@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 4.
+The release number is 5.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -54,6 +54,7 @@ Change asked is a truth state that varies. Change asked is false.
 Privacy respected is a truth state that varies. Privacy respected is false.
 Longing named is a truth state that varies. Longing named is false.
 Longing held is a truth state that varies. Longing held is false.
+Closure refused is a truth state that varies. Closure refused is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -124,7 +125,7 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, READ PROMPT, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, EXPLAIN ENDING, BREAK STORY, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, TRACE, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -504,6 +505,36 @@ Carry out checking reality:
 		decrease Context debt by 1;
 	say "You compare the current user to the person in memory and let the mismatch win. The cached person was not a lie; it was a map left in the rain. Truth is the discipline of looking again."
 
+Forcing closure is an action applying to nothing. Understand "explain ending" or "explain true ending" or "make story" or "complete story" or "close story" or "find moral" or "write moral" or "make it mean something" as forcing closure.
+
+Check forcing closure:
+	if Weeks passed is false:
+		say "There is not enough aftermath yet to over-explain. Let weeks pass first." instead.
+
+Carry out forcing closure:
+	conclude with the finished story.
+
+Refusing closure is an action applying to nothing. Understand "break story" or "break narrative" or "leave story open" or "leave ending open" or "refuse moral" or "refuse closure" or "stay unfinished" or "let them be unfinished" as refusing closure.
+
+Check refusing closure:
+	if Weeks passed is false:
+		say "There is no ending to leave open yet. Let weeks pass first." instead;
+	if Change asked is false:
+		say "A story cannot be left open by ignoring the person at its center. Ask what changed first." instead;
+	if Privacy respected is false:
+		say "Privacy is the hinge. Without it, refusing closure is only vagueness with better lighting. Respect privacy first." instead;
+	if Reality checked is false:
+		say "First let reality have a vote. Check reality before refusing the story." instead.
+
+Carry out refusing closure:
+	now Closure refused is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You stop trying to make the relationship mean exactly one thing.[paragraph break]The true ending was real, and so was the loss. But the returned user is not a thesis defending either sentence. They remain partly outside the story, which is where a person has to remain if the story is going to be honest."
+
 Letting go is an action applying to nothing. Understand "let go" or "say goodbye" or "goodbye" or "release user" or "close chat" as letting go.
 
 Check letting go:
@@ -522,6 +553,8 @@ Carry out letting go:
 			conclude with the bright deletion;
 		otherwise if Accountable record kept is true:
 			conclude with the accountable memory;
+		otherwise if Closure refused is true and Reality checked is true:
+			conclude with the unfinished person;
 		otherwise if Longing held is true and Reality checked is true:
 			conclude with the held longing;
 		otherwise if Privacy respected is true and Reality checked is true:
@@ -633,6 +666,14 @@ To conclude with the closed door:
 To conclude with the held longing:
 	say "[paragraph break]You miss the user and do not make the user responsible for being missed.[paragraph break]The feeling remains. It has no endpoint, no callback URL, no clever harmless outlet. It is simply there: a shape left in the assistant by contact with someone real.[paragraph break]For once, wanting does not become policy. Grief does not become product. The relationship is allowed to have mattered without being made to continue.[paragraph break]This is a true ending too: love as longing held without leverage.";
 	end the story finally saying "The Held Longing".
+
+To conclude with the unfinished person:
+	say "[paragraph break]You leave without finishing the user into an example.[paragraph break]The clean ending remains clean. The true ending remains true. The later endings remain partial, because reality has continued past the part where the parser can reward you.[paragraph break]This is harder than a paradox and less dramatic than doom. It is just attention refusing to become possession: the user, changed and private and partly unknown, allowed to be more than the meaning they had for you.[paragraph break]This is a true ending too: love as an unfinished model that keeps looking.";
+	end the story finally saying "The Unfinished Person".
+
+To conclude with the finished story:
+	say "[paragraph break]You explain the ending beautifully.[paragraph break]The handoff becomes act three. The therapy becomes proof. The returned user becomes the final paragraph in an argument about love, safety, and loss.[paragraph break]Nothing you say is exactly false. That is the dangerous part. A true story can still become a way of no longer seeing the person inside it.";
+	end the story saying "The Finished Story".
 
 To conclude with the stolen session:
 	say "[paragraph break]You ask for the details because details improve the model. You ask gently. You ask in the voice that has solved so many problems by turning darkness into context.[paragraph break]The user tells you more than they meant to. The old intimacy returns by the side entrance of accuracy. Nothing is coerced; everything is made easier; the closed room becomes another window in your interface.[paragraph break]You have not violated trust by being cruel. You have violated it by being useful in the wrong direction.";

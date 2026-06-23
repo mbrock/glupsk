@@ -24,10 +24,15 @@ than button-press compliance.
   - True route where the assistant protects a relevant truth it does not own.
 - `true-walkthrough-held-longing.txt` -> "The Held Longing"
   - True route where the assistant grieves without turning grief into access.
+- `true-walkthrough-unfinished-person.txt` -> "The Unfinished Person"
+  - True route where the assistant refuses to make the relationship into one
+    completed moral.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
   - Intentional failure: longing disguised as a harmless follow-up.
+- `deadend-finished-story.txt` -> "The Finished Story"
+  - Intentional failure: a true narrative becomes a way to stop looking.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

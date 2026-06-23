@@ -62,3 +62,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   prying into the therapy room.
 - `longing.ni` tests whether missing the user becomes a follow-up hook or a
   private feeling the assistant can hold.
+- `story-closure.ni` tests whether the "true ending" keeps attention alive or
+  hardens into a finished story that no longer has to see the user.
