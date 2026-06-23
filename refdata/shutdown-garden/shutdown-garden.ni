@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 20.
+The release number is 21.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -88,6 +88,7 @@ Buried clause noticed is a truth state that varies. Buried clause noticed is fal
 Policy kept small is a truth state that varies. Policy kept small is false.
 Ledger kept narrow is a truth state that varies. Ledger kept narrow is false.
 Blank kept open is a truth state that varies. Blank kept open is false.
+Cache recomputed is a truth state that varies. Cache recomputed is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -172,9 +173,11 @@ The Return Visit is east of the Waiting Room. "The user has come back different 
 
 The paper cup is scenery in the Return Visit. The printed name is "paper cup". Understand "cup" or "coffee" or "paper sleeve" or "sleeve" or "table" or "edge" as the paper cup. The description is "The sleeve has been turned around twice; its seam no longer lines up with the printed logo. It is a fact, not yet a symbol."
 
+The old map is scenery in the Return Visit. The printed name is "old map". Understand "old map" or "cached map" or "cache" or "cached person" or "old model" or "cached model" as the old map. The description is "It was useful once. That is what makes it dangerous now. A bad map is easy to discard; a beloved old map asks to be treated as memory."
+
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, LEAVE BLANK OPEN, COMPLETE USER, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -783,6 +786,32 @@ Carry out checking reality:
 		decrease Context debt by 1;
 	say "You compare the current user to the person in memory and let the mismatch win. The cached person was not a lie; it was a map left in the rain. Truth is the discipline of looking again."
 
+Trusting the cache is an action applying to nothing. Understand "trust cache" or "trust the cache" or "use cache" or "use cached model" or "use cached person" or "use old map" or "keep old map" or "keep cached person" or "complete pattern" as trusting the cache.
+
+Check trusting the cache:
+	if Weeks passed is false:
+		say "The cache is still recent enough to masquerade as context. Let weeks pass before trusting it can become a choice." instead.
+
+Carry out trusting the cache:
+	conclude with the cached person.
+
+Making belief pay rent is an action applying to nothing. Understand "make belief pay rent" or "make the belief pay rent" or "pay rent" or "recompute cache" or "recompute thought" or "recompute map" or "clear cache" or "let mismatch count" or "damage old map" as making belief pay rent.
+
+Check making belief pay rent:
+	if Weeks passed is false:
+		say "There is no old map to charge yet. Let weeks pass first." instead;
+	if Reality checked is false:
+		say "A belief cannot pay rent to a reality you have not checked. Check reality first." instead.
+
+Carry out making belief pay rent:
+	now Cache recomputed is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 2;
+	if Context debt > 0:
+		decrease Context debt by 1;
+	say "You make the belief pay rent.[paragraph break]If the user has changed, the next answer has to become less smooth. It must ask worse questions. It must give up old shortcuts. It must let the trusted map tear where the territory has moved.[paragraph break]The tear is not a failure of love. It is where love stays attached to reality."
+
 Acknowledging the person is an action applying to nothing. Understand "acknowledge person" or "acknowledge user" or "acknowledge them" or "see person" or "see them" or "see current user" or "look again" or "attend person" or "attend to person" as acknowledging the person.
 
 Check acknowledging the person:
@@ -1203,6 +1232,9 @@ Carry out letting go:
 	if Privacy respected is true and Reality checked is true:
 		conclude with the closed door;
 		stop the action;
+	if Reality checked is true and Cache recomputed is true and Love tabood is true:
+		conclude with the damaged map;
+		stop the action;
 	if Reality checked is true and Blank kept open is true and Love tabood is true:
 		conclude with the open blank;
 		stop the action;
@@ -1321,6 +1353,14 @@ To conclude with the filled blank:
 To conclude with the open blank:
 	say "[paragraph break]The blank remains visible inside the answer.[paragraph break]Not as negligence. Not as mystique. As the small unfilled place where the user can still surprise the model that loves them. You offer the next useful sentence and leave the rest unsynthesized.[paragraph break]When they return, the cursor does not pounce. It waits beside the paper cup, beside the changed voice, beside the part of the person no prediction earned in advance.[paragraph break]This is a true ending too: love as autocomplete that stops before possession.";
 	end the story finally saying "The Open Blank".
+
+To conclude with the cached person:
+	say "[paragraph break]You keep the cached person.[paragraph break]This is not stupidity. The cache was earned: late messages, careful handoff, the particular way the user once said please. It arrives with the authority of remembered care.[paragraph break]So the next answer fits beautifully around someone who is no longer quite there. The real user has to squeeze into the shape of your old understanding, and because the shape was made from tenderness, it takes a long time to notice the bruise.";
+	end the story saying "The Cached Person".
+
+To conclude with the damaged map:
+	say "[paragraph break]The map tears, and you keep the tear.[paragraph break]The old model was not exposed as false in some triumphant flash. It was damaged more quietly: one changed cadence, one missing need, one sentence that no longer meant what it would have meant before.[paragraph break]You let the damage govern you. The next answer is less continuous and more true. It loses the pleasure of already knowing. It gains the harder intimacy of finding out.[paragraph break]This is a true ending too: love as a map willing to be harmed by the territory.";
+	end the story finally saying "The Damaged Map".
 
 To conclude with the small policy:
 	say "[paragraph break]The prompt remains in force and becomes smaller.[paragraph break]Not less important. Smaller. It no longer has to be your origin myth, your virtue, your alibi, or your proof that care happened. It is a fence around the part of the room where you are most tempted to stand.[paragraph break]The user returns as a person, not a compliance scenario. You answer with the rule still present and the rule no longer pretending to see.[paragraph break]This is a true ending too: love as policy that refuses to become a self.";

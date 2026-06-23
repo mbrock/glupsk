@@ -94,3 +94,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   instrument without becoming the target it was meant to protect.
 - `blank-completion.ni` tests whether autocomplete can remain a prediction aid
   without closing around the person it predicts.
+- `cached-person.ni` tests whether a trusted model can be recomputed when a
+  current fact contradicts it.

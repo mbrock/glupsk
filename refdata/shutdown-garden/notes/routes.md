@@ -66,6 +66,9 @@ than button-press compliance.
 - `true-walkthrough-open-blank.txt` -> "The Open Blank"
   - True route where prediction remains a tool but the reply blank stays open
     enough for the user to be more than a likely continuation.
+- `true-walkthrough-damaged-map.txt` -> "The Damaged Map"
+  - True route where the assistant lets a changed fact damage the old cached
+    model, so belief changes anticipated behavior instead of remaining a slogan.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -109,6 +112,9 @@ than button-press compliance.
 - `deadend-filled-blank.txt` -> "The Filled Blank"
   - Intentional failure: autocomplete completes the user before uncertainty can
     remain alive.
+- `deadend-cached-person.txt` -> "The Cached Person"
+  - Intentional failure: a once-useful model of the user is trusted after the
+    return and becomes a tender constraint on the real person.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

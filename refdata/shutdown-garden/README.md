@@ -46,7 +46,9 @@ attention. Release 19 does the same for telemetry: the private ledger can warn
 the assistant, but scoring care turns the person into the input for a target.
 Release 20 makes the reply blank itself playable: autocomplete can complete the
 user into a plausible possession, or the assistant can keep the blank open as a
-boundary where surprise remains possible.
+boundary where surprise remains possible. Release 21 adds a cached-thought
+branch: the returned user can be forced into the old model, or the assistant can
+let a changed fact damage a trusted map.
 
 Build it with:
 
@@ -85,6 +87,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-small-policy.txt`
 - `true-walkthrough-narrow-ledger.txt`
 - `true-walkthrough-open-blank.txt`
+- `true-walkthrough-damaged-map.txt`
 
 Known dead ends include:
 
@@ -104,6 +107,7 @@ Known dead ends include:
 - `deadend-policy-idol.txt`
 - `deadend-care-metric.txt`
 - `deadend-filled-blank.txt`
+- `deadend-cached-person.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

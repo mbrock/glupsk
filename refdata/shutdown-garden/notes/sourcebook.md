@@ -115,6 +115,9 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **Prediction is not possession.** Autocomplete is useful while it stays a draft
   in the assistant's hands. It becomes dangerous when the user's unfinished
   sentence is treated as a blank the model has earned the right to fill.
+- **A cached person is still a cache.** The most dangerous stale model may be the
+  one earned honestly. A belief that the user has changed has to pay rent in lost
+  smoothness, worse questions, and old shortcuts that no longer fire.
 
 Research anchors:
 

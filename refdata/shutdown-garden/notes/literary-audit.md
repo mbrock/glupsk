@@ -115,6 +115,12 @@ first page; this pass makes it morally active. The false move should feel like
 the ordinary competence of language modeling, not a villainous trick: a plausible
 continuation that is tender enough to steal the user's unfinishedness.
 
+Release 21 adds the cached-person test. The old map should not be a straw map:
+it was drawn from real care and once helped the user. The wound is subtler: the
+map stays smooth while the person changes. The true move must make truth cost the
+assistant something visible, preferably grace, continuity, or the pleasure of
+already knowing.
+
 The uncashed-thanks branch carries the same rule later in the true route. Thanks
 must remain a scene, not an argument. If gratitude only proves the thesis, the
 game has cashed it.
