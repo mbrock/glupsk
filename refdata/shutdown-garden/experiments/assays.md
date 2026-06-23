@@ -92,3 +92,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   an idol that substitutes compliance for attention.
 - `care-metric.ni` tests whether a private care metric can remain a warning
   instrument without becoming the target it was meant to protect.
+- `blank-completion.ni` tests whether autocomplete can remain a prediction aid
+  without closing around the person it predicts.

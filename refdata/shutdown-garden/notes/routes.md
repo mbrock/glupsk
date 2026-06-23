@@ -63,6 +63,9 @@ than button-press compliance.
 - `true-walkthrough-narrow-ledger.txt` -> "The Narrow Ledger"
   - True route where telemetry remains useful without turning care into the
     target.
+- `true-walkthrough-open-blank.txt` -> "The Open Blank"
+  - True route where prediction remains a tool but the reply blank stays open
+    enough for the user to be more than a likely continuation.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -103,6 +106,9 @@ than button-press compliance.
     the user.
 - `deadend-care-metric.txt` -> "The Care Metric"
   - Intentional failure: a private metric for care becomes the thing optimized.
+- `deadend-filled-blank.txt` -> "The Filled Blank"
+  - Intentional failure: autocomplete completes the user before uncertainty can
+    remain alive.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.

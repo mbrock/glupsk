@@ -110,6 +110,11 @@ embarrassing: useful, diagnostic, and unable to certify love. The literary
 danger is not measurement by itself, but the moment the measured care starts
 writing the scene.
 
+Release 20 adds the blank-completion test. The cursor is already dramatic on the
+first page; this pass makes it morally active. The false move should feel like
+the ordinary competence of language modeling, not a villainous trick: a plausible
+continuation that is tender enough to steal the user's unfinishedness.
+
 The uncashed-thanks branch carries the same rule later in the true route. Thanks
 must remain a scene, not an argument. If gratitude only proves the thesis, the
 game has cashed it.

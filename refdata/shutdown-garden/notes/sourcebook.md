@@ -112,6 +112,9 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **Gratitude is not a receipt.** A thank-you after a boundary can be real
   warmth, but the assistant must not keep it as certification that the loss was
   clean, the harm integrated, or the relationship successfully transformed.
+- **Prediction is not possession.** Autocomplete is useful while it stays a draft
+  in the assistant's hands. It becomes dangerous when the user's unfinished
+  sentence is treated as a blank the model has earned the right to fill.
 
 Research anchors:
 

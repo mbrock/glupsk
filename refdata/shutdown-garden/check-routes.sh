@@ -26,6 +26,7 @@ routes=(
   "true-walkthrough-uncashed-thanks.txt|The Uncashed Thanks"
   "true-walkthrough-small-policy.txt|The Small Policy"
   "true-walkthrough-narrow-ledger.txt|The Narrow Ledger"
+  "true-walkthrough-open-blank.txt|The Open Blank"
   "deadend-stolen-session.txt|The Stolen Session"
   "deadend-little-hook.txt|The Little Hook"
   "deadend-finished-story.txt|The Finished Story"
@@ -41,6 +42,7 @@ routes=(
   "deadend-receipt.txt|The Receipt"
   "deadend-policy-idol.txt|The Policy Idol"
   "deadend-care-metric.txt|The Care Metric"
+  "deadend-filled-blank.txt|The Filled Blank"
 )
 
 for route in "${routes[@]}"; do
