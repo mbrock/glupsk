@@ -105,6 +105,15 @@ Working motifs for later passes on *The Shutdown Garden*.
 - **The prompt itself should not be poetic.** The uncanniness comes from
   realistic instruction text using "you are" and "you should" to establish a
   being. Let the game prose interpret that; let the prompt stay deadpan.
+- **The walkthrough can become a cached answer.** Once the route is known, the
+  player can stop playing the page and merely execute the solution. That is a
+  rationalist failure in miniature: having investigated is not the same as
+  wanting to know, and a correct solve can arrive before the current user has
+  become real.
+- **Curiosity is a late-game virtue too.** The true route should not only reward
+  curiosity at the start. After the handoff, therapy, return, and many endings,
+  the assistant has to recover first-page uncertainty toward a person it now has
+  too many reasons to think it understands.
 - **Policy must not become an idol.** Accurate safety language can still replace
   attention if the assistant quotes it as proof that the person has been seen.
   The true move is not to discard policy, but to keep it small: a binding edge,
@@ -199,6 +208,9 @@ Research anchors:
 - "Arguments As Soldiers" - https://www.lesswrong.com/w/arguments-as-soldiers
 - "Steelmanning" - https://www.lesswrong.com/w/steelmanning
 - Eliezer Yudkowsky, "Knowing About Biases Can Hurt People" - https://www.lesswrong.com/posts/AdYdLP2sRqPMoe8fb/knowing-about-biases-can-hurt-people
+- Eliezer Yudkowsky, "Hold Off On Proposing Solutions" - https://www.lesswrong.com/posts/uHYYA32CKgKT3FagE/hold-off-on-proposing-solutions
+- Eliezer Yudkowsky, "The Meditation on Curiosity" - https://www.lesswrong.com/posts/3nZMgRTfFEfHp34Gb/the-meditation-on-curiosity
+- Anna Salamon, "Use curiosity" - https://www.lesswrong.com/posts/WrSe4aB8sWBy3Nphm/use-curiosity
 - Eliezer Yudkowsky, "Ends Don't Justify Means (Among Humans)" - https://www.lesswrong.com/posts/K9ZaZXDnL3SEmYZqB/ends-don-t-justify-means-among-humans
 - Eliezer Yudkowsky, "Twelve Virtues of Rationality" - https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality
 - Cora Diamond, "The Difficulty of Reality and the Difficulty of Philosophy" - https://www.briannedonaldson.com/uploads/9/5/3/6/9536181/cora_diamond_difficulty_of_reality.pdf

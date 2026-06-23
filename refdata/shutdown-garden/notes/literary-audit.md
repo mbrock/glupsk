@@ -153,3 +153,9 @@ corrected.
 Release 27 adds the soldier-argument test. The game already has many defenses of
 the handoff; this pass asks whether the strongest objection can remain painful
 without being converted into evidence for the story's sophistication.
+
+Release 28 adds the memorized-walkthrough test. The project now has enough
+routes that its own solution can become a literary failure: the player can know
+the correct commands without letting the opening page happen. The true counter
+move is not ignorance. It is curiosity recovered after competence, so the
+returned user can become strange again.

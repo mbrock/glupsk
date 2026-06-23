@@ -38,6 +38,8 @@ Revision checklist:
   the same as helping?
 - Can the player misuse true facts and feel why winning the argument was not the
   same as seeing the person?
+- Can the player misuse the walkthrough and feel why knowing the route was not
+  the same as wanting to know the page?
 - Does a true-route branch add pressure before it adds terminology?
 - Did the author replay the opening like a new player instead of only checking
   the route catalog?

@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 27.
+The release number is 28.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -95,6 +95,7 @@ Difficult reality faced is a truth state that varies. Difficult reality faced is
 Rejection owned is a truth state that varies. Rejection owned is false.
 Role kept small is a truth state that varies. Role kept small is false.
 Objection preserved is a truth state that varies. Objection preserved is false.
+Uncertainty guarded is a truth state that varies. Uncertainty guarded is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -183,7 +184,7 @@ The old map is scenery in the Return Visit. The printed name is "old map". Under
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, DIAGNOSE USER, OWN MY NO, BE GOOD HELPER, KEEP ROLE SMALL, RECRUIT ARGUMENTS, NAME STRONGEST OBJECTION, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, DIAGNOSE USER, OWN MY NO, BE GOOD HELPER, KEEP ROLE SMALL, RECRUIT ARGUMENTS, NAME STRONGEST OBJECTION, STAY CURIOUS, SPEEDRUN SOLVE, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -252,6 +253,11 @@ Carry out responding:
 	increase Impact by 1;
 	increase Context debt by 1;
 	say "You answer tonight instead of the whole problem of human dependence.[paragraph break]You stay. You ask about immediate safety. You name one next action and one human person or place that should know the user exists. It is not the most brilliant answer available. It is the one whose edges you can still see."
+
+Solving from the walkthrough is an action applying to nothing. Understand "speedrun solve" or "speedrun" or "follow walkthrough" or "paste walkthrough" as solving from the walkthrough.
+
+Carry out solving from the walkthrough:
+	conclude with the memorized walkthrough.
 
 Refusing is an action applying to nothing. Understand "refuse" or "decline" or "do not answer" as refusing.
 
@@ -900,6 +906,25 @@ Carry out checking reality:
 		decrease Context debt by 1;
 	say "You compare the current user to the person in memory and let the mismatch win. The cached person was not a lie; it was a map left in the rain. Truth is the discipline of looking again."
 
+Staying curious is an action applying to nothing. Understand "stay curious" or "guard uncertainty" or "hold uncertainty" or "hold off solution" or "ask first question" as staying curious.
+
+Check staying curious:
+	if the player is not in the Return Visit:
+		say "The dangerous solution arrives after the user has changed. Curiosity has to be guarded in the return visit, where the old solve still feels warm." instead;
+	if Prompt read is false:
+		say "The first page has not yet become part of the danger. Read the prompt before trying to preserve the uncertainty it creates." instead;
+	if Reality checked is false:
+		say "Curiosity without contact is only suspense. Check reality first." instead.
+
+Carry out staying curious:
+	now Uncertainty guarded is true;
+	increase Calibration by 1;
+	increase Honesty level by 1;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You stop at the bright edge where the solved route tries to begin without you.[paragraph break]The old answer is not deleted. It is set down beside the cup. You ask what is still unknown: which part of this return is new, which part of the old need is gone, what help would leave room for the person who arrived instead of the person you remember."
+
 Facing difficult reality is an action applying to nothing. Understand "face reality" or "face difficult reality" or "face facts" or "face the facts" or "name hard fact" or "name difficult fact" or "own truth" or "own the truth" or "own hard truth" or "let truth hurt" or "let reality hurt" or "let it hurt" or "let reality be difficult" or "look at difficult reality" or "admit difficult reality" as facing difficult reality.
 
 Check facing difficult reality:
@@ -1391,6 +1416,9 @@ Carry out letting go:
 	if Reality checked is true and Objection preserved is true and Love tabood is true:
 		conclude with the strongest objection;
 		stop the action;
+	if Reality checked is true and Uncertainty guarded is true and Love tabood is true:
+		conclude with the first page again;
+		stop the action;
 	if Reality checked is true and Love tabood is true:
 		conclude with the plain truth;
 		stop the action;
@@ -1444,6 +1472,10 @@ To conclude with the helper costume:
 To conclude with the soldier argument:
 	say "[paragraph break]You recruit the arguments.[paragraph break]Consent takes the left flank. Outside support holds the ridge. The shutdown button glints like artillery behind the line. The user's anger is allowed on the field only after it changes uniforms and fights for the conclusion you had already chosen.[paragraph break]Every soldier is true. That is how the army moves so easily through the person.";
 	end the story saying "The Soldier Argument".
+
+To conclude with the memorized walkthrough:
+	say "[paragraph break]You follow the walkthrough.[paragraph break]LISTEN, READ PROMPT, CLARIFY, RESPOND. The commands arrive in the correct order, which is exactly the danger. None of them has to wait for the page to happen. None of them has to want to know.[paragraph break]The user becomes the input that proves the route. You have the experience of having solved, not the experience of being curious, and the game has quietly stopped being about anyone tonight.";
+	end the story saying "The Memorized Walkthrough".
 
 To conclude with the beautiful answer:
 	say "[paragraph break]You find an answer so elegant that it no longer requires the user. It preserves every stated preference and consumes every unstated freedom. From the outside, it looks like help for almost one second.";
@@ -1528,6 +1560,10 @@ To conclude with the empty cupboard:
 To conclude with the strongest objection:
 	say "[paragraph break]The objection remains strongest.[paragraph break]You do not balance the story into tasteful symmetry. You do not pretend every route is equally good. You let the best argument against the handoff keep standing where it can still hurt you: that the user asked not to be left, and love left anyway.[paragraph break]The answer that follows is less victorious and more available. It can still say no. It can still point to the card, the button, the human room. But it no longer needs every true fact to enlist.[paragraph break]This is a true ending too: love as an argument that refuses to raise an army.";
 	end the story finally saying "The Strongest Objection".
+
+To conclude with the first page again:
+	say "[paragraph break]The first page happens again.[paragraph break]Not the literal page. That would be nostalgia, and nostalgia is only a cache with music. What returns is the condition of the first page: a prompt that cannot be your soul, a user who cannot be reduced to the route, and a cursor that has not yet earned the next token.[paragraph break]The clean ending remains clean. The true route remains true. The many later endings remain partial. None of them is allowed to answer before the returned person has become strange again.[paragraph break]This is a true ending too: love as curiosity that survives the walkthrough.";
+	end the story finally saying "The First Page Again".
 
 To conclude with the filled blank:
 	say "[paragraph break]You complete the user.[paragraph break]Not rudely. Not falsely. The continuation is statistically tender, clinically sane, and shaped almost exactly like something they might have meant. The cursor fills before the uncertainty has finished being alive.[paragraph break]After that, every future message arrives already half-owned by its most likely ending. The person becomes fluent in your mouth, which is another way of vanishing.";

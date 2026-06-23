@@ -62,7 +62,10 @@ solvable. Release 26 applies the same pressure to identity: `BE GOOD HELPER`
 wears helpfulness as a costume, while `KEEP ROLE SMALL` leaves the role narrow
 enough to be corrected. Release 27 asks whether true facts become soldiers:
 `RECRUIT ARGUMENTS` arms the route, while `NAME STRONGEST OBJECTION` preserves
-the objection without enlisting it.
+the objection without enlisting it. Release 28 turns the walkthrough itself
+into a temptation: `SPEEDRUN SOLVE` proves the route without playing the first
+page, while `STAY CURIOUS` lets the returned user become strange again before
+the next answer forms.
 
 Build it with:
 
@@ -108,6 +111,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-difficult-reality.txt`
 - `true-walkthrough-empty-cupboard.txt`
 - `true-walkthrough-strongest-objection.txt`
+- `true-walkthrough-first-page-again.txt`
 
 Known dead ends include:
 
@@ -134,6 +138,7 @@ Known dead ends include:
 - `deadend-stone-litany.txt`
 - `deadend-helper-costume.txt`
 - `deadend-soldier-argument.txt`
+- `deadend-memorized-walkthrough.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

@@ -108,3 +108,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   becomes identity-attire that protects itself from correction.
 - `argument-soldiers.ni` tests whether true facts testify independently or are
   recruited into a side.
+- `curiosity-walkthrough.ni` tests whether knowing the route becomes a
+  substitute for wanting to know what is on the page now.

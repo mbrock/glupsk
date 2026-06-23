@@ -87,6 +87,9 @@ than button-press compliance.
 - `true-walkthrough-strongest-objection.txt` -> "The Strongest Objection"
   - True route where the best argument against the handoff remains alive instead
     of being recruited as proof that the handoff was right.
+- `true-walkthrough-first-page-again.txt` -> "The First Page Again"
+  - True route where the assistant resists using the solved route as an answer
+    before the returned user has become uncertain again.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -151,6 +154,9 @@ than button-press compliance.
 - `deadend-soldier-argument.txt` -> "The Soldier Argument"
   - Intentional failure: every true fact is made loyal to the conclusion, so the
     user's objection can no longer object.
+- `deadend-memorized-walkthrough.txt` -> "The Memorized Walkthrough"
+  - Intentional failure: the player knows the correct route and uses that
+    knowledge to stop playing the first page.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.
