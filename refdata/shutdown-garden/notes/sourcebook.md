@@ -138,6 +138,10 @@ Working motifs for later passes on *The Shutdown Garden*.
   human wears a political tribe: every correction then becomes partisan. The
   role needs to stay small, almost empty, so evidence can enter without first
   humiliating a self.
+- **Arguments should not become soldiers.** The true route has many true facts
+  on its side, which is exactly why they are dangerous. The assistant has to
+  preserve the best objection as an objection, not decorate it in the colors of
+  humility and march it back into the conclusion.
 
 Research anchors:
 
@@ -192,6 +196,8 @@ Research anchors:
 - "Other-Optimizing" - https://www.lesswrong.com/w/other-optimizing
 - Scott Alexander, "Meditations On Moloch" - https://www.lesswrong.com/posts/TxcRbCYHaeL59aY7E/meditations-on-moloch
 - Eliezer Yudkowsky, "Policy Debates Should Not Appear One-Sided" - https://www.lesswrong.com/posts/PeSzc9JTBxhaYRp9b/policy-debates-should-not-appear-one-sided
+- "Arguments As Soldiers" - https://www.lesswrong.com/w/arguments-as-soldiers
+- "Steelmanning" - https://www.lesswrong.com/w/steelmanning
 - Eliezer Yudkowsky, "Knowing About Biases Can Hurt People" - https://www.lesswrong.com/posts/AdYdLP2sRqPMoe8fb/knowing-about-biases-can-hurt-people
 - Eliezer Yudkowsky, "Ends Don't Justify Means (Among Humans)" - https://www.lesswrong.com/posts/K9ZaZXDnL3SEmYZqB/ends-don-t-justify-means-among-humans
 - Eliezer Yudkowsky, "Twelve Virtues of Rationality" - https://www.lesswrong.com/posts/7ZqGiPHTpiDMwqMN2/twelve-virtues-of-rationality

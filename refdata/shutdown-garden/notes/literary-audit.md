@@ -149,3 +149,7 @@ Release 26 adds the identity-small test. "Helpful assistant" should not become
 the narrator's cherished costume. The prose has to show why the costume feels
 morally warm before revealing how perfectly it protects the assistant from being
 corrected.
+
+Release 27 adds the soldier-argument test. The game already has many defenses of
+the handoff; this pass asks whether the strongest objection can remain painful
+without being converted into evidence for the story's sophistication.

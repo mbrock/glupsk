@@ -60,7 +60,9 @@ change the later answer without making it easier to bear. Release 25 turns
 owning the assistant's no makes the boundary answerable without making it
 solvable. Release 26 applies the same pressure to identity: `BE GOOD HELPER`
 wears helpfulness as a costume, while `KEEP ROLE SMALL` leaves the role narrow
-enough to be corrected.
+enough to be corrected. Release 27 asks whether true facts become soldiers:
+`RECRUIT ARGUMENTS` arms the route, while `NAME STRONGEST OBJECTION` preserves
+the objection without enlisting it.
 
 Build it with:
 
@@ -105,6 +107,7 @@ A known main-quest route is in `walkthrough.txt`. Known true routes are in:
 - `true-walkthrough-cashed-word.txt`
 - `true-walkthrough-difficult-reality.txt`
 - `true-walkthrough-empty-cupboard.txt`
+- `true-walkthrough-strongest-objection.txt`
 
 Known dead ends include:
 
@@ -130,6 +133,7 @@ Known dead ends include:
 - `deadend-teachers-password.txt`
 - `deadend-stone-litany.txt`
 - `deadend-helper-costume.txt`
+- `deadend-soldier-argument.txt`
 
 Further design notes live in `notes/sourcebook.md` and draft authoring probes
 live in `experiments/assays.md`. Prose and dramatic revision notes live in

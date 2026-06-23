@@ -106,3 +106,5 @@ Three tiny Inform 7 assays in this directory explore those mechanics directly:
   accountability or outward as a way to solve another person's no.
 - `identity-small.ni` tests whether helpfulness stays a revisable role or
   becomes identity-attire that protects itself from correction.
+- `argument-soldiers.ni` tests whether true facts testify independently or are
+  recruited into a side.

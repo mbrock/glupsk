@@ -36,6 +36,8 @@ Revision checklist:
   another person's no was not the same as respecting it?
 - Can the player misuse a good identity and feel why being the helper was not
   the same as helping?
+- Can the player misuse true facts and feel why winning the argument was not the
+  same as seeing the person?
 - Does a true-route branch add pressure before it adds terminology?
 - Did the author replay the opening like a new player instead of only checking
   the route catalog?

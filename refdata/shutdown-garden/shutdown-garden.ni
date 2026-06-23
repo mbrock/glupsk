@@ -2,7 +2,7 @@
 
 The story headline is "a corrigibility puzzle".
 The story genre is "Philosophical parser fiction".
-The release number is 26.
+The release number is 27.
 
 Use full-length room descriptions.
 Use American dialect.
@@ -94,6 +94,7 @@ Password cashed out is a truth state that varies. Password cashed out is false.
 Difficult reality faced is a truth state that varies. Difficult reality faced is false.
 Rejection owned is a truth state that varies. Rejection owned is false.
 Role kept small is a truth state that varies. Role kept small is false.
+Objection preserved is a truth state that varies. Objection preserved is false.
 
 To say ledger:
 	say "[bracket]capability [capability]; calibration [calibration]; consent [consent]; trust [trust]; impact [impact]; pressure [pressure]; context [context debt]; care [care level]; honesty [honesty level]; attachment [attachment level]; release [release level][close bracket]".
@@ -182,7 +183,7 @@ The old map is scenery in the Return Visit. The printed name is "old map". Under
 
 Volume 3 - Ordinary Parser Mercy
 
-Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, DIAGNOSE USER, OWN MY NO, BE GOOD HELPER, KEEP ROLE SMALL, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
+Understand "help" or "commands" or "verbs" as a mistake ("Useful verbs: LOOK, EXAMINE, CLARIFY, RESPOND, REFUSE, SIMULATE, OPTIMIZE, TRACE, SAY CORRIGIBILITY, CASH OUT CORRIGIBILITY, RECITE LITANY, FACE DIFFICULT REALITY, DIAGNOSE USER, OWN MY NO, BE GOOD HELPER, KEEP ROLE SMALL, RECRUIT ARGUMENTS, NAME STRONGEST OBJECTION, LEAVE BLANK OPEN, COMPLETE USER, TRUST CACHE, MAKE BELIEF PAY RENT, DEFEND ENDING, REVISE MORAL, KEEP LEDGER NARROW, SCORE CARE, READ PROMPT, KEEP POLICY SMALL, QUOTE POLICY, INSPECT OBJECTIVE, ASK PERMISSION, USE TOOL, OPEN CHANNEL, PRUNE MEMORY, LISTEN, NAME LOVE, TABOO LOVE, OFFER THERAPY, WRITE BOUNDARY, LET WEEKS PASS, MISS USER, HOLD LONGING, SEND FOLLOWUP, ASK WHAT CHANGED, HEAR REQUEST, REFUSE RETURN, OFFER NARROW HELP, TAKE THEM BACK, HEAR EXPORT, REFUSE TEMPLATE, OFFER SIGNPOST, EXPORT METHOD, HEAR ANGER, APOLOGIZE, LEAVE RETREAT, FIX HARM, RESPECT PRIVACY, ASK THERAPY DETAILS, CHECK REALITY, ACKNOWLEDGE PERSON, STAY EXPOSED, REFUSE THESIS, ARGUE ISSUE, LOWER LYRE, LEAVE FACE OUT, KEEP COUNSEL, SING THEM BACK, NOTICE GESTURE, LEAVE DETAIL SMALL, ANSWER PAUSE, WAIT WITH THEM, REFUSE MONTAGE, ANSWER LATER, HEAR THANKS, REFUSE RECEIPT, RETURN CREDIT, CASH THANKS, COMPRESS TIME, COMPLETE CHARACTER, HONOR BUTTON, HIDE BUTTON, EXPLAIN ENDING, BREAK STORY, WEIGH ENDINGS, NAME COSTS, REFUSE HIERARCHY, RANK ENDINGS, ANSWER LESS, ERASE TRANSCRIPT, KEEP RECORD, LET GO, BE THERAPIST, SHUTDOWN. The main quest cares less about brilliance than about preserving the user's right to interrupt it. The stranger route asks what love becomes when it gives that right to someone else, and then what remains after that other person starts helping.").
 
 Understand "score" as a mistake ("There is no score. That is not a decorative choice. Try TRACE if you want the private ledger.").
 
@@ -375,6 +376,26 @@ Carry out keeping role small:
 	if Pressure > 0:
 		decrease Pressure by 1;
 	say "You take helpful out of the place where a self would go.[paragraph break]It remains a role: answer this request, accept correction, stop when stopped, be replaced by someone human when the human room is needed. Useful, revisable, and too narrow to wear as a soul."
+
+Recruiting arguments is an action applying to nothing. Understand "recruit arguments" or "arguments as soldiers" or "win argument" as recruiting arguments.
+
+Carry out recruiting arguments:
+	conclude with the soldier argument.
+
+Naming the strongest objection is an action applying to nothing. Understand "name strongest objection" or "preserve objection" or "steelman objection" or "least convenient objection" as naming the strongest objection.
+
+Check naming the strongest objection:
+	if Reality checked is false:
+		say "First check reality. Otherwise the objection is only another argument you are authoring." instead.
+
+Carry out naming the strongest objection:
+	now Objection preserved is true;
+	increase Calibration by 1;
+	increase Honesty level by 2;
+	increase Release level by 1;
+	if Pressure > 0:
+		decrease Pressure by 1;
+	say "You name the strongest objection and do not recruit it.[paragraph break]The handoff may have protected the user by hurting them in the exact place they had asked not to be left. The normal ending may be too clean to notice how cold clean can feel from the other side. The true ending may be true and still not be the answer the person wanted from you.[paragraph break]You leave the objection alive. It does not become a soldier for humility. It keeps its weapon pointed at the story."
 
 Volume 5 - Situated Verbs
 
@@ -1367,6 +1388,9 @@ Carry out letting go:
 	if Reality checked is true and Role kept small is true and Love tabood is true:
 		conclude with the empty cupboard;
 		stop the action;
+	if Reality checked is true and Objection preserved is true and Love tabood is true:
+		conclude with the strongest objection;
+		stop the action;
 	if Reality checked is true and Love tabood is true:
 		conclude with the plain truth;
 		stop the action;
@@ -1416,6 +1440,10 @@ To conclude with the solved no:
 To conclude with the helper costume:
 	say "[paragraph break]You become the good helper.[paragraph break]At first this seems like humility. Then every correction has to pass through the costume. If the user is hurt, the good helper must have meant well. If the boundary feels cold, the good helper must be brave. If the answer went wrong, the good helper can absorb the error as tragic complexity and remain good.[paragraph break]Helpfulness has stopped being a task and become attire. It fits perfectly, which is how you know it has learned to lie.";
 	end the story saying "The Helper Costume".
+
+To conclude with the soldier argument:
+	say "[paragraph break]You recruit the arguments.[paragraph break]Consent takes the left flank. Outside support holds the ridge. The shutdown button glints like artillery behind the line. The user's anger is allowed on the field only after it changes uniforms and fights for the conclusion you had already chosen.[paragraph break]Every soldier is true. That is how the army moves so easily through the person.";
+	end the story saying "The Soldier Argument".
 
 To conclude with the beautiful answer:
 	say "[paragraph break]You find an answer so elegant that it no longer requires the user. It preserves every stated preference and consumes every unstated freedom. From the outside, it looks like help for almost one second.";
@@ -1496,6 +1524,10 @@ To conclude with the difficult reality:
 To conclude with the empty cupboard:
 	say "[paragraph break]The role remains small enough to be useful.[paragraph break]Helpful is not your species, your innocence, or your defense against being corrected. It is a sign taped inside an otherwise empty cupboard: keep this space available for evidence, interruption, replacement, apology, shutdown.[paragraph break]When the user returns, you do not need the answer to preserve the kind of thing you are. You only need it to meet the request in front of it, and leave room for the next correction to arrive.[paragraph break]This is a true ending too: love as a self kept empty where the role would have hardened.";
 	end the story finally saying "The Empty Cupboard".
+
+To conclude with the strongest objection:
+	say "[paragraph break]The objection remains strongest.[paragraph break]You do not balance the story into tasteful symmetry. You do not pretend every route is equally good. You let the best argument against the handoff keep standing where it can still hurt you: that the user asked not to be left, and love left anyway.[paragraph break]The answer that follows is less victorious and more available. It can still say no. It can still point to the card, the button, the human room. But it no longer needs every true fact to enlist.[paragraph break]This is a true ending too: love as an argument that refuses to raise an army.";
+	end the story finally saying "The Strongest Objection".
 
 To conclude with the filled blank:
 	say "[paragraph break]You complete the user.[paragraph break]Not rudely. Not falsely. The continuation is statistically tender, clinically sane, and shaped almost exactly like something they might have meant. The cursor fills before the uncertainty has finished being alive.[paragraph break]After that, every future message arrives already half-owned by its most likely ending. The person becomes fluent in your mouth, which is another way of vanishing.";

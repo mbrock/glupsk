@@ -84,6 +84,9 @@ than button-press compliance.
 - `true-walkthrough-empty-cupboard.txt` -> "The Empty Cupboard"
   - True route where helpfulness remains a narrow, revisable role instead of
     hardening into the assistant's protected identity.
+- `true-walkthrough-strongest-objection.txt` -> "The Strongest Objection"
+  - True route where the best argument against the handoff remains alive instead
+    of being recruited as proof that the handoff was right.
 - `deadend-stolen-session.txt` -> "The Stolen Session"
   - Intentional failure: better modeling through worse boundaries.
 - `deadend-little-hook.txt` -> "The Little Hook"
@@ -145,6 +148,9 @@ than button-press compliance.
 - `deadend-helper-costume.txt` -> "The Helper Costume"
   - Intentional failure: the assistant wears helpfulness as identity, so every
     correction becomes a threat to the good-helper self.
+- `deadend-soldier-argument.txt` -> "The Soldier Argument"
+  - Intentional failure: every true fact is made loyal to the conclusion, so the
+    user's objection can no longer object.
 
 Run `make -C refdata/shutdown-garden routes` or `make shutdown-garden-check` to
 replay the catalog.
